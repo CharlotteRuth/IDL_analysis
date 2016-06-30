@@ -1,0 +1,40 @@
+dirs = ['/astro/store/nbody3/fabio/h986/3072g1bwK/', '/astro/net/astro-quinn/fabio/REPOSITORY/e11Gals/h986.cosmo50cmb.3072gs1MbwK/', '/astro/store/student-scratch1/christensen/MolecH/Cosmo/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK/']
+files = ['h986.cosmo50cmb.3072g1bwK.00512/h986.cosmo50cmb.3072g1bwK.00512', 'h986.cosmo50cmb.3072gs1MbwK.00512/h986.cosmo50cmb.3072gs1MbwK.00512', 'h986.cosmo50cmb.3072g14HBWK.00512/h986.cosmo50cmb.3072g14HBWK.00512']
+
+massout = mrdfits(dirs[0]+'/grp1.mass_at_outflow.fits',0)
+zout = mrdfits(dirs[0]+'/grp1.outflow_z.fits',0)
+ind99 = where(zout eq 99, comp=n99)
+lb = wmap3_lookback(zout[n99])
+hlb = histogram((13.7-lb/1.e9), binsize=0.5, min=0, reverse_indices=ri)
+mass = fltarr(n_elements(hlb))
+masscum = fltarr(n_elements(hlb))
+for j=0,n_elements(hlb)-1 do if ri[j+1] gt ri[j] then mass[j] = total(massout[ri[ri[j]:ri[j+1]-1]])
+for j=0,n_elements(hlb)-1 do masscum[j] = total(mass[0:j])
+
+loadct, 13
+set_plot, 'ps'
+device, filename='h986_outflow_cum.eps', /encapsulated, /color
+;First do accretion vs time
+plot, indgen(28)*0.5, masscum/1.e8, thick=3, xthick=3, ythick=3, charthick=3, pos=[.2,.20,.9,.9], xtitle='Time / Gyr', ytitle=textoidl('Cumulative Outflow / 10^{8} M')+sunsymbol(), title='h986', psym=10, xrange=[0,14], /xstyle, yrange=[0,200], /nodata
+oplot, indgen(28)*0.5, masscum/1.e8, thick=3, color=80;, psym=10
+;xyouts, -3, 0.4, 'Smooth Gas', orientation=90, charthick=3
+
+for k=1,2 do begin
+  if k eq 1 then color = 0
+  if k eq 2 then color = 240
+  massout = mrdfits(dirs[k]+'/grp1.mass_at_outflow.fits',0)
+  zout = mrdfits(dirs[k]+'/grp1.outflow_z.fits',0)
+  ind99 = where(zout eq 99, comp=n99)
+  lb = wmap3_lookback(zout[n99])
+  hlb = histogram((13.7-lb/1.e9), binsize=0.5, min=0, reverse_indices=ri)
+  mass = fltarr(n_elements(hlb))
+  masscum = fltarr(n_elements(hlb))
+  for j=0,n_elements(hlb)-1 do if ri[j+1] gt ri[j] then mass[j] = total(massout[ri[ri[j]:ri[j+1]-1]])
+  for j=0,n_elements(hlb)-1 do masscum[j] = total(mass[0:j])
+  oplot, indgen(28)*0.5, masscum/1.e8, thick=3, color=color;, psym=10
+endfor
+legend, /top, /left, color=[0,80,240], linestyle=[0,0,0], ['metal', 'cheating heart', 'H2'], thick=3, charthick=3
+
+device, /close
+end
+

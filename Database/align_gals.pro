@@ -1,0 +1,1 @@
+../../Datafiles/Database/align_gals.pro

@@ -1,0 +1,41 @@
+PRO plot_profile,filenames,munit,lunit,outplot = outplot,galtotal = galtotal
+
+loadct,39
+formatplot,outplot = outplot
+
+IF KEYWORD_SET(outplot) THEN BEGIN
+    fgcolor = 0 
+    bgcolor = 255
+ENDIF ELSE BEGIN
+    fgcolor = 255
+    bgcolor = 0
+ENDELSE
+
+FOR i = 0, n_elements(filenames) - 1 DO BEGIN
+    rtipsy,filenames[i],h,g,d,s
+    readarr,filenames[i] + '.HI',h,HI,part = 'gas',/ascii
+    readarr,filenames[i] + '.H2',h,H2,part = 'gas',/ascii
+    H2= H2*2
+    
+    gr = sqrt(g.x*g.x + g.y*g.y)*lunit[i]
+    g.mass = g.mass*munit[i]
+
+    sr = sqrt(s.x*s.x + s.y*s.y)*lunit[i]
+    s.mass = s.mass*munit[i]
+
+    rmax = 100
+    nbins = 100
+    s_prof = prof_array(sr,s.mass,rmin = 0, nbins = nbins, rmax = rmax)
+    HI_prof = prof_array(gr,g.mass,weight = HI, rmin = 0, nbins = nbins, rmax = rmax)
+    H2_prof = prof_array(gr,g.mass,weight = H2, rmin = 0, nbins = nbins, rmax = rmax)
+
+    IF keyword_set(outplot) THEN  device,filename = filenames[i] + '_prof.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window,0
+    plot,s_prof.rbins,s_prof.sd,/ylog,/xlog,xtitle = 'Radius [kpc]',ytitle = 'Surface Density [M' + sunsymbol() + '/kpc^2]',yrange = [10,1e10],xrange = [0.5,100],title = filenames[i]
+    oplot,HI_prof.rbins,HI_prof.sd,color = 50, linestyle = 2
+    oplot,H2_prof.rbins,H2_prof.sd,color = 240,linestyle = 1
+    legend,['Stars','HI','H_2'],color = [fgcolor,50,240],linestyle = [0,2,1],/right
+    IF keyword_set(outplot) THEN device,/close ELSE stop
+ENDFOR
+
+stop
+END

@@ -1,0 +1,356 @@
+This is the procedure to kinematically decompose a galaxy simulation into its 
+component parts, ie: bulge, pseudobulge, disk, thick disk, thin disk and halo.
+
+See decomposition.physics for the details of method, these are the 
+instructions for the procedure. 
+
+The requirements are:
+
+-Tipsy, (UW ONLY open on Elektra by typing ~trq/bin.x86_64/tipsy.)
+Make sure number lock is off when using Tipsy. 
+Tipsy man page are online at http://www-hpcc.astro.washington.edu/tipsy/man/
+
+IDL and the following procedures:
+
+align.pro
+arrscl.pro
+deco.pro
+equalnbins.pro
+filepath.pro
+getlcirc.pro
+gettok.pro
+hist1d.pro
+legend.pro
+loadct.pro
+mean.pro
+moment.pro
+path_sep.pro
+rdfloat.pro
+read_lon_array.pro
+readcol.pro
+remchar.pro
+rtipsy.pro
+setdifference.pro
+spline.pro
+starmass.pro
+strnumber.pro
+strsplit.pro
+swap_endian.pro
+
+The Amiga Halo Finder outputs for this simulation.
+simulationname.amiga.grp
+simulationname.amiga.gtp
+simulationname.amiga.stat
+
+This is a fully inclusive list, many of these may be included in the IDL 
+libraries. 
+
+For this bootcamp the example galaxy is MW1.1024g1bwK.00512
+
+STEP ONE
+MAKING A ROTATION CURVE IN TIPSY
+
+The first step is to create a rotation curve for the galaxy in tipsy.
+Unfortunately, this is currently the only known way to get a rotation curve 
+that is compatable with the decomp proceedure and it cannot be automated.
+
+Before beginning, find the force softening for the gas and dark matter in the 
+simulation. 
+They should be the same for gas and dark. Tipsy needs this number to make the 
+rotation curve. 
+Find the force softening by compiling and running rtipsy.pro in IDL.
+
+> IDL
+IDL> .r rtipsy.pro
+IDL> rtipsy, 'MW1.1024g1bwK.00512',h,g,d,s
+IDL> help,min(d.eps)
+
+It should display:
+
+<Expression>    FLOAT     =   1.09375e-05
+
+For the example the force softening is 1.09375e-5
+Save this number for later and exit IDL.
+
+IDL> exit
+
+Now make the rotation curve in Tipsy.
+
+Open tipsy 
+
+> tipsy
+
+A display window will pop up but all commands should continue to by typed in 
+the terminal.
+
+<yes, master> openb MW1.1024g1bwK.00512
+<yes, master> loads 1
+<yes, master> loadall
+<yes, master> viewgas logrho 1 7 clip  
+
+The display will show the gas of the entire simulation colored 
+logarithmically by density, making it easier to determine where a galaxy is.
+(1 and 7 are the exponent of the gas density in units of the critical density 
+which is also the density unit for GASOLINE, try also 
+logtemp if you wanna see a temperature map)
+
+<yes, master> makebox 1
+
+Make a box around the galaxy you want. Zoom by left clicking, be sure number 
+lock is off or else clicking won't work. Make the box by holding shift and 
+left clicking in the bottom left corner of where you want your box to be, 
+then shift-click again in the top right. The display will zoom all the way 
+back out and switch angles. Zoom back in and do this again from another 
+angle to complete the three dimensional box.
+
+NOTE: If you don't know precicesly where your galaxy is, read in the amiga 
+array and show just the halo you want with the following command:
+<yes, master> viewarray all default 0.9 1.1 clip 
+Then make a box around the shown halo (should be pink) and follow the above 
+viewing and box making instructions. If you don't want the largest halo, 
+change the min and max in the viewarray command to the desired range.
+
+Activate the box:
+
+<yes, master> abox 1
+<yes, master> viewgas logrho 1 7 clip
+
+This will bring up just your box on the display. Use the center mouse button 
+and manipulate the scroll bars in the bottom right corner of the display 
+window until the galaxy is face on.
+
+Or, try the command 'angleup' to align the galaxy with the gas angular 
+momentum in box 1.
+
+<yes, master> angleup 1 gas
+<yes, master> rotate up 90
+
+That will show you the galaxy face on. (there might be small deviations if 
+the galaxy is warped)
+
+To measure the radius, use the ruler tool
+
+<yes, master> ruler
+
+Click the center, then the edge of your galaxy. This will display the 
+radius in simulation units. Keep track of this number. 
+For the example galaxy the radius is about 0.00033 (which is about 9.4kpc)
+
+<yes, master> setsphere 2 pot 1 0.00033
+
+This will make a sphere (box number 2) with the center at the lowest potential
+encompassing everything within the given radius.
+
+Tipsy will ask if things are OK  here, just say yes.
+
+<Assuming z = 0, physical coordinates, H0 = 50 km/sec/Mpc>
+<Omega = 1, Lambda = 0, vacuum boundary>
+<Is this alright, master (y/n)?>
+
+<yes, master> y
+
+Make another sphere with 1/6th the radius, this will be used to align and 
+center the galaxy for the rotation curve procedure.
+
+Check to make sure that the entire galaxy is contained in this sphere, and 
+that the edges of the sphere aren't too far from the edges of the galaxy. 
+
+Also check box 3 to make sure it corresponds to the actual center of the 
+galaxy. 
+
+<yes, master> setsphere 3 pot 1 0.00005
+<yes, master> abox 2
+<yes, master> viewgas logrho 1 7 clip
+<yes, master> abox 3
+<yes, master> viewgas logrho 1 7 clip
+
+Now we make the rotation curve.
+
+<yes, master> rotationcurve 2 3 pot all lin 100 MW1.1024g1bwK.00512.rot 0 0.00033
+
+This will make a rotation curve of the contents of box 2 aligned according to 
+the contents of box 3 using all types of particles(all can be replaced by 
+gas, dark or star), linear binning of 100 bins (there can be 1 to 199 
+bins but if you use too many it may crash when the outer bins contain very 
+few particles, this is also a good reason to keep the sphere close to the 
+edges of the galaxy)
+Name the file filename.rot with minimum and maximum radius of 0 and .00033.
+
+Tipsy will ask for the force softening that was established before.
+Enter it twice, once for gas and once for dark. 
+
+<enter gas gravitational softening, master>
+ 1.09375e-05
+<enter dark gravitational softening, master>
+ 1.09375e-05
+
+The rotation curve may take a few minutes, but when Tipsy returns you to 
+the command prompt it is done and you may exit Tipsy.
+
+<yes, master> quit
+
+It's a good idea to check the rotation curve file and make sure that it 
+contains four columns and one row for each bin, all with non zero values 
+(but the first line) and that there are no NaNs.
+  
+UW ONLY:
+If it contains one column of values and 3 columns of "nan"'s you probably ran 
+the wrong version of tipsy and should start over on elektra  using this tipsy:
+ ~trq/bin.x86_64/tipsy
+
+The following is from the tipsy man pages at 
+(http://www-hpcc.astro.washington.edu/tipsy/man/) 
+regarding the output file from rotationcurve:
+
+	The output  file  has  the  following  four  columns:  the
+       radius, the total circular velocity, the circular velocity
+       if only the dark matter were included,  and  the  circular
+       velocity  if only the baryonic matter (stars and gas) were
+       included.  The circular velocity is calculated in a  plane
+       perpendicular to the angular momentum axis of the gas par-
+       ticles in box box-number.  The calculated velocity is  the
+       average of four perpendicular directions in this plane.
+
+
+STEP TWO
+DECOMPOSE THE GALAXY
+
+The deco.pro procedure needs several things: 
+
+1) the galaxy output from GASOLINE filename, 
+2) the name of your rotation curve file 
+3) the name of the parameter file for this galaxy ( usually called 
+silumationname.param)
+4) the amiga halo number being used and 
+5) the energy 'cutting point' between bulge/halo and thick disk/pseudo bulge.
+
+Amiga is  halo finder that we use to isolate individual galaxies from the 
+rest of the simulation.It creates several files, among them a 
+simulationname.amiga.gtp and simulationname.amiga.grp and a  
+simulationname.amiga.stat. It also assigns a halo 'index' to the galaxy 
+(there are usually many galaxies inside each simulation output. In this 
+example the galaxy's index is '1'. the .stat file contains useful 
+information on the properties of each galaxy in the output. 
+Below is an example.
+
+Grp      N_tot     N_gas    N_star    N_dark       Mvir(M_sol)   Rvir(kpc)    GasMass(M_sol)   StarMass(M_sol)   DarkMass(M_sol)       V_max    R@V_max 
+ 1    4778626    672950   2845963   1259713     1.1130129e+12    267.7286     7.7674948e+10     7.7608809e+10     9.5736300e+11   250.77000    2.01429 
+
+The "cutting point" is the gravitational energy level that we use to 
+distinguish between bulge particles (that are more tightly bound) from halo 
+particles  (that are less bound to the galaxy's potential) and from thick 
+disk and pseudo bulge particles.
+
+
+NOTES ON ECUT
+For this example, and large galaxies with similar units, a cutting point
+(Ecut) = -0.2 is often a good guess to start with. A more accurate
+energy cut for the example galaxy (MW1.1024) is -0.33 (smaller galaxies
+have smaller Ecut...like -0.02).  As dynamical components are not 
+sharply separated in energy space, the exact value is somewhat up to the 
+individual galaxy and will most likely require a couple of attempts 
+running DECO.  The plot range.ps will output from deco.pro and displays the 
+angular momentum vs the energy range of all the particles. Make sure the 
+Ecut you choose is within that range as a first guess, usually a value 
+just before the the distribution starts raising substantially.
+Deco will also output a density profile, the fit of the overplotted lines will
+also indicate the appropriateness of the chosen Ecut.
+If running deco.pro, it will prompt to check and/or change this energy cut 
+mid run. The bash script DECOMP does not prompt this, so after running it 
+one should always check their range.ps and density_profile.ps 
+
+
+If you have the bash script DECOMP from the bootcamp directory, now is the 
+time
+to run it!
+
+At the shell:
+
+>DECOMP MW1.1024g1bwK.00512 MW1.1024g1bwK.00512.rot MW1.1024g1bwK.param 1 -0.33
+
+That is, DECOMP filename rotationfile paramfile halo Ecut
+
+This is what it does:
+
+Finds the distance units, this is in the MW1.1024g1bwK.param file, dKpcUnit is
+the desired line. 
+In this case the distance unit is 2.85714e4 kpc
+
+Finds the mass units. Also in the param file, dMsolUnit, which is 3.171e15
+
+In IDL, DECOMP compiles all the required .pro files and runs deco.pro with 
+the simulation file, rotation curve file, halo number, distance units, 
+mass units and Ecut as input.
+
+This will produce a .cmp file containing all the separated components of 
+the galaxy(see below). It has the same format as a grp file, i.e. a one 
+column ascii file with  a value for every particle
+(0 for gas, dark matter and stars not belonging to the halo we are looking at)
+deco  will also produce range.ps to show the range of energies of the 
+particles a density_profile.ps and a decomposition.ps (edge and face on).
+One extra bonus feature: filename.masses gives some information regarding 
+the masses of each component and a B/D ratio.
+
+density_profile.ps plots the density profile of the bulge and halo
+components as separated by the energy cut.  A 'good' choice is the one
+where the halo is well approximated by a power law and the bulge cuts
+out at a few kpc. This usually separates high velocity metal poor
+stars from metal rich, centrally concentrated stars. In case, rerun deco with 
+a different cut, using a more negative energy value if the halo component 
+is too centrally concentrated. 
+
+VIEWING THE  GALAXY DIVIDED IN ITS KINEMATIC COMPONENTS
+
+To look at it in tipsy:
+
+>openb MW1.1024g1bwK.00512
+>loads 1
+>loadall
+>readarray MW1.1024g1bwK.00512.cmp
+>xarray all rainbow 0.9 6.1 clip
+
+This will display the different components in different colors.
+
+Each component is assigned a different number as follows:
+Disk 1
+Halo 2
+Bulge 3
+Thick disk 4
+Pseudo Bulge 5
+Other stuff like satellites 6
+
+
+Don't forget that running DECOMP multiple times will write over any previous 
+runs in the same directory. 
+
+IN CASE OF CRASHES:
+
+Do not panic.
+
+If deco.pro crashes saying either:
+
+%Attempt to subscript SPHERE with BULGE is out of range.
+% Execution halted at: DECO              183 /astro/net/scratch2/lapope/OFFICIAL_DECO_PROGRAMS/deco.pro
+
+or
+
+% Attempt to subscript REST with THICK is out of range.
+% Execution halted at: DECO              183 /astro/net/scratch2/lapope/OFFICIAL_DECO_PROGRAMS/deco.pro
+%                      $MAIN$      
+
+Then you picked a bad Ecut. Make sure it is within the range now shown in 
+range.ps.
+
+Running deco.pro separately in IDL instead of from within the DECOMP script 
+will engage an interactive portion, which will plot the energy range then ask
+the user if they would like to change their Ecut guess before continuing. 
+
+To call it:
+
+IDL> deco,filename,rotationfile,amiga halo number, distance unit, mass unit, Ecut
+
+
+
+
+
+

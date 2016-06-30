@@ -1,0 +1,30 @@
+ This is a list of the sequence of commands needed to fit a curve to the TRGB of a given galaxy.
+
+First, iso_sement must be compiled and run
+.r trgb.pro
+.r extrap_iso.pro
+.r interpol_color.pro
+.r iso.pro
+.r gbasis.pro
+.r iso_segment
+.r finish_tips
+iso_segment,'NGC0253-WIDE1',adjust = 27.62
+iso_segment,'NGC0253-WIDE1',adjust = 27.64 ;second time around
+iso_segment,'NGC0253-WIDE2',adjust = 27.62
+iso_segment,'NGC0253-WIDE2',adjust = 27.64 ; second time around
+iso_segment,'NGC0253-WIDE3',adjust = 27.58
+iso_segment,'NGC0253-WIDE3',adjust = 27.54 ; second time around
+finish_tips,'NGC0253-WIDE1',/PLOTTIP
+
+To do this for fake galaxies, the fake errors must first be generate
+.r add_err.pro
+add_err,'/astro/net/scratch2/christensen/TRGBDust/NGC0253-WIDE1/NGC0253-WIDE1.vi2.fits','/astro/net/scratch2/christensen/TRGBDust/Fake1/Fake1.vi','/astro/net/scratch2/christensen/TRGBDust/Fake1/Fake1.vi2'
+.r gbasis.pro
+.r extrap_iso.pro
+.r interpol_color.pro
+.r iso.pro
+.r iso_segment
+.r finish_tips
+iso_segment,'Fake1',/FAKEFILE
+finish_tips,"Fake1",/FAKEFILE,/PLOTTIP
+

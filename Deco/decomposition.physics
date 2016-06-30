@@ -1,0 +1,65 @@
+To obtain a disk/bulge decomposition based on the kinematics of
+the stellar component we
+
+1)  first align each simulated galaxy particle
+distribution such that the angular momentum vector of the cold gas
+(T< 40.000K) in the central few kpcs lies along the z axis, and
+calculate Jz/Jcirc for each star in the galaxy, where Jz is the angular
+momentum in the x − y plane, and Jcirc is the momentum of the
+co-rotating circular orbit with similar orbital energy (see also Abadi
+et al. (2003); Governato et al. (2007). Stars in the disk plane which
+have near circular orbits, will have Jz/Jcirc∼ 1. Do define what will
+now be the final set of disk particles we select stars with Jz/Jcirc>
+0.8. This condition is used to match the eccentricities of disk stars
+in the Milky Way.(Nordstrom et al. 2004).
+
+
+2) Once the reference frame has been established (we verified that
+young stars trace very closely the cold gas) a non rotating, “classic”
+spheroid is first selected starting from the stars with negative Jz up
+to a cut on Jz/Jcirc, determined by assuming that halo so identified
+has zero net rotation. 
+
+To include halo stars with residual rotation we
+define as zmax the maximum height that disk stars can reach above the
+plane. When stars’ orbits take them more than 5 scale heights above
+the plane, they are re-classified as spheroid stars independently of
+their Jz/Jc. This scale height criterion is based on SDSS
+observations, (Juric & York 2005), showing that the Milky Way thick
+disk contributes only ∼8% of stars at 5 scaleheights above the
+plane. (calculated using stellar densities).
+
+2b) Halo and bulge components are then extracted from the spheroid by
+using the total energy of the stars, with those stars which are
+tightly bound belonging to the bulge. The total surface density of the
+spheroid component of our galaxy models has a steep inner profile and
+a flat outer profile, with transition for MW1 and galaxies of similar
+mass happening at R ∼ 4kpc.  The energy cut is made in order to match
+the two slopes in the surface mass density profile we see in most of
+our simulations (see density_profile.ps for guidance).  We verified
+that this selection indeed produce two components that share the
+global properties of halos (old and sub-solar metallicity stars) and
+bulges (higher metallicity stars with a wider spread in ages).
+
+
+At this stage, our kinematic decomposition has selected a
+disk, and “classic”, i.e. almost non rotating halo and bulge. 
+
+
+3) We now deal with the heretofore unclassified stars, i.e those with
+cut < Jz/Jc < 0.8 and relatively close to the disk plane. These are
+likely are a mixture of thick disk stars, rotating pseudo-bulge stars,
+and disk stars whose orbits have been displaced from circular due to
+bar instabilities (most of the simulated galaxies have long lasting
+stellar bars). 
+
+3b) We then make the same binding energy cut as we made to separate
+the bulge stars from the halo stars. Thus, the most bound ”unclassified”
+stars are put in a rotating bulge (pseudo-bulge) component,
+while the less bound ones are added to the disk, as thick disk
+stars.
+
+ At the end of this classification procedure all stars within the
+virial radius of our galaxies have been assigned to a dynamically
+defined component. Thin, thick  disk and pesudo bulge are often 
+grouped together to define the B/D ratio. 

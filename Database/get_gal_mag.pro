@@ -1,0 +1,1 @@
+../../Datafiles/Database/get_gal_mag.pro

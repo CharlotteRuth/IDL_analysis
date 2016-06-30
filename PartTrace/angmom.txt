@@ -1,0 +1,54 @@
+	51265.9      53261.7      81602.9  2.30697e+08  1.46310e+08  2.24163e+08  7.78532e+07      1.53211
+MRDFITS: Binary table.  14 columns by  26361 rows.
+MRDFITS: Binary table.  14 columns by  12250 rows.
+      7533.02      6196.40      11427.5  1.98578e+08  7.59059e+07  1.39987e+08  6.40811e+07      1.84422
+MRDFITS: Binary table.  14 columns by  7866 rows.
+MRDFITS: Binary table.  14 columns by  4404 rows.
+      112166.      101630.      188361.  8.82296e+08  4.47578e+08  8.29543e+08  3.81965e+08      1.85340
+MRDFITS: Binary table.  14 columns by  74646 rows.
+MRDFITS: Binary table.  14 columns by  25448 rows.
+      21295.3      18593.9      21873.9  1.58961e+09  4.73178e+08  5.56646e+08  8.34674e+07      1.17640
+MRDFITS: Binary table.  14 columns by  21119 rows.
+MRDFITS: Binary table.  14 columns by  9249 rows.
+      188890.      200838.      313805.  3.98918e+09  1.85755e+09  2.90238e+09  1.04483e+09      1.56248
+MRDFITS: Binary table.  14 columns by  25740 rows.
+MRDFITS: Binary table.  14 columns by  10152 rows.
+      245766.      257092.      478928.  6.32601e+09  2.61000e+09  4.86208e+09  2.25208e+09      1.86286
+MRDFITS: Binary table.  14 columns by  34677 rows.
+MRDFITS: Binary table.  14 columns by  20187 rows.
+      372607.      346665.      663947.  1.29209e+10  6.99812e+09  1.34031e+10  6.40497e+09      1.91524
+MRDFITS: Binary table.  14 columns by  138713 rows.
+MRDFITS: Binary table.  14 columns by  30019 rows.
+      56174.7      58657.1      85725.2  7.79216e+09  1.76083e+09  2.57339e+09  8.12558e+08      1.46146
+MRDFITS: Binary table.  14 columns by  190849 rows.
+MRDFITS: Binary table.  14 columns by  64512 rows.
+      261529.      335427.      364478.  4.99125e+10  2.16391e+10  2.35132e+10  1.87410e+09      1.08661
+MRDFITS: Binary table.  14 columns by  99941 rows.
+MRDFITS: Binary table.  14 columns by  42162 rows.
+  3.44254e+06  4.70165e+06  3.96770e+06  3.44051e+11  1.98231e+11  1.67286e+11 -3.09449e+10     0.843895
+MRDFITS: Binary table.  14 columns by  121562 rows.
+MRDFITS: Binary table.  14 columns by  42045 rows.
+  1.17323e+06  1.50144e+06  1.40311e+06  1.42620e+11  6.31282e+10  5.89939e+10 -4.13430e+09     0.934510
+MRDFITS: Binary table.  14 columns by  310028 rows.
+MRDFITS: Binary table.  14 columns by  122809 rows.
+      199722.      325586.      332211.  6.19193e+10  3.99848e+10  4.07984e+10  8.13617e+08      1.02035
+MRDFITS: Binary table.  14 columns by  90597 rows.
+MRDFITS: Binary table.  14 columns by  37439 rows.
+  1.81677e+06  1.93911e+06  3.55377e+06  1.64594e+11  7.25985e+10  1.33050e+11  6.04513e+10      1.83268
+MRDFITS: Binary table.  14 columns by  201980 rows.
+MRDFITS: Binary table.  14 columns by  95544 rows.
+  2.59261e+06  2.77175e+06  4.41678e+06  5.23655e+11  2.64824e+11  4.21997e+11  1.57173e+11      1.59350
+MRDFITS: Binary table.  14 columns by  312811 rows.
+MRDFITS: Binary table.  14 columns by  197810 rows.
+  5.18076e+06  5.77155e+06  5.00191e+06  1.62060e+12  1.14167e+12  9.89428e+11 -1.52241e+11     0.866650
+MRDFITS: Binary table.  14 columns by  434943 rows.
+MRDFITS: Binary table.  14 columns by  205315 rows.
+  1.42125e+07  1.76275e+07  2.24111e+07  6.18165e+12  3.61918e+12  4.60134e+12  9.82152e+11      1.27137
+MRDFITS: Binary table.  14 columns by  580063 rows.
+MRDFITS: Binary table.  14 columns by  255193 rows.
+  1.62245e+07  1.76280e+07  2.07175e+07  9.41121e+12  4.49855e+12  5.28697e+12  7.88419e+11      1.17526
+MRDFITS: Binary table.  14 columns by  869126 rows.
+MRDFITS: Binary table.  14 columns by  276759 rows.
+  2.36591e+07  3.18387e+07  3.07805e+07  2.05627e+13  8.81166e+12  8.51878e+12 -2.92884e+11     0.966762
+MRDFITS: Binary table.  14 columns by  1861351 rows.
+MRDFITS: Binary table.  14 columns by  950687 rows.

@@ -1,0 +1,1 @@
+../../Datafiles/Database/ascii_mags.pro

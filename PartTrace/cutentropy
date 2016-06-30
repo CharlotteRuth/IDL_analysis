@@ -1,0 +1,33 @@
+missing = 243406
+print,where(gpart.iord eq missing)
+iordind = where(gpart.iord eq missing)
+print,transpose(gloc[iordind,*])
+
+range=[indgen(71),indgen(122-72) + 72]
+nall = n_elements(gpart)
+nsteps = n_elements(range)
+
+allstruct = replicate({iord:0L, mass:LONARR(nsteps), grp:LONARR(nsteps), temp:FLTARR(nsteps), rho:FLTARR(nsteps), entropy:FLTARR(nsteps), radius:FLTARR(nsteps), vx:FLTARR(nsteps), vy:FLTARR(nsteps), vz:FLTARR(nsteps), x:FLTARR(nsteps), y:FLTARR(nsteps), z:FLTARR(nsteps)}, nall)
+allstruct.iord=gpart.iord
+allstruct.mass=gpart.mass[range]
+allstruct.grp=gpart.grp[range]
+allstruct.temp=gpart.temp[range]
+allstruct.rho=gpart.rho[range]
+allstruct.entropy=gpart.entropy[range]
+allstruct.radius=gpart.radius[range]
+allstruct.vx=gpart.vx[range]
+allstruct.vy=gpart.vy[range]
+allstruct.vz=gpart.vz[range]
+allstruct.x=gpart.x[range]
+allstruct.y=gpart.y[range]
+allstruct.z=gpart.z[range]
+allstruct.mass=gpart.mass[range]
+mwrfits,allstruct,'grp' + finalid + '.allgas.entropy.fits',/create
+
+halodat = mrdfits('grp' + finalid + '.alignment.fits',1)
+halodat = halodat[range]
+mwrfits,halodat,'grp' + finalid + '.alignment.fits',/create
+
+
+
+

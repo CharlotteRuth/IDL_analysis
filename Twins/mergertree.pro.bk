@@ -1,0 +1,258 @@
+;# just input your favourite galaxy: everything else shoule be aok!
+;# "MW1.1024g1bwK"," ", " "
+;#
+
+;dir = '/net/scratch2/fabio/REPOSITORY/e11Gals/h603.cosmo50cmb.2304g2bwK/'
+;dist_units = 50000.
+;galname = 'h603.cosmo50cmb.2304g2bwK'
+;gal = 1
+;distr=[0,30000]
+
+;dir = '/astro/net/scratch1/abrooks/FABIO/h516.cosmo25cmb.2304g2bwK/'
+;dist_units = 25000.
+;galname = 'h516.cosmo25cmb.2304g2bwK'
+;gal = 1
+;distr=[0,15000]
+;step = ['00072','00120','00168','00216','00264','00312','00360','00408','00456','00512']
+;step = ['00024','00036','00048','00060','00072','00084','00096','00108','00512']
+
+;dir = '/astro/net/nbody1/abrooks/h799.cosmo25cmb.3072g1MBWK/'
+;galname = 'h799.cosmo25cmb.3072g1MBWK'
+
+;dir = '/astro/store/student-scratch1/christensen/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/steps/'
+;galname = 'h516.cosmo25cmb.3072g14HBWK'
+
+;dir = '/astro/store/student-scratch1/christensen/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g1MBWK/steps/'
+;galname = 'h516.cosmo25cmb.3072g1MBWK'
+;dist_units = 25000.
+;gal = 1
+;step =['00084','00096','00108','00120','00132','00144','00156','00168','00180','00192','00492']
+
+
+;  dir = '/astro/store/student-scratch1/christensen/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/steps/'
+;  galname = 'h516.cosmo25cmb.3072g14HBWK'
+;  dist_units = 25000.
+
+;dir ='/astro/store/student-scratch1/christensen/MolecH/Cosmo/h603.cosmo50cmb.3072g/h603.cosmo50cmb.3072g14HBWK/steps/'
+;galname = 'h603.cosmo50cmb.3072g14HBWK'
+;  dist_units = 50000.
+
+PRO mergertree,dir,galname,dist_units,gal = gal,timer=timer,distr=distr,fraction=fraction,threshold=threshold,_extra=_extra,plot = plot
+
+IF n_params() EQ 0 THEN BEGIN
+    print,"TRACE_TREE, gal [, timer=timer, distr=distr]"
+    RETURN
+ENDIF
+IF keyword_set(fraction) AND keyword_set(threshold) THEN BEGIN
+    print,"TRACE_TREE: set only one of (threshold,fraction)"
+    print,"            (default: fraction = 0.005)"
+    RETURN
+ENDIF
+
+IF NOT keyword_set(distr) THEN distr = [0,799.] 
+IF NOT keyword_set(timer) THEN timer = [0,13.8] 
+IF NOT keyword_set(gal) THEN gal = 1
+
+;loadct,39
+!P.thick = 1.5
+!X.Charsize = 1.25
+!Y.Charsize = 1.25
+!P.CHARSIZE = 1.25
+
+
+command = "ls "+dir+"*/*amiga.grp | grep amiga.grp | sed 's/.amiga.grp//g'"
+spawn,command,file           ; return the files without the .amiga.grp
+;stop
+grpfile = file+'.amiga.grp'
+statfile = file+'.amiga.stat'
+step_st = strmid(file,4,5,/reverse_offset)
+step = fix(strmid(file,2,3,/reverse_offset))
+;step = ['00084','00096','00108','00120','00132','00144','00156','00168','00180','00192','00492']
+;time = step/512.*13.66
+time = step/512.*13.66
+nsteps = n_elements(step)
+name_steps = dir+galname+'.'+step_st+'.dir/'+galname+'.'+step_st
+ind_steps = intarr(nsteps)
+FOR i = 0, nsteps - 1 DO BEGIN
+    ind_steps[i] = WHERE(strcmp(file, name_steps[i]) eq 1)
+;    stop
+ENDFOR
+;stepsize = 4
+;stop
+
+final_halo  = read_ascii_array(grpfile[ind_steps[nsteps - 1]]) 
+;rheader,file[ind_steps[nsteps - 1]],h
+rtipsy,file[ind_steps[nsteps - 1]],h,g,d,s,/justhead
+final_halo = final_halo[h.ngas:h.ngas+h.ndark -1]; restrict to DM only
+readcol,statfile[ind_steps[nsteps - 1]],halo_id,ntot,ngas,nstar,ndark,mvir,rvir,gmass,smass,dmass,Vmax,Rvmax,Vdisp,xc,yc,zc,vxc,vyc,vzc,tmp,format='l,l,l,l,l,f,f,f,f,f,f,f,f,f,f,f,f,f,f,I',numline = 1,skipline=gal,/silent ; read information about each halo
+;galmass=string(sigfig(mvir[0],2)),/scientific))
+galmass = strtrim(mvir[0]*8.0)
+virial =fltarr(nsteps)
+vtime=fltarr(nsteps)
+virial[0]=rvir[0]
+vtime[0]=time[nsteps-1]
+finalgal = where(final_halo EQ gal) ; restrict to virialized galaxy
+halo_distance = 0.
+
+IF NOT keyword_set(fraction) THEN fraction = 0.005 ELSE fraction=fraction*1.
+IF NOT keyword_set(threshold) THEN threshold = n_elements(finalgal)*fraction ; minimum halo particle number
+;  distance = sqrt((xc-xc[0])^2+(yc-yc[0])^2+(zc-zc[0])^2)
+
+get_lun,unit
+openw,unit,dir + galname+'.halo_step.out' ; store the information for Evan in his format
+
+IF keyword_set(plot) THEN BEGIN
+    set_plot,'ps'
+    device,filename = 'mergertree_'+galname+'.eps',/color,bits_per_pixel=8
+ENDIF ELSE set_plot,'x'
+plot,[0,0,0],[0,0,0],xrange=distr,yrange=timer,/xstyle,/ystyle,xtit='distance (kpc)',charsize=0.9,pos=[0.15,0.1,0.99,0.95],yticks=7,ytickname=[' ',' ',' ',' ',' ',' ',' ',' ']
+xyouts,-distr[1]/8.,6.,"time (Gyrs)",orientation=90.
+xyouts,0.95*distr[1],12.5,textoidl('M_{vir}')+galmass+'M'+sunsymbol(),alignment=1.
+xyouts,-distr[1]/14.,1.8,'2',charsize=1.4
+xyouts,-distr[1]/14.,3.8,'4',charsize=1.4
+xyouts,-distr[1]/14.,5.8,'6',charsize=1.4
+xyouts,-distr[1]/14.,7.8,'8',charsize=1.4
+xyouts,-distr[1]/12.,9.8,'10',charsize=1.4
+xyouts,-distr[1]/12.,11.8,'12',charsize=1.4
+symsize = 0.45*(alog10(mvir[0]))-2.5
+symstar = 0.45*(alog10(smass[0]))-2.5
+loadct,39,/silent
+plots,halo_distance[0],time[nsteps-1],psym=sym(1),symsize=symsize
+plots,halo_distance[0],time[nsteps-1],psym=sym(1),symsize=symstar,color=250
+
+old_linked = lonarr(1)+gal
+; halo = later timestep: progenitor = earlier timestep
+l=1
+
+for i =nsteps-1,1,-1 do begin
+    if i lt 0 then break
+    print,''
+    print,'I:  ',strtrim(i,2),'; step: ',step[i],'; ',grpfile[ind_steps[i]]
+    print,'I2: ',strtrim(i-1,2),'; step: ',step[i-1],', ',grpfile[ind_steps[i-1]]
+    halo_all  = read_ascii_array(grpfile[ind_steps[i]]) ; get halo ids for larger timestep
+;    rheader,file[ind_steps[i]],h_halo
+    rtipsy,file[ind_steps[i]],h_halo,g_halo,d_halo,s_halo,/justhead
+    halo_all = halo_all[h_halo.ngas:h_halo.ngas+h_halo.ndark -1]
+
+    if  (i eq nsteps-1 ) then begin ;The first iteration
+        readcol,statfile[ind_steps[i]],halo_id,ntot,ng,nstar,ndark,mvir,rvir,gmass,smass,dmass,Vmax,Rvmax,Vdisp,xc,yc,zc,vxc,vyc,vzc,ID_A,FORMAT='I5,L9,L9,L9,L9,F18,F12,F18,F18,F18,F11,F11,F11,F11,F11,F11,F15,F15,F15,I6',/preserve_null,/silent
+        if (N_ELEMENTS(halo_id eq 0) gt 1 )then readcol,statfile[ind_steps[i]],halo_id,ntot,ng,nstar,ndark,mvir,rvir,gmass,smass,dmass,Vmax,Rvmax,Vdisp,xc,yc,zc,vxc,vyc,vzc,FORMAT='I5,L9,L9,L9,L9,F18,F12,F18,F18,F18,F11,F11,F11,F11,F11,F11,F15,F15,F15',/preserve_null,/silent
+    endif
+    if (i ne nsteps-1 ) then begin  ;All subsequent iterations
+        readcol,statfile[ind_steps[i]],halo_id,ntot,ng,nstar,ndark,mvir,rvir,gmass,smass,dmass,Vmax,Rvmax,Vdisp,xc,yc,zc,vxc,vyc,vzc,ID_A,clean,reality,FORMAT='I5,L9,L9,L9,L9,F18,F12,F18,F18,F18,F11,F11,F11,F11,F11,F11,F15,F15,F15,I6,A9,A9',/preserve_null,/silent
+        if (N_ELEMENTS(halo_id eq 0) gt 1 )then readcol,statfile[ind_steps[i]],halo_id,ntot,ng,nstar,ndark,mvir,rvir,gmass,smass,dmass,Vmax,Rvmax,Vdisp,xc,yc,zc,vxc,vyc,vzc,clean,reality,FORMAT='I5,L9,L9,L9,L9,F18,F12,F18,F18,F18,F11,F11,F11,F11,F11,F11,F15,F15,F15,A9,A9',/preserve_null,/silent
+         falsehalos = where(reality eq 'false',nf)
+        if (nf ne 0) then begin
+            false_id=halo_id[falsehalos[uniq(halo_id[falsehalos])]]
+            for j=0,n_elements(false_id)-1 do begin
+                false = where(halo_all eq false_id[j],nf)
+                if (nf ne 0) then begin
+                    halo_all[false]= replicate(1,n_elements(false))
+                endif
+            endfor
+        endif
+    endif
+
+    halo = halo_all[finalgal] ; only trace those in final galaxy at z=0
+;    print,'halos: ',halo
+    progenitor_all = read_ascii_array(grpfile[ind_steps[i -1]]) ;get halo ids for previous timestep
+;   rheader,file[ind_steps[i - 1]],h_prog
+    rtipsy,file[ind_steps[i - 1]],h_prog,g_prog,d_prog,s_prog,/justhead
+    progenitor_all = progenitor_all[h_prog.ngas:h_prog.ngas+h_prog.ndark -1]
+    readcol,statfile[ind_steps[i - 1]],halo_id,ntot,ng,nstar,ndark,mvir,rvir,gmass,smass,dmass,Vmax,Rvmax,Vdisp,xc,yc,zc,vxc,vyc,vzc,ID_A,clean,reality,FORMAT='I5,L9,L9,L9,L9,F18,F12,F18,F18,F18,F11,F11,F11,F11,F11,F11,F15,F15,F15,I6,A9,A9',/silent,/preserve_null
+    if (N_ELEMENTS(halo_id eq 0) gt 1 )then readcol,statfile[ind_steps[i-1]],halo_id,ntot,ng,nstar,ndark,mvir,rvir,gmass,smass,dmass,Vmax,Rvmax,Vdisp,xc,yc,zc,vxc,vyc,vzc,clean,reality,FORMAT='I5,L9,L9,L9,L9,F18,F12,F18,F18,F18,F11,F11,F11,F11,F11,F11,F15,F15,F15,A9,A9',/preserve_null,/silent
+
+ ;   virial[l]=rvir[0]
+ ;   vtime[l]=time[i]
+;oplot,[virial[l],virial[l-1]],[vtime[l],vtime[l-1]],color=50,line=1
+    falsehalos = where(reality eq 'false',nf)
+    if (nf ne 0) then begin
+        false_id=halo_id[falsehalos[uniq(halo_id[falsehalos])]]
+        for j=0,n_elements(false_id)-1 do begin
+            false = where(progenitor_all eq false_id[j],nf)
+            if (nf ne 0) then begin
+                progenitor_all[false]= replicate(1,n_elements(false))
+            endif
+        endfor
+    endif
+    progenitor = progenitor_all[finalgal] ; only trace those in final galaxy at z=0
+;    print,'Progenitor: ',progenitor
+    max_old_halos = max(progenitor)
+    num_halo = ulonarr(max_old_halos+1)
+    transfer =  ulonarr(max_old_halos+1)
+    
+    num_prog_all1 = histogram(progenitor_all,reverse_indices=r,min=0)
+    num_prog1 = histogram(progenitor,min=0)
+
+    ;; find # particles from prog that transfer to halo
+    for j = 1L,max_old_halos-1 do begin
+        if num_prog1[j] eq 0 then continue
+        if num_prog_all1[j] ge threshold then begin
+            member = r[r[j]:r[j+1]-1] 
+            halo_list = halo_all[member]
+            h=histogram(halo_list,min=0)
+            ntrans = max(h,maxbin) ; # of particles that go to new halo
+            if maxbin eq 0 and n_elements(h) ne 1 then begin ; for the case of more than half the particles being stripped, but still a large number of particles remain in the halo
+                if max(h[1:*]) ge threshold then begin
+                    ntrans =  max(h[1:*],maxbin)
+                    maxbin = maxbin+1
+                endif
+            endif          
+            transfer[j] = ntrans ; number going to new halo
+            num_halo[j] = maxbin ; number of the new halo
+        endif        
+    endfor
+
+    ;; find progenitor halos which have greater than "threshold" particles
+    nz_all = where(progenitor_all ne 0)
+    num_prog_all = histogram(progenitor_all[nz_all],min=0)
+    prog_linked_all = where(num_prog_all ge threshold,nprog_all) ; 
+    nz = where(progenitor ne 0)
+    num_prog = histogram(progenitor[nz],min=0)
+    prog_linked = where(num_prog ge threshold,nprog) ; 
+    IF (prog_linked[0] ne  -1 ) THEN BEGIN
+        ;; get only halos who end up merged in virialized halo
+        match_multi,num_halo[prog_linked],old_linked,dup=keep
+        stop
+        prog_linked = prog_linked[keep]
+        print,'Prog_linked: ',prog_linked
+ ;       IF ( i eq 2 OR i eq 1) then stop
+;    ;; add to file showing merger links
+;    nz = where(halo ne 0)
+;    g = histogram(halo[nz],min=0)
+;    dummy = where(g ge threshold,nhalo)
+        nhalo = n_elements(rem_dup(num_halo[prog_linked]))
+        printf,unit,'step',step[i-1],step[i],n_elements(prog_linked),nhalo,format='(A4,I10,I10,I10,I10)'
+        FOR j=0L,n_elements(prog_linked)-1 DO BEGIN
+            printf,unit,prog_linked[j],num_halo[prog_linked[j]],num_prog_all[prog_linked[j]],transfer[prog_linked[j]],format='(I14,I10,I10,I10)'
+        ENDFOR
+    
+;    readcol,statfile[i],halo_id,ntot,ngas,nstar,ndark,mvir,rvir,gmass,smass,dmass,Vmax,Rvmax,Vdisp,xc,yc,zc,vxc,vyc,vzc,tmp,format='l,l,l,l,l,f,f,f,f,f,f,f,f,f,f,f,f,f,f,I'
+        center = MIN(prog_linked) - 1
+        prog_distance = sqrt((xc[prog_linked-1]-xc[center])^2+(yc[prog_linked-1]-yc[center])^2+(zc[prog_linked-1]-zc[center])^2)*dist_units
+        stop
+        match_multi, old_linked, num_halo[prog_linked], dup=dist_link
+
+
+        FOR k =0L,n_elements(prog_linked) -1 DO BEGIN
+            IF k GT 0 THEN oplot,[prog_distance[k],halo_distance[dist_link[k]]],[time[i-1],time[i]],line=2
+            symsize = .45*(alog10(Mvir[prog_linked[k]-1]))-2.5
+            plots,prog_distance[k],time[i-1],psym=sym(1),symsize=symsize
+            IF nstar[prog_linked[k]-1] GT 1 THEN BEGIN
+                symstar = 0.45*(alog10(smass[prog_linked[k]-1]))-2.5
+                plots,prog_distance[k],time[i-1],psym=sym(1),symsize=symstar,color=250
+            ENDIF
+        ENDFOR
+        old_linked = prog_linked
+        halo_distance = prog_distance 
+    ENDIF
+ENDFOR                          ;end loop over steps
+;  endplot
+
+IF keyword_set(plot) THEN device,/close
+
+close,unit
+free_lun,unit
+
+end
+;file[ind_steps[nsteps - 1]]

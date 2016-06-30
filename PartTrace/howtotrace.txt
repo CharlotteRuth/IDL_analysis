@@ -1,0 +1,23 @@
+
+* find_history.pro
+;This function analyzes the history of gas and star particles by
+;taking a list of input particles and outputing a .fits file containing
+;their properties at a given timestep. 
+;It takes iords of star, gas, and igasorder
+;It produces a file called history.fits for each of the outputs
+;Call it through halo1_gasacc1.sh, if possible
+;Run first with stars
+
+*haloid.pro
+Uses the output of find_history for stars to trace the merger history of halos
+
+*find_all_gas.pro
+Finds all the gas that is ever in the galaxy
+
+*Then, rerun with find_history with the gas option to find the history of all of those gas particles
+
+*accrmode.pro
+Determines the state of gas at each step
+
+*gas_gal_disk_history
+Determines when gas is lost from or accreted onto the galaxy

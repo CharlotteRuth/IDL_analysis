@@ -1,0 +1,37 @@
+dirs = ['/astro/store/nbody3/fabio/h986/3072g1bwK/', '/astro/net/astro-quinn/fabio/REPOSITORY/e11Gals/h986.cosmo50cmb.3072gs1MbwK/', '/astro/store/student-scratch1/christensen/MolecH/Cosmo/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK/']
+files = ['h986.cosmo50cmb.3072g1bwK.00512/h986.cosmo50cmb.3072g1bwK.00512', 'h986.cosmo50cmb.3072gs1MbwK.00512/h986.cosmo50cmb.3072gs1MbwK.00512', 'h986.cosmo50cmb.3072g14HBWK.00512/h986.cosmo50cmb.3072g14HBWK.00512']
+
+massaccr = mrdfits(dirs[0]+'/grp1.mass_at_accr.fits',0)
+zaccr = mrdfits(dirs[0]+'/grp1.accrz.fits',0)
+lb = wmap3_lookback(zaccr)
+hlb = histogram((13.7-lb/1.e9), binsize=0.5, min=0, reverse_indices=ri)
+mass = fltarr(n_elements(hlb))
+masscum = fltarr(n_elements(hlb))
+for j=0,n_elements(hlb)-1 do if ri[j+1] gt ri[j] then mass[j] = total(massaccr[ri[ri[j]:ri[j+1]-1]])
+for j=0,n_elements(hlb)-1 do masscum[j] = total(mass[0:j])
+
+loadct, 13
+set_plot, 'ps'
+device, filename='h986_accr.eps', /encapsulated, /color
+;First do accretion vs time
+plot, indgen(28)*0.5, (mass/0.5e9), thick=3, xthick=3, ythick=3, charthick=3, pos=[.25,.15,.9,.9], xtitle='Time / Gyr', ytitle='Gas Accretion Rate / M'+sunsymbol()+' yr!u-1!n', title='h986', psym=10, /nodata, xrange=[0,14], /xstyle, yrange=[0,10], /ystyle
+oplot, indgen(28)*0.5, (mass/0.5e9), thick=3, color=80;, psym=10
+;xyouts, -3, 0.4, 'Smooth Gas', orientation=90, charthick=3
+
+for k=1,2 do begin
+  if k eq 1 then color = 0
+  if k eq 2 then color = 240
+  massaccr = mrdfits(dirs[k]+'/grp1.mass_at_accr.fits',0)
+  zaccr = mrdfits(dirs[k]+'/grp1.accrz.fits',0)
+  lb = wmap3_lookback(zaccr)
+  hlb = histogram((13.7-lb/1.e9), binsize=0.5, min=0, reverse_indices=ri)
+  mass = fltarr(n_elements(hlb))
+  masscum = fltarr(n_elements(hlb))
+  for j=0,n_elements(hlb)-1 do if ri[j+1] gt ri[j] then mass[j] = total(massaccr[ri[ri[j]:ri[j+1]-1]])
+  for j=0,n_elements(hlb)-1 do masscum[j] = total(mass[0:j])
+  oplot, indgen(28)*0.5, (mass/0.5e9), thick=3, color=color;, psym=10
+endfor
+legend, /top, /right, color=[0,80,240], linestyle=[0,0,0], ['metal', 'cheating heart', 'H2'], thick=3, charthick=3
+
+device, /close
+end
