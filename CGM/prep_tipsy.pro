@@ -13,6 +13,7 @@ filename = filebase + '.' + step
 pfile = '../../' + filebase + '.param'
 units = tipsyunits(pfile)
 outarray =['smoothlength','FeMassFrac','OxMassFrac','HI','H2','iord','HeI','HeII','hsm']
+outarray =['FeMassFrac','OxMassFrac','HI','H2']
 
 stat = read_stat_struc_amiga(filename + '.amiga.stat')
 ind = where(stat.group EQ haloid)
@@ -32,9 +33,11 @@ halofilename = filename + '.halo.' + strtrim(string(haloid),2) + '.' + strtrim(m
 IF (file_exist(halofilename + '.std') EQ 0) OR keyword_set(remake) THEN BEGIN
 ;Select the halo
     tipsysatshi,filename,haloid,units.lengthunit,units.massunit,cutout_rad = maxr,outarray = outarray
-;Add the correct smoothing lengths to the file
-    fix_smooth,halofilename
 ENDIF
+print,'Run ~/tipsy_tools/smooth -s 32g -o ' + dir + filebase + '.' + step + '/' + halofilename + '.hsmooth < ' + dir + filebase + '.' + step + '/'+ halofilename + '.std'
+stop 
+;Add the correct smoothing lengths to the file
+fix_smooth,halofilename         ;Missing so temporarily commented out
 
 ;Create the auxilary files
 IF (file_exist(halofilename + '.aux') EQ 0) OR keyword_set(remake) THEN $
@@ -43,7 +46,7 @@ IF (file_exist(halofilename + '.aux') EQ 0) OR keyword_set(remake) THEN $
 ;Rotate the tipsy files
 FOR i = 0, n_elements(angle) - 1 DO $
   IF angle[i] NE 0 THEN $
-    IF (file_exist(halofilename + '.' + strtrim(fix(angle[i]),2)) EQ 0) OR keyword_set(remake) THEN $
+;    IF (file_exist(halofilename + '.' + strtrim(fix(angle[i]),2)) EQ 0) OR keyword_set(remake) THEN $
       rotatetipsy,halofilename,angle[i]
 
 ;Create the Line-of-sight files
@@ -79,4 +82,17 @@ FOR i = 0, n_elements(angle) - 1 DO BEGIN
     close,1
 ENDFOR
 
+END
+
+PRO prep_tipsy_master
+  dir = '/nobackupp8/crchrist/MolecH/h239.cosmo50cmb.3072g/h239.cosmo50cmb.3072g14HMbwK/'
+  filebase = 'h239.cosmo50cmb.3072g14HMbwK'
+  step_arr = ['00048','00060','00084','00128','00228','00328','00424']
+  haloid_arr = ['6','5','2','1','1','1','1']
+
+  FOR i = 0, n_elements(step_arr) - 1 DO BEGIN
+     cd,dir + filebase + '.' + step_arr[i]
+     pwd
+     prep_tipsy,filebase,haloid_arr[i],step_arr[i],dir,angle = ['90']
+  ENDFOR
 END

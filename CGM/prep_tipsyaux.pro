@@ -31,8 +31,8 @@ dummyf = fltarr(h.ngas)
 dummyi = lonarr(h.ngas) + 826393640
 readarr,filename + '.H2'        ,h,H2  ,/ascii,part = 'gas'
 readarr,filename + '.HI'        ,h,HI  ,/ascii,part = 'gas'
-readarr,filename + '.HeI'       ,h,HeI ,/ascii,part = 'gas'
-readarr,filename + '.HeII'      ,h,HeII,/ascii,part = 'gas'
+;readarr,filename + '.HeI'       ,h,HeI ,/ascii,part = 'gas'
+;readarr,filename + '.HeII'      ,h,HeII,/ascii,part = 'gas'
 readarr,filename + '.OxMassFrac',h,OX  ,/ascii,part = 'gas'
 readarr,filename + '.FeMassFrac',h,FE  ,/ascii,part = 'gas'
 
@@ -47,11 +47,9 @@ gsfr[indsf] = 1.0 - exp(-1.0*cstar*deltat/tdyn[indsf]*2.0*H2[indsf]/(2.0*H2[inds
 C  = Ox*Carbon/Oxygen 
 Si = Fe*Silicon/Iron
 
-openw,1,filename + 'aux'
+openw,1,filename + '.aux'
 FOR i = 0, h.ngas - 1 DO $
    writeu,1,C[i],Ox[i],Si[i],Fe[i];,gsfr[i];,format='($)'
 ;FOR i = 0, h.ngas - 1 DO $
-;   writeu,1,C[i],Ox[i],Si[i],Fe[i],gsfr[i],dummyf[i],dummyf[i],dummyf[i],dummyf[i],dummyi[i]
-close,1
-stop
+
 END
