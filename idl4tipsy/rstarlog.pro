@@ -29,8 +29,8 @@ openr,lun,file,/xdr,/get_lun
 ; starlog record structure
 ;record = {iOrderStar:0L, iOrderGas:0L, timeform:0.d, rform:dblarr(3), vform:dblarr(3), massForm:0.0d, rhoform:0.0d, Tempform:0.0d}
 
-IF KEYWORD_SET(MOLECULARH) THEN record = {iOrderStar:0L, iOrderGas:0L, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d, H2form:0.0d} $
-ELSE record = {iOrderStar:0L, iOrderGas:0L, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d} 
+IF KEYWORD_SET(MOLECULARH) THEN record = {iOrderStar:0LL, iOrderGas:0LL, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d, H2form:0.0d} $
+ELSE record = {iOrderStar:0LL, iOrderGas:0LL, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d} 
 
 iSize = 0L
 readu,lun,iSize
