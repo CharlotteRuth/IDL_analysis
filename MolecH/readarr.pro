@@ -29,7 +29,7 @@ IF KEYWORD_SET(ascii) THEN readf,1,dummy ELSE readu,1,dummy
 
 ;byteorder, dummy
 
-print, dummy
+;print, dummy
 
 temp = 't'
 for i=0L, header.n-1 do begin
