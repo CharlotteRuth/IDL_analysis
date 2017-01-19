@@ -825,10 +825,21 @@ IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN device, /close ELSE stop    
  ENDIF
 
+;----------- Answer to Kristian Finlator
+
+    IF keyword_set(outplot) THEN  device,filename = outplot + '_Marr_SFR.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize*2.6,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize*2.6
+    multiplot,[1,2]
+    plot,xmass,diskgmass_total/sfmass_total,/xlog,ytitle = textoidl('M_{accr}/M_*'),/ylog,psym = 4,yrange = [1,30],xtitle = textoidl('M_*/M')+sunsymbol(),xrange = xrange
+    multiplot
+    plot,xmass,diskgmass_total/(reejectmass[*,nz - 1] + sfmass_total),/xlog,ytitle = textoidl('M_{accr}/M_*(1+\eta)'),/ylog,psym = 4,yrange = [0.4,2],xtitle = textoidl('M_*/M')+sunsymbol(),xrange = xrange
+    multiplot,/reset
+    IF keyword_set(outplot) THEN device, /close ELSE stop
+
+
 ;------------ Mass Loading Over Time with current xaxis
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_massloading_mass_time_eject_rv5.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-    plot,xarrt[*,0],reejectmassr_rv5[*,0]/sfmassr[*,0],/xlog,yrange = [0.09,50],ytitle = textoidl('\eta_{ejected}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [20,200]
+    plot,xarr[*,0],reejectmassr_rv5[*,0]/sfmassr[*,0],/xlog,yrange = [0.09,50],ytitle = textoidl('\eta_{ejected}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,200]
 ;    oplot,xarr,reejectmass_rv5[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[3])),symsize = symsize
     FOR iz = 0, nz - 1 DO BEGIN
        oplot,xarrt[*,iz],reejectmassr_rv5[*,iz]/sfmassr[*,iz],psym = symcat(symbols[3]),color  = z_colors[iz],symsize = symsize*0.6
@@ -844,7 +855,7 @@ IF keyword_set(z_cut) THEN BEGIN
 ;------------ Mass Loading Over Time with current xaxis
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_massloading_mass_time_heat.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-    plot,xarrt[*,0],reheatmassr[*,0]/sfmassr[*,0],/xlog,yrange = [0.9,150],ytitle = textoidl('\eta_{lost}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [20,200]
+    plot,xarrt[*,0],reheatmassr[*,0]/sfmassr[*,0],/xlog,yrange = [0.9,150],ytitle = textoidl('\eta_{lost}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,200]
 ;    oplot,xarr,reheatmass[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[4])),symsize = symsize
     FOR iz = 0, nz - 1 DO BEGIN
        oplot,xarrt[*,iz],reheatmassr[*,iz]/sfmassr[*,iz],psym = symcat(symbols[4]),color  = z_colors[iz],symsize = symsize*0.6
