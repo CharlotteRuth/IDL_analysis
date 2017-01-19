@@ -20,7 +20,7 @@ IF KEYWORD_SET(outplot) THEN BEGIN
         !P.CHARTHICK=4
         !X.THICK=4
         !Y.THICK=4
-        !p.charsize=1.3
+        !p.charsize=1.0
         !x.charsize=1.2         ;2.25
         !y.charsize=1.2         ;2.25
         !P.thick = 2
