@@ -17,7 +17,7 @@
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK'
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK'
 
-PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = centralhalo,debug = debug
+PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = centralhalo,debug = debug,nowrite = nowrite
 
 ;-------------------- Read in simulation data for final step
   IF NOT keyword_set(finalid) THEN finalid = '1' 
@@ -45,12 +45,15 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
   Fes = fltarr(nsteps)
   Oxs = fltarr(nsteps)
   coldgas=fltarr(nsteps)
+  zmetals_H = fltarr(nsteps)
+  Fes_H = fltarr(nsteps)
+  Oxs_H = fltarr(nsteps)
   HIs = fltarr(nsteps)
   H2s = fltarr(nsteps)
+  Hgas=fltarr(nsteps)  
 
 ;-------------------- Read in the information about the gas particles at each timestep
-  gpart = mrdfits('grp' + finalid + '.allgas.entropy.fits',1)
-  npart = n_elements(gpart)
+  gpart_save = mrdfits('grp' + finalid + '.allgas.entropy.fits',1)
 
 ;-------------------- Need to exclude 'early' particles to compare to the outflow files
 ;  early = mrdfits('early.iord.fits',0)
@@ -63,12 +66,37 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
 ;  gpart = gpart[keep] ;gpart now only contains the particles that were not accreted early
 
 ;-------------------- Make sure the halo information and gpart are for equivalent outputs
-  IF NOT nsteps EQ n_elements(gpart[0].mass) THEN print,'Files are for different time steps'
-  indiskarr = intarr(npart) ; List of gas particles that are ever in the disk
+  IF nsteps NE n_elements(gpart_save[0].mass) THEN BEGIN 
+     print,'Files are for different time steps'
+     
+     stop
+     stop
+
+     indsave  = [indgen(71),indgen(51)+72] ;Skips step 308 from h239
+     indsave  = [indgen(100),indgen(24)+101] ;Skips step 420 from h285
+     gpart_clip = replicate({iord:0L, mass:LONARR(nsteps), grp:LONARR(nsteps), temp:FLTARR(nsteps), rho:FLTARR(nsteps), entropy:FLTARR(nsteps), radius:FLTARR(nsteps), vx:FLTARR(nsteps), vy:FLTARR(nsteps), vz:FLTARR(nsteps), x:FLTARR(nsteps), y:FLTARR(nsteps), z:FLTARR(nsteps)}, n_elements(gpart_save.iord))
+     gpart_clip.iord = gpart_save.iord
+     gpart_clip.mass = gpart_save.mass[indsave]
+     gpart_clip.grp = gpart_save.grp[indsave]
+     gpart_clip.temp = gpart_save.temp[indsave]
+     gpart_clip.rho = gpart_save.rho[indsave]
+     gpart_clip.entropy = gpart_save.entropy[indsave]
+     gpart_clip.radius = gpart_save.radius[indsave]
+     gpart_clip.x = gpart_save.x[indsave]
+     gpart_clip.y = gpart_save.y[indsave]
+     gpart_clip.z = gpart_save.z[indsave]
+     gpart_clip.vx = gpart_save.vx[indsave]
+     gpart_clip.vy = gpart_save.vy[indsave]
+     gpart_clip.vz = gpart_save.vz[indsave]
+     print,'Are you sure you want to rewrite grp?.allgas.entropy.fits? If so, continue.'
+     stop
+     mwrfits, gpart_clip, 'grp' + finalid + '.allgas.entropy.fits', /create
+     gpart_save = gpart_clip
+  ENDIF
   
-;-------------------- Step through outputs to find the location of the particles
+;-------------------- Step through outputs to find the location of the
+;                     particles
   FOR i = 0, nsteps - 1 DO BEGIN
-     gloc = intarr(npart)  
      stat = read_stat_struc_amiga(halodat[i].file + '.amiga.stat')
      main = where(halodat[i].haloid EQ stat.group)
      satellites = where(sqrt((stat.xc - stat[main].xc)^2 + (stat.yc - stat[main].yc)^2 + (stat.zc - stat[main].zc)^2)*1000 LE stat[main].rvir AND stat.ngas gt 0)
@@ -84,16 +112,24 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
      read_tipsy_arr,halodat[i].file + '.H2',h,H2,part = 'gas',type = 'float'
      read_tipsy_arr,halodat[i].file + '.FeMassFrac',h,Fe,part = 'gas',type = 'float'
      read_tipsy_arr,halodat[i].file + '.OxMassFrac',h,Ox,part = 'gas',type ='float'  
-     match,gpart.iord,iord,indg,inda
-     HI = HI[inda];*gpart[indg].mass[i]
-     H2 = 2.0*H2[inda];*gpart[indg].mass[i]
-     Fe = Fe[inda];*gpart[indg].mass[i]
-     Ox = Ox[inda];*gpart[indg].mass[i]
+     match,gpart_save.iord,iord,indg,inda
+     IF n_elements(indg) NE n_elements(gpart_save.iord) THEN BEGIN
+        match2,gpart_save.iord,iord,indg2,inda2
+        IF max(gpart_save[where(indg2 EQ -1)].mass[i]) GT 0 THEN stop 
+     ENDIF
+     HI = HI[inda]
+     H2 = 2.0*H2[inda]
+     Fe = Fe[inda]
+     Ox = Ox[inda]
+     iord_arr = iord
+     iord = iord[inda]
+     gpart = gpart_save[indg]
+     gloc = intarr(n_elements(gpart)) 
 
-     HIm = HI*gpart[indg].mass[i]
-     H2m = H2*gpart[indg].mass[i]
-     Fem = Fe*gpart[indg].mass[i]
-     Oxm = Ox*gpart[indg].mass[i]
+     HIm = HI*gpart.mass[i]
+     H2m = H2*gpart.mass[i]
+     Fem = Fe*gpart.mass[i]
+     Oxm = Ox*gpart.mass[i]
 
 ;-------------------- Convert the position information gpart to the frame of the halo
      az = reform(a[i,*])
@@ -130,6 +166,12 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
      IF n_elements(inhalo) NE 1 THEN BEGIN
         inhalo = inhalo[1:n_elements(inhalo) - 1]
         gloc[inhalo] = 1
+        HI = HI[inhalo]
+        H2 = H2[inhalo]
+        Oxm = Oxm[inhalo]
+        Fem = Fem[inhalo]
+        iord = iord[inhalo]
+        gpart = gpart[inhalo]
      ENDIF ELSE BEGIN
         print,'No Gas Particles'
         zmetals[i] = 0
@@ -138,21 +180,23 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
         HIs[i] = 0
         H2s[i] = 0
         coldgas[i] = 0
-        print,i,zmetals[i],Oxs[i],Fes[i],HIs[i],H2s[i],coldgas[i]  
+        print,i,zmetals[i],Oxs[i],Fes[i],coldgas[i],zmetals_H[i],Oxs_H[i],Fes_H[i],HIs[i],H2s[i],Hgas[i]
         CONTINUE
      ENDELSE
-
-;-------------------- Gas particles that are part of the disk (in the galaxy, with density GE 0.1, temperature LE 2e4, and abs(z) LE 10kpc) are set to 3
-     disk = where(gloc EQ 1 AND gpart.rho[i] GE 0.1 AND gpart.temp[i] LE 1.2e4 AND abs(gpart.z[i]) LE 10.0)
+ ;-------------------- Gas particles that are part of the disk (in the galaxy, with density GE 0.1, temperature LE 2e4, and abs(z) LE 10kpc) are set to 3
+     disk = where(gpart.rho[i] GE 0.1 AND gpart.temp[i] LE 1.2e4 AND abs(gpart.z[i]) LE 10.0)
 ;     disk = where(gpart.grp[i] EQ halodat[i].haloid AND gpart.rho[i] GE 0.1 AND gpart.temp[i] LE 2e4 AND abs(gpart.z[i]) LE 10.0)
-     zmetals[i] = total((HI + H2)*(2.09*Oxm + 1.06*Fem))/max(HI+H2)
-     Oxs[i] = total((HI + H2)*Oxm)/max(HI+H2)
-     Fes[i] = total((HI + H2)*Fem)/max(HI+H2)
+     zmetals[i] = total(2.09*Oxm[disk] + 1.06*Fem[disk])
+     Oxs[i] = total(Oxm[disk])
+     Fes[i] = total(Fem[disk])
+     coldgas[i]=total(gpart[disk].mass[i])
+     zmetals_H[i] = total((HI + H2)*(2.09*Oxm + 1.06*Fem))/max(HI+H2)
+     Oxs_H[i] = total((HI + H2)*Oxm)/max(HI+H2)
+     Fes_H[i] = total((HI + H2)*Fem)/max(HI+H2)
      HIs[i] = total(HIm)
      H2s[i] = total(H2m)
-     coldgas[i]=total(HIm + H2m)
-     print,i,zmetals[i],Oxs[i],Fes[i],HIs[i],H2s[i],coldgas[i]
-;     stop
+     Hgas[i]=total(HIm + H2m)
+     print,i,zmetals[i],Oxs[i],Fes[i],coldgas[i],zmetals_H[i],Oxs_H[i],Fes_H[i],HIs[i],H2s[i],Hgas[i]
 
      IF keyword_set(debug) AND keyword_set(plots) THEN BEGIN
 ;     IF 0 THEN BEGIN
@@ -172,8 +216,9 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
         histogramp,abs(gpart[inhalo].z[i]),nbins = 100
         histogramp,abs(gpart[inhalo[ind_unbound]].z[i]),/overplot,color = 245,nbins = 100        
      ENDIF
+     gpart = 0
   ENDFOR
-  writecol,'grp' + finalid + '.metals.txt',zmetals,Oxs,Fes,HIs,H2s,coldgas
+  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.metals.txt',zmetals,Oxs,Fes,coldgas,zmetals_H,Oxs_H,Fes_H,HIs,H2s,Hgas,format='(10E)'
 END
 
 
