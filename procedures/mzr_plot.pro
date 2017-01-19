@@ -79,9 +79,9 @@ LogMstarAM = findgen(32)/10+7.4
 mzrAM = 8.798 - alog10(1 + (10^8.901/10^LogMstarAM)^0.64) ;fit from Andrew & Martini 2013, see table 4
 oplot,LogMstarAM,mzrAM,color = obscolor, thick = obsthick, linestyle = 3
 FOR i = 0, n - 1 DO BEGIN
-    loadct,ctables[i]
+;    loadct,ctables[i]
     IF keyword_set(onehalos) THEN metalfile = filenames[i] + '.halo.' + strtrim(onehalos[i],2) ELSE  metalfile = filenames[i]
-    IF keyword_set(readfile) AND file_test(metalfile + '.metals.fits') THEN metals = mrdfits(metalfile + '.metals.fits',1) ELSE BEGIN
+    IF keyword_set(readfile) AND file_test(metalfile + '.metals.fits') THEN metals = mrdfits(metalfile + '.metals.fits',1,/silent) ELSE BEGIN
         IF keyword_set(onehalos) THEN IF keyword_set(noObsStellarMass) THEN metals = mzr(filenames[i], onehalo = onehalos[i]) ELSE metals = mzr(filenames[i],/obs, onehalo = onehalos[i]) ELSE $
           IF keyword_set(noObsStellarMass) THEN metals = mzr(filenames[i]) ELSE metals = mzr(filenames[i],/obs) 
         mwrfits,metals,metalfile + '.metals.fits',/create
@@ -98,7 +98,6 @@ FOR i = 0, n - 1 DO BEGIN
                    IF keyword_set(simStellarMass) THEN oplot,[alog10(metals[ind].smass),alog10(metals[ind].smass)],[metals[ind].ox_sfr,metals[ind].ox_sfr],psym = symcat(psym[i]), color = colors[i], symsize = 0.5*symsizes[i], thick = thicks[i]              
 ;               oplot,[alog10(metals[ind].smassO),alog10(metals[ind].smassO)],[metals[ind].ox_sfr,metals[ind].ox_sfr],psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i]*0.75, thick = thicks[i]
                    print,halos[j,i],alog10(metals[ind].smassO),alog10(metals[ind].smass),metals[ind].ox_sfr
-                   stop
                ENDIF
            ENDIF
        ENDFOR
@@ -111,15 +110,17 @@ FOR i = 0, n - 1 DO BEGIN
                ELSE oplot,alog10(metals[indnosat].smassO),metals[indnosat].ox_sfr,psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i], thick = thicks[i]
                IF NOT finite(metals[indnosat].ox_sfr) THEN BEGIN
                    IF n_elements(indnosat) EQ 1 THEN oplot,[alog10(metals[indnosat].smassO),alog10(metals[indnosat].smassO)],[metals[indnosat].ox_inner,metals[indnosat].ox_inner],psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i], thick = thicks[i] $
-                   ELSE oplot,alog10(metals[indnosat].smassO),metals[indnosat].ox_inner,psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i], thick = thicks[i]      
-               ENDIF
+                   ELSE oplot,alog10(metals[indnosat].smassO),metals[indnosat].ox_inner,psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i], thick = thicks[i]     
+                   ox_plot = metals[indnosat].ox_inner
+               ENDIF ELSE ox_plot = metals[indnosat].ox_sfr
+               print,filenames[i],' ',strtrim(onehalos[i],2),alog10(metals[indnosat].smassO),ox_plot
            ENDIF
            IF (indsat[0] NE -1) THEN $
              IF n_elements(indnosat) EQ 1 THEN oplot,[alog10(metals[indsat].smassO),alog10(metals[indsat].smassO)],[metals[indsat].ox_sfr,metals[indsat].ox_sfr],psym = symcat(psym[i] + 1), color = colors[i], symsize = symsizes[i], thick = thicks[i] ELSE oplot,alog10(metals[indsat].smassO),metals[indsat].ox_sfr,psym = symcat(psym[i] + 1), color = colors[i], symsize = symsizes[i], thick = thicks[i]
        ENDIF
        IF keyword_set(simStellarMass) THEN oplot,[alog10(metals[indsat].smass),alog10(metals[indsat].smass)],[metals[indsat].ox_sfr,metals[indsat].ox_sfr],psym = symcat(psym[i] + 1), color = colors[i], symsize = 0.5, thick = thicks[i]
 ;       oplot,alog10(metals.smassO),metals.ox_sfr,psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i]*0.75, thick = thicks[i]       
-       print,alog10(metals[indnosat].smassO),alog10(metals.smass),metals[indnosat].ox_sfr
+;       print,alog10(metals[indnosat].smassO),alog10(metals.smass),metals[indnosat].ox_sfr
    ENDELSE
    IF NOT keyword_set(readfile) OR NOT file_test(filenames[i] + '.metals.fits') THEN mwrfits,metals,filenames[i] + '.metals.fits',/create
 ;   stop
