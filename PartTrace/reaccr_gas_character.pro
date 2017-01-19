@@ -24,12 +24,19 @@ readarr,file_iord,h,iord,part = 'gas',/ascii
 timeend = 13.734377
 
 ;Reading in files
+halodat = mrdfits(dir + '/grp' + finalid + '.alignment.fits',1)
 ejectiord  = mrdfits(dir + '/grp' + finalid + '.reeject_iord.fits',0)
 ejectmass  = mrdfits(dir + '/grp' + finalid + '.mass_at_reeject.fits',0)
 ejectz     = mrdfits(dir + '/grp' + finalid + '.reeject_z.fits',0)
 accriord   = mrdfits(dir + '/grp' + finalid + '.reaccrdisk_iord.fits',0)
 accrmass = mrdfits(dir + '/grp' + finalid + '.mass_at_reaccrdisk.fits',0)
 accrz    = mrdfits(dir + '/grp' + finalid + '.reaccrdisk_z.fits',0)
+earlydiski = mrdfits(dir + '/grp' + finalid + '.earlydisk_iord.fits') ;Read in information to include particles that start in the halo in the accretion
+earlydiskm = mrdfits(dir + '/grp' + finalid + '.earlydisk_mass.fits')
+earlydiskz = fltarr(n_elements(earlydiski)) + max(halodat.z)
+accriord = [earlydiski,accriord]
+accrmass = [earlydiskm,accrmass]
+accrz = [earlydiskz,accrz]
 
 match2,ejectiord,accriord,ind1,ind2
 ;Remove accreted gas that was never ejected
@@ -38,6 +45,7 @@ accrmass = accrmass[where(ind2 NE -1)]
 accrz = accrz[where(ind2 NE -1)]
 hist = histogram(accriord,locations = iord)
 iord = iord[where(hist GE 2)]
+
 match2,iord,accriord,ind1,ind2
 ;Remove gas that was only accreted once
 accriord = accriord[where(ind2 NE -1)]
@@ -45,6 +53,7 @@ accrmass = accrmass[where(ind2 NE -1)]
 accrz = accrz[where(ind2 NE -1)]
 uniqi = accriord[uniq(accriord,sort(accriord))]
 ind = [-1]
+
 FOR i = 0, n_elements(uniqi) - 1 DO BEGIN
    sub_eject_ind = where(uniqi[i] EQ ejectiord)
    sub_accr_ind = where(uniqi[i] EQ accriord)
@@ -61,7 +70,6 @@ accriord = accriord[ind]
 accrmass = accrmass[ind]
 accrz = accrz[ind]
 
-halodat = mrdfits(dir + '/grp' + finalid + '.alignment.fits',1)
 IF (max(halodat.xc) LE 0.1 AND max(halodat.xc) GT -0.1) THEN BEGIN
     halodat.xc = halodat.xc*units.lengthunit/1000.0 + units.lengthunit/2/1000.0
     halodat.yc = halodat.yc*units.lengthunit/1000.0 + units.lengthunit/2/1000.0
@@ -75,7 +83,7 @@ a = [[halodat.xa],[halodat.ya],[halodat.za]]
 match2,fix(accrz*1000)/1000.0,fix(halodat.z*1000)/1000.0,accr_step,temp
 accr_step = accr_step
 
-basestruct = {iord:0L, igasorder:0L, mark:0L, mass:double(0.0), x:double(0.0), y:double(0.0), z:double(0.0), vx:double(0.0), vy:double(0.0), vz:double(0.0), rho:double(0.0), temp:double(0.0), metallicity:double(0.0), haloid:0L}
+basestruct = {iord:0L, igasorder:0L, mark:0L, red:double(0.0), mass:double(0.0), x:double(0.0), y:double(0.0), z:double(0.0), vx:double(0.0), vy:double(0.0), vz:double(0.0), rho:double(0.0), temp:double(0.0), metallicity:double(0.0), haloid:0L}
 accrhistory  = replicate(basestruct,n_elements(accrz))
 accrhistory.iord = accriord
 
@@ -101,6 +109,7 @@ FOR i = 0, n_elements(halodat.file) - 1 DO BEGIN
       gvel = [[gashistory[gashistory_ind].vx - satsdata[isats].xvcm],[gashistory[gashistory_ind].vy - satsdata[isats].yvcm],[gashistory[gashistory_ind].vz - satsdata[isats].zvcm]]
       gpos = transpose(transpose(basis)#transpose(gpos))
       gvel = transpose(transpose(basis)#transpose(gvel))
+      accrhistory[accr_step_ind[accr_ind]].red = fltarr(n_elements(accr_ind)) + halodat[i].z
       accrhistory[accr_step_ind[accr_ind]].x = reform(gpos[*,0])
       accrhistory[accr_step_ind[accr_ind]].y = reform(gpos[*,1])
       accrhistory[accr_step_ind[accr_ind]].z = reform(gpos[*,2])
