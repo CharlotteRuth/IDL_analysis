@@ -51,10 +51,16 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
   cd,dir
   spawn,'ls ' + dir + '/*' + laststep + '/*' + laststep + '.coolontime',file_coolon
   spawn,'ls ' + dir + '/*' + laststep + '/*' + laststep + '.iord',file_iord
+;  spawn,'ls ' + dir + '/*' + laststep + '/*' + laststep + '.OxMassFrac',file_ox
+;  spawn,'ls ' + dir + '/*' + laststep + '/*' + laststep + '.FeMassFrac',file_fe
   spawn,'ls ' + dir + '/*' + laststep + '/*' + laststep,file
   rtipsy,file[0],h,g,d,s,/justhead
   readarr,file_coolon[0],h,coolon,part = 'gas',/ascii
-  readarr,file_iord[0],h,iord,part = 'gas',/ascii,type = 'long'  
+  readarr,file_iord[0],h,iord,part = 'gas',/ascii,type = 'long' 
+;  readarr,file_ox[0],h,oxmassfrac,part = 'gas',/ascii
+;  readarr,file_fe[0],h,femassfrac,part = 'gas',/ascii
+;  stop
+;  readarr,'',
   spawn,'ls ' + dir + '/h*.param',pfile
   units = tipsyunits(pfile[0])
 
@@ -90,7 +96,10 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 ;  gpart = gpart[keep] ;gpart now only contains the particles that were not accreted early
 
 ;-------------------- Make sure the halo information and gpart are for equivalent outputs
-  IF NOT nsteps EQ n_elements(gpart[0].mass) THEN print,'Files are for different time steps'
+  IF NOT nsteps EQ n_elements(gpart[0].mass) THEN BEGIN
+     print,'Files are for different time steps'
+     stop
+  ENDIF
 
   indiskarr = intarr(npart) ; List of gas particles that are ever in the disk
 
@@ -98,25 +107,35 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
   THEN gloc_filename = 'grp' + finalid + '.' + ejectext + '.gloc.fits' $
   ELSE gloc_filename = 'grp' + finalid + '.' + ejectext + '.dcut.gloc.fits'
 
-  IF NOT file_test(gloc_filename) THEN BEGIN
+  IF NOT file_test(gloc_filename) OR keyword_set(steps_debug) THEN BEGIN
+     stop
      gloc = intarr(npart,nsteps) ;fill this matrix with numbers representing whether the gas is gone (-1), not in the halo (0), in the halo but not the disk (1), or in the disk (2)
   
 ;-------------------- Step through outputs to find the location of the particles
      FOR i = 0, nsteps - 1 DO BEGIN
+        rtipsy,halodat[i].file,h,g,d,s,/justhead
+        readarr,halodat[i].file + '.iord',h,iord,part = 'gas',/ascii,type = 'long'
+;        readarr,halodat[i].file + '.OxMassFrac',h,oxmassfrac,part = 'gas',/ascii
+;        readarr,halodat[i].file + '.FeMassFrac',h,femassfrac,part = 'gas',/ascii
+;        stop
+        match,gpart.iord,iord,ind1,ind2
+        iord = iord[ind2]
+;        oxmassfrac = oxmassfrac[ind2]
+;        femassfrac = femassfrac[ind2]
         IF keyword_set(Hcut) THEN BEGIN
-           rtipsy,halodat[i].file,h,g,d,s,/justhead
-           readarr,halodat[i].file + '.iord',h,iord,part = 'gas',/ascii,type = 'long'
            read_tipsy_arr,halodat[i].file + '.HI',h,HI,part = 'gas'
            read_tipsy_arr,halodat[i].file + '.H2',h,H2,part = 'gas'
-           match,gpart.iord,iord,ind1,ind2
-           iord = iord[ind2]
            HI = HI[ind2]
            H2 = H2[ind2]
-           match2,gpart.iord,iord,ind1,ind2
+        ENDIF
+        match2,gpart.iord,iord,ind1,ind2
+ ;       oxmassfrac = oxmassfrac[ind1[where(ind1 NE -1)]]
+ ;       femassfrac = femassfrac[ind1[where(ind1 NE -1)]]
+        IF keyword_set(Hcut) THEN BEGIN
            Hall = fltarr(n_elements(gpart.iord))
            Hall[where(ind1 NE -1)] = (HI[ind1[where(ind1 NE -1)]] + 2*H2[ind1[where(ind1 NE -1)]])/max(HI + 2*H2)
-        ENDIF
-        
+        ENDIF        
+
         stat = read_stat_struc_amiga(halodat[i].file + '.amiga.stat')
         main = where(halodat[i].haloid EQ stat.group)
         satellites = where(sqrt((stat.xc - stat[main].xc)^2 + (stat.yc - stat[main].yc)^2 + (stat.zc - stat[main].zc)^2)*1000 LE stat[main].rvir AND stat.ngas gt 0)
@@ -232,7 +251,8 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
            ENDELSE
         ENDIF
      ENDFOR
-     IF keyword_set(Hcut) THEN mwrfits,gloc,gloc_filename,/create ELSE mwrfits,gloc,gloc_filename,/create
+     IF NOT keyword_set(nowrite) THEN $
+        IF keyword_set(Hcut) THEN mwrfits,gloc,gloc_filename,/create ELSE mwrfits,gloc,gloc_filename,/create
   ENDIF ELSE BEGIN
      gloc = mrdfits(gloc_filename)
      gloc_temp = gloc
@@ -266,15 +286,23 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
   istep = fix(ind_accr/npart)
   ipart = ind_accr - istep*npart
   indstart = where(gloc_temp[*,0] EQ 3)
-  reaccr_iord = [gpart[indstart].iord,gpart[ipart].iord] 
-  IF NOT keyword_set(nowrite) AND NOT keyword_set(limitedwrite) THEN $
-     mwrfits,[gpart[indstart].iord,gpart[ipart].iord],'grp' + finalid + '.' + coolext + 'reaccr_iord.fits',/create ;iord of the reaccreted particle
-  IF NOT keyword_set(nowrite) AND NOT keyword_set(limitedwrite) THEN $
-     mwrfits,[(indstart*0 + halodat[0].z),halodat[istep + 1].z],'grp' + finalid + '.' + coolext + 'reaccr_z.fits',/create ;Redshift at which particle is first in the halo
   mass = gpart[ipart].mass
   arraybase = lindgen(n_elements(ipart))*n_elements(gpart[0].mass)
+  IF indstart[0] NE -1 THEN BEGIN
+     reaccr_iord = [gpart[indstart].iord,gpart[ipart].iord] 
+     reaccr_z = [(indstart*0 + halodat[0].z),halodat[istep + 1].z]
+     reaccr_m = [reform((gpart[indstart].mass)[0,indstart]),mass[arraybase + istep + 1]]
+  ENDIF ELSE BEGIN
+     reaccr_iord = gpart[ipart].iord
+     reaccr_z = halodat[istep + 1].z
+     reaccr_m = mass[arraybase + istep + 1]
+  ENDELSE
   IF NOT keyword_set(nowrite) AND NOT keyword_set(limitedwrite) THEN $
-     mwrfits,[reform((gpart[indstart].mass)[0,indstart]),mass[arraybase + istep + 1]],'grp' + finalid + '.' + coolext + 'mass_at_reaccr.fits',/create ;Mass of particle when first in the halo
+     mwrfits,reaccr_iord,'grp' + finalid + '.' + coolext + 'reaccr_iord.fits',/create ;iord of the reaccreted particle
+  IF NOT keyword_set(nowrite) AND NOT keyword_set(limitedwrite) THEN $
+     mwrfits,reaccr_z,'grp' + finalid + '.' + coolext + 'reaccr_z.fits',/create ;Redshift at which particle is first in the halo
+  IF NOT keyword_set(nowrite) AND NOT keyword_set(limitedwrite) THEN $
+     mwrfits,reaccr_m,'grp' + finalid + '.' + coolext + 'mass_at_reaccr.fits',/create ;Mass of particle when first in the halo
   IF keyword_set(debug) THEN BEGIN
      window,1
      haloaccr_time = z_to_t([indstart*0 + halodat[0].z,halodat[istep + 1].z])
@@ -310,8 +338,13 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
   ind_accr = where(gloc_diff EQ -3) ;Select for instances particles were first out of the disk and then in it
   istep_later = [fix(ind_accr/npart)]
-  ipart = [where(gloc_temp[*,0] eq 3),ind_accr - istep_later*npart]
-  istep = [lonarr(n_elements(where(gloc_temp[*,0] eq 3))) - 1,fix(ind_accr/npart)]
+  IF (where(gloc_temp[*,0] eq 3))[0] NE -1 THEN BEGIN ;Includes particles that start in the disk
+     ipart = [where(gloc_temp[*,0] EQ 3),ind_accr - istep_later*npart]
+     istep = [lonarr(n_elements(where(gloc_temp[*,0] eq 3))) - 1,fix(ind_accr/npart)] 
+  ENDIF ELSE BEGIN
+     ipart = [ind_accr - istep_later*npart]    
+     istep = fix(ind_accr/npart) ;If no particles start in the disk
+  ENDELSE
   time = z_to_t(halodat[istep + 1].z)
   reaccrdiskall_iord = gpart[ipart].iord
   IF NOT keyword_set(nowrite) AND NOT keyword_set(limitedwrite) THEN $
@@ -366,8 +399,13 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
   istepfirst_later = [fix(ind_accrfirst/npart)]
   ipartfirst_later = [ind_accrfirst - istepfirst_later*npart]
 ;  uniqi_first2 = [where(gloc_temp[*,0] EQ 3),(istepfirst_later + 1)*npart + ipartfirst_later]
-  istepfirst = [lonarr(n_elements(where(gloc_temp[*,0] EQ 3))) - 1,istepfirst_later]
-  ipartfirst = [where(gloc_temp[*,0] EQ 3),ipartfirst_later]
+  IF (where(gloc_temp[*,0] EQ 3)) NE -1 THEN BEGIN ;Includes particles that start in the disk
+     istepfirst = [lonarr(n_elements(where(gloc_temp[*,0] EQ 3))) - 1,istepfirst_later]
+     ipartfirst = [where(gloc_temp[*,0] EQ 3),ipartfirst_later]
+  ENDIF ELSE BEGIN
+     istepfirst = istepfirst_later
+     ipartfirst = ipartfirst_later
+  ENDELSE
   uniqi_first = [(istepfirst + 1)*npart + ipartfirst]
   gloc_temp = [0]
   gloc_diff = [0]
@@ -475,7 +513,7 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 
 
 ;-------------------- Re-ejection (gas that moves from being in disk
-;                     to being unbound from it -- must be heated by supernova)
+;                     to being unbound from it -- NO LONGER must be heated by supernova)
   gloc_temp = gloc;[indcoolon,*]
   IF indcooloff[0] NE -1 THEN gloc_temp[indcooloff,*] = -10
   FOR j = 0,nsteps - 2 DO gloc_temp[where((gloc_temp[*,nsteps - 1 - j] EQ 1 OR gloc_temp[*,nsteps - 1 - j] EQ 0) AND gloc_temp[*,nsteps - 2 - j] EQ 2),nsteps - 2 - j] = 1
