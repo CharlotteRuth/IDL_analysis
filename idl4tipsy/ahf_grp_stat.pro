@@ -90,7 +90,7 @@ spawn,command,particlefile  ; return the files without the .amiga.grp
 ; done, then the number of particles in the next halo is given and that many 
 ; next lines contain the indices to the particles in that halo, and so on.  So, 
 ; we must grab all the indices without treating npart of each halo as an index. 
-readcol, halosfile, id, sub, nsub, mvir, npart, xc, yc, zc, vxc, vyc, vzc, rvir, rmax, vmax, sigv, spin01, spin, od, format='l,l,l,f,l,f,f,f,f,f,f,f,f,x,x,x,f,x,f,f,f,x,x,x,x,x,x,x,x,x,x,x,x,x,x,f'
+readcol, halosfile[0], id, sub, nsub, mvir, npart, xc, yc, zc, vxc, vyc, vzc, rvir, rmax, vmax, sigv, spin01, spin, od, format='l,l,l,f,l,f,f,f,f,f,f,f,f,x,x,x,f,x,f,f,f,x,x,x,x,x,x,x,x,x,x,x,x,x,x,f'
 
 ; **************************************************************************
 ; First, create the .grp file
@@ -103,7 +103,7 @@ readcol, halosfile, id, sub, nsub, mvir, npart, xc, yc, zc, vxc, vyc, vzc, rvir,
 ; rdfloat, particlefile, index, skipline=1
 ; index = long(index)
 ;endif else 
-readcol, particlefile, index, format='l', skipline=1
+readcol, particlefile[0], index, format='l', skipline=1
 init=0
 startind = lonarr(n_elements(npart))
 endind = lonarr(n_elements(npart))
