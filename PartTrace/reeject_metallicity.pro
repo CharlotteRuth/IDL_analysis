@@ -3,8 +3,11 @@ PRO reeject_metallicity,dir,filenames,finalid = finalid,scale = scale,normalize 
 formatplot,outplot = outplot,thick = formatthick
 n = n_elements(dir)
 zsolar  =  0.0130215
-metalscale = 2 ;The code was run the metallicity bug where zmetal just is ox+fe.  The actual metallicity is about twice as high (z = 1.06*fe + 2.09*ox)
-IF keyword_set(absolute) THEN xrange_fb = [-1.5,0.5] ELSE xrange_fb = [-0.5,1.0]
+;metalscale = 2 ;The code was run the metallicity bug where zmetal
+;just is ox+fe.  The actual metallicity is about twice as high (z =
+;1.06*fe + 2.09*ox). Updated 8/13/16 except this is already accounted
+;for in find_history.pro
+IF keyword_set(absolute) THEN xrange_fb = [-2.5,0.5] ELSE xrange_fb = [-0.5,1.0]
 IF NOT keyword_set(finalid) THEN finalid = '1'
 IF NOT keyword_set(scale) THEN scale = fltarr(n) + 1
 IF keyword_set(outplot) THEN BEGIN
@@ -52,26 +55,26 @@ FOR i = 0, n_elements(dir)-1 DO BEGIN
    print,dir[i] + 'grp' + finalid[i] + '.reeject_z.fits'
 
    align = mrdfits('grp' + finalid[i] + '.alignment.fits',1)
-   readcol,'grp' + finalid[i] + '.metals.txt',z,ox,fe,H2,HI,H
-   stepmetallicity = z/h
+   readcol,'grp' + finalid[i] + '.metals.txt',z,ox,fe,coldgas,z_H,ox_H,fe_H,H2,HI,H
+   stepmetallicity = z/coldgas
 
    normalmetallicity = fltarr(n_elements(ejecthistory))
    FOR j = 0, n_elements(z) - 1 DO $
-       normalmetallicity[where(ejectz EQ align[j].z)] = ejecthistory[where(ejectz EQ align[j].z)].metallicity*metalscale/stepmetallicity[j]
+       normalmetallicity[where(ejectz EQ align[j].z)] = ejecthistory[where(ejectz EQ align[j].z)].metallicity/stepmetallicity[j]
 
 ;   expellhistory = mrdfits(dir[i] + 'grp' + finalid[i] + '.expell_disk.fits',1)
 
    IF keyword_set(absolute) THEN BEGIN
-       IF i EQ 0 AND     keyword_set(normalize) THEN histogramp,alog10(ejecthistory.metallicity/zsolar*metalscale), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i], /normalize,xrange = xrange_fb,xtitle = 'Log(Z/Z'+sunsymbol()+')',ytitle = '1/M dM/dr',title = label, /nodata,yrange = [0,0.06]
-       IF i EQ 0 AND NOT keyword_set(normalize) THEN histogramp,alog10(ejecthistory.metallicity/zsolar*metalscale), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i],            xrange = xrange_fb,xtitle = 'Log(Z/Z'+sunsymbol()+')',ytitle = 'dM/dr'    ,title = label, /nodata ;yrange=[0,2e9] ;,xmargin = [16,3]
-       IF                keyword_set(normalize) THEN histogramp,alog10(ejecthistory.metallicity/zsolar*metalscale), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i], /normalize,/overplot,color = colors[i],thick = thicks[i],linestyle = linestyles[i]
-       IF NOT            keyword_set(normalize) THEN histogramp,alog10(ejecthistory.metallicity/zsolar*metalscale), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i],            /overplot,color = colors[i],thick = thicks[i],linestyle = linestyles[i]
+       IF i EQ 0 AND     keyword_set(normalize) THEN histogramp,alog10(ejecthistory.metallicity/zsolar), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i], /normalize,xrange = xrange_fb,xtitle = 'Log(Z/Z'+sunsymbol()+')',ytitle = '1/M dM/dr',title = label, /nodata,yrange = [0,0.08]
+       IF i EQ 0 AND NOT keyword_set(normalize) THEN histogramp,alog10(ejecthistory.metallicity/zsolar), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i],            xrange = xrange_fb,xtitle = 'Log(Z/Z'+sunsymbol()+')',ytitle = 'dM/dr'    ,title = label, /nodata ;yrange=[0,2e9] ;,xmargin = [16,3]
+       IF                keyword_set(normalize) THEN histogramp,alog10(ejecthistory.metallicity/zsolar), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i], /normalize,/overplot,color = colors[i],thick = thicks[i],linestyle = linestyles[i]
+       IF NOT            keyword_set(normalize) THEN histogramp,alog10(ejecthistory.metallicity/zsolar), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i],            /overplot,color = colors[i],thick = thicks[i],linestyle = linestyles[i]
 ;   histogramp,                                              alog10(expellhistory.metallicity/zsolar),nbins = 100,max = xrange_fb[1],weight = expellhistory.mass*scale[i],           /overplot,color = colors[i],thick = thicks[i],linestyle = 2
-       print,max(weighted_histogram(alog10(ejecthistory.metallicity/zsolar*metalscale), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i],locations = yaxis),maxindex)
+       print,max(weighted_histogram(alog10(ejecthistory.metallicity/zsolar), nbins = 100,min = xrange_fb[0],max = xrange_fb[1],weight = ejecthistory.mass*scale[i],locations = yaxis),maxindex)
 ;       oplot,[yaxis[maxindex],yaxis[maxindex]],[0,1],color = colors[i],thick = thicks[i],linestyle = 1
 ;       modez[i] = 10^(yaxis[maxindex])
-;       medianz = total(ejecthistory.metallicity/zsolar*metalscale*ejecthistory.mass*scale)/total(ejecthistory.mass*scale)
-       medianz = median(ejecthistory.metallicity/zsolar*metalscale)
+;       medianz = total(ejecthistory.metallicity/zsolar*ejecthistory.mass*scale)/total(ejecthistory.mass*scale)
+       medianz = median(ejecthistory.metallicity/zsolar)
        oplot,[alog10(medianz),alog10(medianz)],[0,1],color = colors[i],thick = thicks[i],linestyle = 1
        modez[i] = medianz
    ENDIF ELSE BEGIN
@@ -89,7 +92,6 @@ FOR i = 0, n_elements(dir)-1 DO BEGIN
        oplot,[alog10(medianz),alog10(medianz)],[0,1],color = colors[i],thick = thicks[i],linestyle = 1
        modez[i] = medianz
    ENDELSE
-
    undefine,totalmass
    undefine,ejecthistory
    undefine,expellhistory
