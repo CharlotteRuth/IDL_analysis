@@ -43,6 +43,44 @@ nstars = a * smass^b
 RETURN,nstars/c
 END
 
+FUNCTION int_kroupa01,mass1,mass2,nstar = nstar
+;Integratees the IMF to give total number of stars between bounding
+;masses, mass1 and mass2, where mass1 is the greater mass
+
+bmasses = [0.08,0.5,100] ;bounding masses and mass of break in IMF
+exp = [-0.3,-1.3] ;exponents of IMF to produce mass of stars in given range. IMF to produce # will have exp-1
+a = [0.22038*2.0*alog(10.0),0.22038*alog(10.0)] ;coefficients for IMF
+IF keyword_set(nstar) THEN exp = exp-1  ;so that it is no longer in terms of mass but is in number
+
+cumM1 = fltarr(n_elements(mass1)) ;Create an array to hold the total mass between mass1 and the maximum mass
+
+ind0 = where(mass1 GT bmasses[2]) ;Anything that is too massive to be in the IMF, i.e., mass greater than max mass
+ind1 = where(mass1 GT bmasses[1] AND mass1 LE bmasses[2]) ;Anything that is in the high-mass part of the IMF
+ind2 = where(mass1 GT bmasses[0] AND mass1 LE bmasses[1]) ;Anything that is in the low-mass part of the IMF
+ind3 = where(mass1 LT bmasses[0]) ;Anything that falls below the low-end of the IMF
+
+IF (ind0[0] NE -1) THEN cumM1[ind0] = 0
+IF (ind1[0] NE -1) THEN cumM1[ind1] = a[1]/(exp[1] + 1)*(bmasses[2]^(exp[1] + 1) - mass1[ind1]^(exp[1] + 1))
+IF (ind2[0] NE -1) THEN cumM1[ind2] = a[1]/(exp[1] + 1)*(bmasses[2]^(exp[1] + 1) - bmasses[1]^(exp[1] + 1)) + $
+                                      a[0]/(exp[0] + 1)*(bmasses[1]^(exp[1] + 0) - mass1[ind2]^(exp[0] + 1))
+IF (ind3[0] NE -1) THEN cumM1[ind3] = 0
+
+cumM2 = fltarr(n_elements(mass1)) ;Create an array to hold the total mass between mass2 and the maximum mass
+
+ind0 = where(mass2 GT bmasses[2]) ;Anything that is too massive to be in the IMF, i.e., mass greater than max mass
+ind1 = where(mass2 GT bmasses[1] AND mass2 LE bmasses[2]) ;Anything that is in the high-mass part of the IMF
+ind2 = where(mass2 GT bmasses[0] AND mass2 LE bmasses[1]) ;Anything that is in the low-mass part of the IMF
+ind3 = where(mass2 LT bmasses[0]) ;Anything that falls below the low-end of the IMF
+
+IF (ind0[0] NE -1) THEN cumM2[ind0] = 0
+IF (ind1[0] NE -1) THEN cumM2[ind1] = a[1]/(exp[1] + 1)*(bmasses[2]^(exp[1] + 1) - mass2[ind1]^(exp[1] + 1))
+IF (ind2[0] NE -1) THEN cumM2[ind2] = a[1]/(exp[1] + 1)*(bmasses[2]^(exp[1] + 1) - bmasses[1]^(exp[1] + 1)) + $
+                                      a[0]/(exp[0] + 1)*(bmasses[1]^(exp[1] + 0) - mass2[ind2]^(exp[0] + 1))
+IF (ind3[0] NE -1) THEN cumM2[ind3] = 0
+
+RETURN,cumM1 - cumM2
+END
+
 FUNCTION int_kroupa,mass1,mass2,nstar = nstar
 ;Integratees the IMF to give total number of stars between bounding
 ;masses
@@ -234,3 +272,4 @@ legend,['Miller-Scalo','Kroupa'],linestyle = [0,1],/right
 device,/close
 
 END
+
