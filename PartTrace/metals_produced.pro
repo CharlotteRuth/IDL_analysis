@@ -97,7 +97,7 @@ FUNCTION zsnovaii,tmin,tmax,s,sfmass,which_imf
 
 ;1e4 Msol should produce 48.6 SNII, ejecting 611 Msol of material, 2.2
 ;solar masses of iron and 47.5 solar masses of oxygen
-
+z_outflow = {massloss: 0.0, femassloss: 0.0, oxmassloss: 0.0, zmassloss: 0.0}
 
 zmin = 7e-5
 zmax = 3e-2
@@ -117,7 +117,7 @@ IF (where(s.tform GT tmax))[0] NE -1 THEN agemax[where(s.tform GT tmin)] = 0 ;Fo
 
 mmax = mass_from_lifetime(agemin,dMetals)
 mmin = mass_from_lifetime(agemax,dMetals)
-print,''
+;print,''
 ;print,'Min Mass: ',mmin,', Max Mass: ',mmax
 IF keyword_set(debug) THEN BEGIN
     masses = 1e4
@@ -128,7 +128,7 @@ ENDIF
 ind_massive = where(mmax GE 8.0 AND mmin LE 40.0) ;The indicies for the stars which will have a type II supernova 
 
 IF (ind_massive[0] EQ -1) THEN BEGIN
-    z_outflow = {z_snia, massloss: 0, femassloss: 0, oxmassloss: 0, zmassloss: 0}
+    z_outflow = {massloss: 0.0, femassloss: 0.0, oxmassloss: 0.0, zmassloss: 0.0, stellarRemMass: 0.0,stellarRemZ: 0.0}
     RETURN,z_outflow ;If there are no star particles young enough to have produced SNII, return
 ENDIF
 
@@ -147,8 +147,8 @@ IF (where(masses_lower GT 40))[0] NE -1 THEN masses_lower[where(masses_lower GT 
 
 mass_sn = fltarr(n_elements(mmax))
 num_sn = fltarr(n_elements(mmax))
-IF(which_imf EQ 0) THEN mass_sn[ind_massive] = int_kroupa(masses_upper,masses_lower) ELSE mass_sn[ind_massive] = int_ms(masses_upper,masses_lower)
-IF(which_imf EQ 0) THEN num_sn[ind_massive] = int_kroupa(masses_upper,masses_lower,/nstar) ELSE num_sn[ind_massive] = int_ms(masses_upper,masses_lower,/nstar)
+IF (which_imf EQ 0) THEN mass_sn[ind_massive] = int_kroupa(masses_upper,masses_lower) ;ELSE mass_sn[ind_massive] = int_ms(masses_upper,masses_lower)
+IF (which_imf EQ 0) THEN num_sn[ind_massive] = int_kroupa(masses_upper,masses_lower,/nstar) ;ELSE num_sn[ind_massive] = int_ms(masses_upper,masses_lower,/nstar)
 mass_sn = mass_sn*sfmass
 num_sn = num_sn*sfmass
 
@@ -164,17 +164,21 @@ z_frac =  1.06*fe_frac + 2.09*ox_frac
 
 IF keyword_set(debug)  THEN dMassLoss = dMassLoss*1e4 ELSE dMassLoss = mass_sn - num_sn*dMSNrem
 
-print,'Mass of SNII: ',total(mass_sn)
-print,'Number of SNII: ',total(num_sn)
-print,'Mass Lost: ',total(dMassLoss),total(dMassLoss);/1.66500e+09
+;print,'Mass of SNII: ',total(mass_sn)
+;print,'Number of SNII: ',total(num_sn)
+;print,'Mass Lost: ',total(dMassLoss),total(dMassLoss);/1.66500e+09
 oxMassLoss = dMassLoss*ox_frac
-print,'Ox Mass Lost: ',total(oxMassLoss),total(oxMassLoss)/total(dMassLoss)
+;print,'Ox Mass Lost: ',total(oxMassLoss),total(oxMassLoss)/total(dMassLoss)
 feMassLoss = dMassLoss*fe_frac
-print,'Fe Mass Lost: ',total(feMassLoss),total(feMassLoss)/total(dMassLoss)
+;print,'Fe Mass Lost: ',total(feMassLoss),total(feMassLoss)/total(dMassLoss)
 zMassLoss = dMassLoss*z_frac
-print,'Metal Mass Lost: ',total(zMassLoss),total(zMassLoss)/total(dMassLoss)
+;print,'Metal Mass Lost: ',total(zMassLoss),total(zMassLoss)/total(dMassLoss)
+;Mass of star particles now in the form of stellar remnants
+stellarRemMass = num_sn*dMSNrem
+;Mass of metals now in the form of stellar remnants
+stellarRemZ = num_sn*dMSNrem*dMetals
 
-z_outflow = {z_snii, massloss: total(dMassLoss), femassloss: total(feMassLoss), oxmassloss: total(oxMassLoss), zmassloss: total(zMassLoss)}
+z_outflow = {massloss: float(total(dMassLoss)), femassloss: float(total(feMassLoss)), oxmassloss: float(total(oxMassLoss)), zmassloss: float(total(zMassLoss)),stellarRemMass: float(total(stellarRemMass)),stellarRemZ: float(total(stellarRemZ))}
 RETURN,z_outflow
 END
 
@@ -205,8 +209,8 @@ IF (where(s.tform GT tmax))[0] NE -1 THEN agemax[where(s.tform GT tmin)] = 0 ;Fo
 
 mmax = mass_from_lifetime(agemin,dMetals) ; The maximum mass of stars that may have ended their lives during this time
 mmin = mass_from_lifetime(agemax,dMetals) ; the minimum mass of stars that may have ended their lives during this time
-print,''
-print,'Mmin: ',mmin[0],' Mmax: ',mmax[0];,agemin,agemax
+;print,''
+;print,'Mmin: ',mmin[0],' Mmax: ',mmax[0];,agemin,agemax
 
 ;Debug
 ;mmin = findgen(700,increment = 0.01,start = 1)
@@ -215,16 +219,22 @@ print,'Mmin: ',mmin[0],' Mmax: ',mmax[0];,agemin,agemax
 ind_lowmass = where(mmin LT 8.0) ;The indicies for the stars which will have a type Ia supernova 
 
 IF (ind_lowmass[0] EQ -1) THEN BEGIN
-    z_outflow = {z_snia, massloss: 0, femassloss: 0, oxmassloss: 0, zmassloss: 0}
+    z_outflow = {massloss: 0.0, femassloss: 0.0, oxmassloss: 0.0, zmassloss: 0.0}
     RETURN,z_outflow ;If there are no star particles old enough to have produced SNIa, return
 ENDIF
 
 masses_upper = mmax[ind_lowmass]
 masses_lower = mmin[ind_lowmass]
+IF (where(masses_upper GT 3./2.))[0] EQ -1 THEN BEGIN
+    z_outflow = {massloss: 0.0, femassloss: 0.0, oxmassloss: 0.0, zmassloss: 0.0}
+    RETURN,z_outflow ;If there are no star particles old enough to have produced SNIa, return
+ENDIF
 
 ; Only stars less that 8 solar masses produce SNIa
 IF (where(masses_upper GT 8))[0] NE -1 THEN masses_upper[where(masses_upper GT 8)] = 8
+IF (where(masses_upper LT 3./2.))[0] NE -1 THEN masses_upper[where(masses_upper LT 3./2.)] = 3./2. 
 IF (where(masses_lower LT 3./2.))[0] NE -1 THEN masses_lower[where(masses_lower LT 3./2.)] = 3./2. 
+
 
 num_sn = fltarr(n_elements(mmax))
 indlow = where(masses_lower LT 3./2., complement = indhigh)
@@ -281,13 +291,14 @@ oxMassLoss = dMassLoss*ox_frac
 feMassLoss = dMassLoss*fe_frac
 zMassLoss = dMassLoss*z_frac
 
-print,'Number of SNIa: ',total(num_sn)
-print,'Mass Lost: ',total(dMassLoss),total(dMassLoss);/1.66500e+09
-print,'Ox Mass Lost: ',total(oxMassLoss),total(oxMassLoss)/total(dMassLoss)
-print,'Fe Mass Lost: ',total(feMassLoss),total(feMassLoss)/total(dMassLoss)
-print,'Metal Mass Lost: ',total(zMassLoss),total(zMassLoss)/total(dMassLoss)
-z_outflow = {z_snia, massloss: total(dMassLoss), femassloss: total(feMassLoss), oxmassloss: total(oxMassLoss), zmassloss: total(zMassLoss)}
-
+;print,'Number of SNIa: ',total(num_sn)
+;print,'Mass Lost: ',total(dMassLoss),total(dMassLoss);/1.66500e+09
+;print,'Ox Mass Lost: ',total(oxMassLoss),total(oxMassLoss)/total(dMassLoss)
+;print,'Fe Mass Lost: ',total(feMassLoss),total(feMassLoss)/total(dMassLoss)
+;print,'Metal Mass Lost: ',total(zMassLoss),total(zMassLoss)/total(dMassLoss)
+z_outflow = {massloss: float(total(dMassLoss)), femassloss: float(total(feMassLoss)), oxmassloss: float(total(oxMassLoss)), zmassloss: float(total(zMassLoss))}
+;print,float(total(dMassLoss)),float(total(feMassLoss)),float(total(oxMassLoss)),float(total(zMassLoss))
+;print,z_outflow
 ;plot,mmin[where(dMetals GT 0.0007 AND dMetals LT 0.0009)],num_sn[where(dMetals GT 0.0007 AND dMetals LT 0.0009)],psym = 3,xrange = [0.8,1]
 ;colors = (alog10(dMetals)+4.2)/2.3*254
 ;for j=0,n_elements(color)-1 DO oplot,[mmin[j],mmin[j]],[num_sn[j],num_sn[j]],psym = 3,color = color[j]
@@ -296,12 +307,25 @@ END
 
 
 PRO test_metal_production
+dirbase = '/nobackupp8/crchrist/MolecH/' ;PFE
+;dirbase = '/home/christensen/Storage2/UW/MolecH/Cosmo/';ymir
+
 steps = ['00024','00048','00072','00096','00120','00144','00168','00192','00216','00240','00264','00288','00312','00336','00360','00384','00408','00432','00456','00480','00504','00512']
 steps = ['00024','00096','00168','00240','00312','00360','00480','00512']
-;steps = ['00512']
-dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h516.cosmo25cmb.1536g/h516.cosmo25cmb.1536g14HBWK/steps/'
-filebase = 'h516.cosmo25cmb.1536g14HBWK.'+ steps + '.dir/h516.cosmo25cmb.1536g14HBWK.' + steps
-pfile = '../h516.cosmo25cmb.1536g14HBWK.param'
+steps = ['00512']
+
+;fileroot_short = 'h516.cosmo25cmb.1536g'
+;fileroot = 'h516.cosmo25cmb.1536g14HBWK' 
+;fileroot_short = 'h516.cosmo25cmb.3072g'
+;fileroot = 'h516.cosmo25cmb.3072g14HBWK'
+;fileroot_short = 'h603.cosmo50cmb.3072g'
+;fileroot = 'h603.cosmo50cmb.3072g14HBWK'
+fileroot_short = 'h799.cosmo25cmb.3072g/'
+fileroot = 'h799.cosmo25cmb.3072g14HBWK/'
+
+dir = dirbase + fileroot_short + '/' + fileroot
+filebase = fileroot + '.'+ steps + '/' + fileroot + '.' + steps
+pfile = fileroot + '.param'
 ;dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/steps/'
 ;filebase = 'h516.cosmo25cmb.3072g14HBWK.' + steps + '.dir/h516.cosmo25cmb.3072g14HBWK'
 ;pfile = '../h516.cosmo25cmb.3072g14HBWK.param'
@@ -309,17 +333,17 @@ pfile = '../h516.cosmo25cmb.1536g14HBWK.param'
 dDelta = 0.000690912 ;4.075253e-04
 dDeltaStarForm = 1e6
 
-if 0 Then BEGIN
-dir = '/home/christensen/Code/gasoline-radiation/test/onestar/'
-pfile = 'onestar.param'
+IF 0 THEN BEGIN
+   dir = '/home/christensen/Code/gasoline-radiation/test/onestar/'
+   pfile = 'onestar.param'
 ;steps = ['00020','00031','00032','00033','00034','00035','00036','00037','01000']
 ;steps = ['00001','00002','00003','00004','00005','00006','00007','00008','00009','00010','00011','00012','00013','00014','00015','00016','00017','00018','00019','00020','00021','00022','00023','00024','00025','00026','00027','00028','00029','00030','00031','00032','00033','00034','00035','00036','00037','00038','00039','00040']
-steps = ['01000','02000','03000','04000','05000','06000','07000','08000','09000','10000']
+   steps = ['01000','02000','03000','04000','05000','06000','07000','08000','09000','10000']
 ;steps = ['00100','00200','00300','00400','00500','00600','00700','00800','00900','01000']
 ;steps = ['00010','00020','00030','00040','00050','00060','00070','00080','00090','00100']
-filebase = 'onestar.' + steps
+   filebase = 'onestar.' + steps
 ;filebase = 'onestar.z0.01.' + steps
-dDelta = 7.812500e-04
+   dDelta = 7.812500e-04
 ENDIF
 
 cd,dir
