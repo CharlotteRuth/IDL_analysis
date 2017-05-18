@@ -17,7 +17,10 @@
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK'
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK'
 
-PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = centralhalo,debug = debug,nowrite = nowrite
+;keyword parameter "inhalo" outputs the metals in the halo in addition
+;to those in the disk
+
+PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = centralhalo,debug = debug,nowrite = nowrite,inhalo = inhalo
 
 ;-------------------- Read in simulation data for final step
   IF NOT keyword_set(finalid) THEN finalid = '1' 
@@ -45,6 +48,9 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
   Fes = fltarr(nsteps)
   Oxs = fltarr(nsteps)
   coldgas=fltarr(nsteps)
+  zmetals_ha = fltarr(nsteps)
+  Fes_ha = fltarr(nsteps)
+  Oxs_ha = fltarr(nsteps)
   zmetals_H = fltarr(nsteps)
   Fes_H = fltarr(nsteps)
   Oxs_H = fltarr(nsteps)
@@ -115,7 +121,7 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
      match,gpart_save.iord,iord,indg,inda
      IF n_elements(indg) NE n_elements(gpart_save.iord) THEN BEGIN
         match2,gpart_save.iord,iord,indg2,inda2
-        IF max(gpart_save[where(indg2 EQ -1)].mass[i]) GT 0 THEN stop 
+        IF max(gpart_save[where(indg2 EQ -1)].mass[i]) GT 0 THEN stop ;Check for h603, 3
      ENDIF
      HI = HI[inda]
      H2 = 2.0*H2[inda]
@@ -189,6 +195,9 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
      zmetals[i] = total(2.09*Oxm[disk] + 1.06*Fem[disk])
      Oxs[i] = total(Oxm[disk])
      Fes[i] = total(Fem[disk])
+     zmetals_ha[i] = total(2.09*Oxm + 1.06*Fem)
+     Oxs_ha[i] = total(Oxm)
+     Fes_ha[i] = total(Fem)
      coldgas[i]=total(gpart[disk].mass[i])
      zmetals_H[i] = total((HI + H2)*(2.09*Oxm + 1.06*Fem))/max(HI+H2)
      Oxs_H[i] = total((HI + H2)*Oxm)/max(HI+H2)
@@ -218,7 +227,8 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
      ENDIF
      gpart = 0
   ENDFOR
-  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.metals.txt',zmetals,Oxs,Fes,coldgas,zmetals_H,Oxs_H,Fes_H,HIs,H2s,Hgas,format='(10E)'
+;  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.metals.txt',zmetals,Oxs,Fes,coldgas,zmetals_H,Oxs_H,Fes_H,HIs,H2s,Hgas,format='(10E)'
+  IF keyword_set(inhalo) AND NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.halometals.txt',zmetals_ha,Oxs_ha,Fes_ha,format='(3E)'
 END
 
 
@@ -229,6 +239,10 @@ PRO master_metal_history
   metal_history,dir = dir,finalid = finalid
   finalid = '1'
   metal_history,dir = dir,finalid = finalid  
+
+  dir = '/nobackupp8/crchrist/MolecH/h799.cosmo25cmb.3072g/h799.cosmo25cmb.3072g14HBWK/'
+  finalid = '1'
+  metal_history,dir = dir,finalid = finalid,/inhalo
 
   dir = '/nobackupp2/crchrist/MolecH/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/'
   finalid = '2'
