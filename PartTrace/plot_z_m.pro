@@ -20,7 +20,7 @@ IF keyword_set(stellarmass) THEN BEGIN
    xrange = [1e7,1e11]
 ENDIF ELSE BEGIN
    IF NOT keyword_set(absolute) THEN xtitle = 'Virial Mass [M' +sunsymbol() + ']'
-   xrange = [1e10,1e12]
+   xrange = [3e9,1e12]
 ENDELSE
 IF keyword_set(colors) THEN BEGIN
     loadct,39
@@ -54,18 +54,18 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
    ind = (where(stat.group eq halo[i]))[0]
    vmass[i] = stat[ind].m_tot
    smass[i] = stat[ind].m_star
-   readcol,dirs[i] + '/grp' + halo[i] + '.metals.txt',z,ox,fe,H2,HI,H
-   zgas[i] = z[n_elements(z) - 1]/h[n_elements(z) - 1]/zsolar
+   readcol,dirs[i] + '/grp' + halo[i] + '.metals.txt',zmetals,ox,fe,coldg,zmetals_H,ox_H,fe_H,mHI_m,mH2_m,Hgas
+   zgas[i] = zmetals[n_elements(z) - 1]/coldg[n_elements(z) - 1]/zsolar
 ENDFOR
 
 IF keyword_set(absolute) THEN BEGIN
 ;    outplotext = outplotext + '_zm_abs.eps'
     ytitle = 'Log(Z/Z'+sunsymbol()+')'
-    yrange = [-1,0.2]
+    yrange = [-1.6,0]
 ENDIF ELSE BEGIN
 ;    outplotext = outplotext + '_zm_scale.eps'
     ytitle = textoidl('Log(Z_{eject}/Z_{gas})')
-    yrange = [-0.05,0.6]
+    yrange = [-0.05,0.25]
 ENDELSE
 
 IF keyword_set(stellarmass) THEN xaxis = smass ELSE xaxis = vmass
@@ -77,4 +77,5 @@ IF keyword_set(symbols_boarder) THEN oplot,xaxis,alog10(modez),psym = symcat(sym
 IF NOT keyword_set(absolute) THEN oplot,xrange,[0,0],thick = thicks[0]
 ;legend,['Gas Ejected','Star Formation'],psym = [symbols[1],46],color = [colore[1],fgcolor],/bottom,/right,box =0
 ;IF keyword_set(outplot) THEN device, /close ELSE stop
+;stop
 END
