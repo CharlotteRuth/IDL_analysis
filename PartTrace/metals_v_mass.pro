@@ -1,9 +1,10 @@
 ;Plots the mass of metals in different states
-
+;.r metals_produced.pro
+;.r /home1/crchrist/IDL/IDL_analysis/procedures/legend.pro
 PRO metals_v_mass,dirs,files,halo,finalstep = finalstep,colors = colors,outplot = outplot,stellarmass = stellarmass,symbols = symbols,formatthick = formatthick
 
 n = n_elements(dirs)
-
+zsolar  =  0.0130215
 IF NOT keyword_set(finalstep) THEN finalstep = '00512'
 IF keyword_set(stellarmass) THEN BEGIN
    xtitle = 'Stellar Mass [M' + sunsymbol() + ']'
@@ -31,12 +32,16 @@ device,decomposed = 0
 IF keyword_set(colors) THEN BEGIN
     loadct,39
 ;    IF n_elements(colors) EQ 0 AND colors[0] EQ 0  THEN colors = [50,254,fgcolor]
-    colors = [50,254,120,fgcolor]
+    gascolor = 60
+    starcolor = 254
+    diskcolor = 200
+    cgmcolor = 20
+    colors = [cgmcolor,gascolor,starcolor,diskcolor]
 ENDIF ELSE BEGIN
     loadct,0    
     colors = [0,0,0,0]
 ENDELSE
-IF NOT keyword_set(symbols) THEN symbols = [15,14,46,16] ;Halo/Ever, ISM, Stars, ISM+stars
+IF NOT keyword_set(symbols) THEN symbols = [14,15,46,16] ;Halo/Ever, ISM, Stars, ISM+stars
 IF keyword_set(formatthick) THEN BEGIN
    thick = 4
    IF NOT keyword_set(symsize) THEN symsize = 2
@@ -58,6 +63,8 @@ shalo_femass = fltarr(n)
 srvir_mass = fltarr(n)
 srvir_oxmass = fltarr(n)
 srvir_femass = fltarr(n)
+srvir_remmass = fltarr(n)
+srvir_remz = fltarr(n)
 
 ism_mass = fltarr(n)
 ism_oxmass = fltarr(n)
@@ -83,6 +90,11 @@ grvir_mass = fltarr(n)
 grvir_oxmass = fltarr(n)
 grvir_femass = fltarr(n)
 
+primehalo_stars_oxmass = fltarr(n)
+primehalo_stars_femass = fltarr(n)
+currenthalo_stars_oxmass = fltarr(n)
+currenthalo_stars_femass = fltarr(n)
+
 prevtfile = ''
 close,/all
 FOR i = 0, n_elements(dirs) - 1 DO BEGIN
@@ -92,6 +104,7 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
       units = tipsyunits(dirs[i] + files[i] + '.param')
       rtipsy,tfile,h,g0,d0,s0
       readarr,tfile + '.iord',h,iord,/ascii,type = 'long'
+      read_tipsy_arr,tfile + '.massform',h,massform,part = 'star',type = 'float'
       iordgas = iord[0:h.ngas - 1]
       iordstar = iord[h.ngas + h.ndark: h.n - 1]
 ;    readarr,tfile + '.OxMassFrac',h,Ox,/ascii,type = 'float'
@@ -144,6 +157,17 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
    s.x = spos[*,0]
    s.y = spos[*,1]
    s.z = spos[*,2]
+
+ ;  inhalo = [0]
+ ;  IF keyword_set(centralhalo) THEN BEGIN
+ ;     test = where(gpart.grp[i] EQ stat[main].group, ntest)
+ ;     IF ntest NE 0 THEN inhalo = [inhalo,test]
+ ;  ENDIF ELSE BEGIN
+ ;     FOR j = 0, n_elements(satellites) - 1 DO BEGIN
+ ;        test = where(gpart.grp[i] EQ stat[satellites[j]].group, ntest)
+ ;        IF ntest NE 0 THEN inhalo = [inhalo,test]
+ ;     ENDFOR
+ ;  ENDELSE
    
 ;;    diskaccrm = mrdfits(dirs[i] + '/grp' + halo[i] + '.mass_at_reaccrdisk.fits',0)
 ;;    diskaccrz = mrdfits(dirs[i] + '/grp' + halo[i] + '.reaccrdisk_z.fits',0)
@@ -185,6 +209,22 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
     
    srvir_ind = where(sqrt(s.x*s.x + s.y*s.y + s.z*s.z) LE rvir) ;Stars within a virial radius
    srvir = s[srvir_ind]
+   massform_srvir = massform[srvir_ind]
+
+; Calculate the metals produced by the stars currently in the halo
+   dDelta = 0.000691208*units.timeunit ;516, 799 0.000691088, 603, 986 (0.000691208), 239 (0.000691208)
+   tmax = dDelta*float(finalstep)
+   srvir.tform = srvir.tform*units.timeunit
+   which_imf = 0
+   z_snii_srvir = zsnovaii(0, tmax + dDelta, srvir, massform_srvir*units.massunit, which_imf)
+   srvir_remmass[i] = total(z_snii_srvir.stellarremmass)
+   srvir_remz[i] = total(z_snii_srvir.stellarremz)
+   z_snia_srvir = zsnovaia(0, tmax + dDelta, srvir, massform_srvir*units.massunit)
+   currenthalo_stars_oxmass[i] = z_snii_srvir.oxmassloss + z_snia_srvir.oxmassloss
+   currenthalo_stars_femass[i] = z_snii_srvir.femassloss + z_snia_srvir.femassloss
+   readcol,dirs[i] + '/grp' + halo[i] + '.sfmetals.txt',zstars,oxstars,festars
+   primehalo_stars_oxmass[i] = total(oxstars)
+   primehalo_stars_femass[i] = total(festars)
 
    grvir_ind = where(sqrt(g.x*g.x + g.y*g.y + g.z*g.z) LE rvir) ;Gas within a virial radius
    grvir = g[grvir_ind]
@@ -205,20 +245,23 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
 ;--------------------------------
 ;Stars formed from material ever accreted onto disk within a virial radius  
 ;   stop
-   weight_gal = integrate_ssp((max(s0.tform) - s_gal.tform)*units.timeunit,s_gal.metals)
+;   weight_gal = integrate_ssp((max(s0.tform) - s_gal.tform)*units.timeunit,s_gal.metals) ;in ms_mass.pro
+   weight_gal = s_gal.mass*0 + 1
    s_mass[i] = total(s_gal.mass*weight_gal)*units.massunit
    s_oxmass[i] = total(s_gal.mass*weight_gal*ox_s[s_gal_ind])*units.massunit
    s_femass[i] = total(s_gal.mass*weight_gal*fe_s[s_gal_ind])*units.massunit
 ;   stop
 
 ;Stars formed from material ever accreted onto halo within a virial radius  
-   weight_halo = integrate_ssp((max(s0.tform) - s_halo.tform)*units.timeunit,s_halo.metals)
+;   weight_halo = integrate_ssp((max(s0.tform) - s_halo.tform)*units.timeunit,s_halo.metals)
+   weight_halo = s_halo.mass*0 + 1
    shalo_mass[i] = total(s_halo.mass*weight_halo)*units.massunit
    shalo_oxmass[i] = total(s_halo.mass*weight_halo*ox_s[s_halo_ind])*units.massunit
    shalo_femass[i] = total(s_halo.mass*weight_halo*fe_s[s_halo_ind])*units.massunit
   
 ;Stars within a virial radius
-   weight_rvir = integrate_ssp((max(s0.tform) - srvir.tform)*units.timeunit,srvir.metals)
+;   weight_rvir = integrate_ssp((max(s0.tform) - srvir.tform)*units.timeunit,srvir.metals)
+   weight_rvir = srvir.mass*0 + 1
    srvir_mass[i] = total(srvir.mass*weight_rvir)*units.massunit
    srvir_oxmass[i] = total(srvir.mass*weight_rvir*ox_s[srvir_ind])*units.massunit
    srvir_femass[i] = total(srvir.mass*weight_rvir*fe_s[srvir_ind])*units.massunit
@@ -285,8 +328,31 @@ s_zmass = 2.09*s_oxmass + 1.06*s_femass
 shalo_zmass = 2.09*shalo_oxmass + 1.06*shalo_femass
 ;Stars within a virial radius
 srvir_zmass = 2.09*srvir_oxmass + 1.06*srvir_femass
+;Metals produced by all stars in the virial radius at z = 0
+currenthalo_stars_zmass = 2.09*currenthalo_stars_oxmass + 1.06*currenthalo_stars_femass
+;Metals produced by stars in the main halo
+primehalo_stars_zmass = 2.09*primehalo_stars_oxmass + 1.06*primehalo_stars_femass
 
+writecol,'~/Zproduced_z0.txt',files,halo,currenthalo_stars_zmass,primehalo_stars_zmass,(accrh_zmass + shalo_zmass),s_zmass,ism_zmass,(accr_halo_zmass + s_zmass),format = '(A,I,E,E,E,E,E,E)'
+
+;;;;;;;;;;;;; Stars Plots ;;;;;;;;;;;;;;;;
 IF keyword_set(stellarmass) THEN xmass = srvir_mass ELSE xmass = vmass
+;Verify stellar metallicity. Match with Gallazzi, Panel 8
+IF keyword_set(outplot) THEN  device,filename = outplot + '_stellar_metallicity.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+logstellarmetallicity = alog10((srvir_zmass - srvir_remz)/(srvir_mass - srvir_remmass)/zsolar)
+logstellarmetallicity_obs = (logstellarmetallicity+0.16)/1.08 ;Peeples 2014, Eq 7
+plot,xmass,logstellarmetallicity,/xlog,psym = symcat(sym_outline(symbols[0])),xrange = xrange,yrange= [-1.6,0],xtitle = xtitle,ytitle = 'Stellar Metallicity'
+oplot,xmass,logstellarmetallicity_obs,psym = symcat(sym_outline(symbols[0])),color = 100
+IF keyword_set(outplot) THEN device, /close ELSE stop
+
+zmetals_predict = 10^(1.0146*alog10(srvir_mass) + alog10(0.030) + 0.1091)
+IF keyword_set(outplot) THEN  device,filename = outplot + '_totalmetals_comp.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+plot,xmass,currenthalo_stars_zmass,psym = symcat(sym_outline(symbols[0])),/xlog,xtitle = xtitle,ytitle = 'Metal Mass',/ylog,yrange = [1e2,1e11],xrange = xrange
+oplot,xmass,zmetals_predict,psym = 5
+oplot,xmass,(srvir_zmass - srvir_remz),psym = symcat(sym_outline(symbols[0])),color = 254
+oplot,xmass,ism_zmass,psym = symcat(sym_outline(symbols[0])),color = 60
+IF keyword_set(outplot) THEN device, /close ELSE stop
+
 
 ;Fraction of stellar metals that are in stars formed from accreted material
 IF keyword_set(outplot) THEN  device,filename = outplot + '_stellar_insitu_accr.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
@@ -294,10 +360,12 @@ plot,xmass,s_zmass/srvir_zmass,/xlog,psym = symcat(sym_outline(symbols[0])),xran
 oplot,xmass,s_mass/srvir_mass,psym = symcat(symbols[0])
 oplot,xmass,shalo_mass/srvir_mass,psym = symcat(symbols[0]),color = 100
 oplot,xmass,shalo_zmass/srvir_zmass,psym = symcat(sym_outline(symbols[0])),color = 100
-legend,["Stellar Mass","Stellar Metals"],psym = [symbols[0],sym_outline(symbols[0])],/bottom,/right
+legend,["Stellar Mass","Stellar Metals"],psym = [symbols[0],sym_outline(symbols[0])],/bottom,/right,box = 0
+legend,["In Situ (Accreted to Disk)","In Situ (Accreted to Halo)"],psym = [symbols[0],symbols[0]],color = [fgcolor,100],/bottom,/left,box = 0
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
 ;Fraction of metals in the halo that were added to once-disk-accreted material
+;Fraction of metals accreted onto disk that were accreted onto the halo
 IF keyword_set(outplot) THEN  device,filename = outplot + '_halo_accr.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xmass,(accr_halo_zmass + s_zmass)/(accr_zmass + s_zmass),/xlog,psym = symcat(sym_outline(symbols[0])),xrange = xrange,yrange = [0,1],xtitle = xtitle,ytitle = "Gas and Stars in Halo from Disk/Gas Ever in Disk"
 oplot,xmass,(accr_halo_mass + s_mass)/(accr_mass + s_mass),psym = symcat(symbols[0])
@@ -305,13 +373,17 @@ legend,["Gas Mass","Gas Metals"],psym = [symbols[0],sym_outline(symbols[0])],/bo
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
 ;Fraction of metals in the halo that were added to once-halo-accreted material
+;Fraction of metals that were accreted to halo that are currently in
+;the halo
 IF keyword_set(outplot) THEN  device,filename = outplot + '_halo_accrh.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xmass,(accrh_halo_zmass + shalo_zmass)/(accrh_zmass + shalo_zmass),/xlog,psym = symcat(sym_outline(symbols[0])),xrange = xrange,yrange = [0,1],xtitle = xtitle,ytitle = "Gas and Stars in Halo from Halo/Gas Ever in Halo"
+plot,xmass,(accrh_halo_zmass + shalo_zmass)/(accrh_zmass + shalo_zmass),/xlog,psym = symcat(sym_outline(symbols[0])),xrange = xrange,yrange = [0,1],xtitle = xtitle,ytitle = "Gas and Stars in Halo/Gas Ever in Halo"
 oplot,xmass,(accrh_halo_mass + shalo_mass)/(accrh_mass + shalo_mass),psym = symcat(symbols[0])
 legend,["Gas Mass","Gas Metals"],psym = [symbols[0],sym_outline(symbols[0])],/bottom,/right
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
 ;Fraction of mass within rvir that is bound/was accreted to disk
+;Why isn't accrh_halo_mass/grvir_mass always 1? (Check, in
+;particular, for low mass halos)
 IF keyword_set(outplot) THEN  device,filename = outplot + '_halo_rvir.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xmass,accrh_halo_mass/grvir_mass,xtitle = xtitle,xrange = xrange,/xlog,psym = symcat(sym_outline(symbols[0])),yrange = [0,1],ytitle = "Accreted Gas within Rvir/Gas within Rvir"
 oplot,xmass,accr_halo_mass/grvir_mass,psym = symcat(symbols[0])
@@ -320,30 +392,85 @@ IF keyword_set(outplot) THEN device, /close ELSE stop
 
 
 ;Fraction of metals in the halo that were added to once-accreted material
-IF keyword_set(outplot) THEN  device,filename = outplot + '_halo_accrh.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+IF keyword_set(outplot) THEN  device,filename = outplot + '_halo_accrh_frac.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xmass,accrh_halo_zmass/accrh_zmass,/xlog,psym = symcat(sym_outline(symbols[0])),xrange = xrange,yrange = [0,1],xtitle = xtitle,ytitle = "Gas in Halo/Gas Ever in Halo"
 oplot,xmass,accrh_halo_mass/accrh_mass,psym = symcat(symbols[0])
 legend,["Gas Mass","Gas Metals"],psym = [symbols[0],sym_outline(symbols[0])],/bottom,/right
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
+;Comparing different ways to total the metals in the halo
+IF keyword_set(outplot) THEN  device,filename = outplot + '_totalmetals.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+plot,xmass,primehalo_stars_zmass,/xlog,psym = symcat(15),xrange = xrange,xtitle = xtitle,ytitle = "Total Metal Mass",/ylog,yrange = [1e4,1e9];[min([primehalo_stars_zmass,currenthalo_stars_zmass,(accrh_zmass + s_zmass)]),max([primehalo_stars_zmass,currenthalo_stars_zmass,(accrh_zmass + s_zmass)])]
+oplot,xmass,currenthalo_stars_zmass,psym = symcat(sym_outline(15))
+oplot,xmass,accrh_zmass + s_zmass,psym = symcat(4)
+legend,["Metals Produced by Stars in Main Progenitor","Metals Produced by Stars in Final Halo","Metals in All Material Ever in Halo"],psym = [15,sym_outline(15),4],/bottom,/right,box = 0
+IF keyword_set(outplot) THEN device, /close ELSE stop
+print,'Current/Ever: ',currenthalo_stars_zmass/primehalo_stars_zmass
+print,'All Material/Ever: ',(accrh_zmass + s_zmass)/primehalo_stars_zmass
 
 ;Fraction of metals produced in accreted material that are still within rvir
+;Add in metals accreted
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zfrac_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xmass,(accr_zmass + s_zmass)/(accr_zmass + s_zmass),/xlog,xrange = xrange,yrange = [0,0.8],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
+plot,xmass,(accr_zmass + s_zmass)/(accr_zmass + s_zmass),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
 oplot,xmass,(accr_halo_zmass + s_zmass)/(accrh_zmass + s_zmass),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
 oplot,xmass,(accr_halo_zmass + s_zmass)/(accrh_zmass + s_zmass),psym = symcat(sym_outline(symbols[0])),symsize = symsize
-oplot,xmass,(s_zmass + ism_zmass)/(accrh_zmass + s_zmass),psym = symcat(symbols[3]),color = 190,symsize = symsize
-oplot,xmass,(s_zmass + ism_zmass)/(accrh_zmass + s_zmass),psym = symcat(sym_outline(symbols[3])),symsize = symsize
 oplot,xmass,ism_zmass/(accrh_zmass + s_zmass),psym = symcat(symbols[1]),color = colors[1],symsize = symsize
 oplot,xmass,ism_zmass/(accrh_zmass + s_zmass),psym = symcat(sym_outline(symbols[1])),symsize = symsize
 oplot,xmass,s_zmass/(accrh_zmass + s_zmass),psym = symcat(symbols[2]),color = colors[2],symsize = symsize
 oplot,xmass,s_zmass/(accrh_zmass + s_zmass),psym = symcat(sym_outline(symbols[2])),symsize = symsize
-legend,["Within Rvir","Stars + ISM","Stars","ISM"],color = [colors[0],190,colors[2],colors[1]],psym = [symbols[0],symbols[3],symbols[2],symbols[1]],box = 0
+oplot,xmass,(s_zmass + ism_zmass)/(accrh_zmass + s_zmass),psym = symcat(symbols[3]),color = colors[3],symsize = symsize
+oplot,xmass,(s_zmass + ism_zmass)/(accrh_zmass + s_zmass),psym = symcat(sym_outline(symbols[3])),symsize = symsize
+legend,["Within Rvir","Stars + ISM","Stars","ISM"],color = [colors[0],colors[3],colors[2],colors[1]],psym = [symbols[0],symbols[3],symbols[2],symbols[1]],box = 0
 IF keyword_set(outplot) THEN device, /close ELSE stop
+
+;Fraction of metals produced by stars in current main halo in that are still within rvir
+IF keyword_set(outplot) THEN  device,filename = outplot + '_zcurrfrac_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+plot,xmass,(accr_zmass + s_zmass)/(currenthalo_stars_zmass),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
+oplot,xmass,(accr_halo_zmass + s_zmass)/(currenthalo_stars_zmass),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
+oplot,xmass,(accr_halo_zmass + s_zmass)/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,ism_zmass/(currenthalo_stars_zmass),psym = symcat(symbols[1]),color = colors[1],symsize = symsize
+oplot,xmass,ism_zmass/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass,(srvir_zmass - srvir_remz)/(currenthalo_stars_zmass),psym = symcat(symbols[2]),color = colors[2],symsize = symsize
+oplot,xmass,(srvir_zmass - srvir_remz)/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[2])),symsize = symsize
+oplot,xmass,(srvir_zmass - srvir_remz + ism_zmass)/(currenthalo_stars_zmass),psym = symcat(symbols[3]),color = colors[3],symsize = symsize
+oplot,xmass,(srvir_zmass - srvir_remz + ism_zmass)/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[3])),symsize = symsize
+legend,["Within Rvir","Stars + ISM","Stars","ISM"],color = [colors[0],colors[3],colors[2],colors[1]],psym = [symbols[0],symbols[3],symbols[2],symbols[1]],box = 0
+IF keyword_set(outplot) THEN device, /close ELSE stop
+
+;Fraction of metals produced by stars in current main halo, as
+;calculated by peeples in that are
+;still within rvir                                                                                                                           
+IF keyword_set(outplot) THEN  device,filename = outplot + '_zcurrfrac_peeples2_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+plot,xmass,(accr_zmass + s_zmass)/(zmetals_predict),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
+oplot,xmass,(grvir_zmass + srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
+oplot,xmass,(grvir_zmass + srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,ism_zmass/(zmetals_predict),psym = symcat(symbols[1]),color = colors[1],symsize = symsize
+oplot,xmass,ism_zmass/(zmetals_predict),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass,(srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(symbols[2]),color = colors[2],symsize = symsize
+oplot,xmass,(srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(sym_outline(symbols[2])),symsize = symsize
+oplot,xmass,(srvir_zmass - srvir_remz + ism_zmass)/(zmetals_predict),psym = symcat(symbols[3]),color = colors[3],symsize = symsize
+oplot,xmass,(srvir_zmass - srvir_remz + ism_zmass)/(zmetals_predict),psym = symcat(sym_outline(symbols[3])),symsize = symsize
+legend,["Within Rvir","Stars + ISM","Stars","ISM"],color = [colors[0],colors[3],colors[2],colors[1]],psym = [symbols[0],symbols[3],symbols[2],symbols[1]],box = 0
+IF keyword_set(outplot) THEN device, /close ELSE stop
+
+;Fraction of metals produced by stars in main progenitor in that are still within rvir
+IF keyword_set(outplot) THEN  device,filename = outplot + '_zcurrfrac_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+plot,xmass,(accr_zmass + s_zmass)/(primehalo_stars_zmass),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
+oplot,xmass,(accr_halo_zmass + s_zmass)/(primehalo_stars_zmass),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
+oplot,xmass,(accr_halo_zmass + s_zmass)/(primehalo_stars_zmass),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,ism_zmass/(primehalo_stars_zmass),psym = symcat(symbols[1]),color = colors[1],symsize = symsize
+oplot,xmass,ism_zmass/(primehalo_stars_zmass),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass,s_zmass/(primehalo_stars_zmass),psym = symcat(symbols[2]),color = colors[2],symsize = symsize
+oplot,xmass,s_zmass/(primehalo_stars_zmass),psym = symcat(sym_outline(symbols[2])),symsize = symsize
+oplot,xmass,(s_zmass + ism_zmass)/(primehalo_stars_zmass),psym = symcat(symbols[3]),color = colors[3],symsize = symsize
+oplot,xmass,(s_zmass + ism_zmass)/(primehalo_stars_zmass),psym = symcat(sym_outline(symbols[3])),symsize = symsize
+legend,["Within Rvir","Stars + ISM","Stars","ISM"],color = [colors[0],colors[3],colors[2],colors[1]],psym = [symbols[0],symbols[3],symbols[2],symbols[1]],box = 0
+IF keyword_set(outplot) THEN device, /close ELSE stop
+
 
 ;Fraction of metals produced in accreted material that are still within rvir
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zfrac_smass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,shalo_mass,(accr_zmass + s_zmass)/(accr_zmass + s_zmass),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = 'Stellar Mass [M' + sunsymbo() + ']',ytitle = textoidl('M_z/M_z avaliable')
+plot,shalo_mass,(accr_zmass + s_zmass)/(accr_zmass + s_zmass),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = 'Stellar Mass [Msun]',ytitle = textoidl('M_z/M_z avaliable')
 oplot,shalo_mass,(accr_halo_zmass + s_zmass)/(accr_zmass + s_zmass),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
 oplot,shalo_mass,(accr_halo_zmass + s_zmass)/(accr_zmass + s_zmass),psym = symcat(sym_outline(symbols[0])),symsize = symsize
 oplot,shalo_mass,(s_zmass + ism_zmass)/(accr_zmass + s_zmass),psym = symcat(symbols[3]),color = colors[3],symsize = symsize
