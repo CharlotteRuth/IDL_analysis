@@ -1,5 +1,7 @@
 ;Charlotte Christensen
 ;5/25/12
+;Calculates the mass of metals produced by stars and currently in stars
+
 ;This program uses grp1.allgas.entropy.fits and alignment.txt to
 ;establish when the gas is in the main halo and when it is in the disk
 ;of the main halo
@@ -16,6 +18,8 @@
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h799.cosmo25cmb.3072g/h799.cosmo25cmb.3072g14HBWK'
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK'
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK'
+
+;.r metals_produced.pro
 
 PRO stellarmetal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = centralhalo,debug = debug,nowrite = nowrite
   dDelta = 0.000691208 ;516, 799 0.000691088, 603, 986 (0.000691208), 239 (0.000691208)
@@ -52,10 +56,13 @@ PRO stellarmetal_history,dir = dir,finalid = finalid,laststep = laststep,central
   zmetals = fltarr(nsteps)
   Fes = fltarr(nsteps)
   Oxs = fltarr(nsteps)
+  zmetals_stellar = fltarr(nsteps)
+  Fes_stellar = fltarr(nsteps)
+  Oxs_stellar = fltarr(nsteps)
 
 ;-------------------- Step through outputs to find the location of the
 ;                     particles
-  FOR i = nsteps - 1, nsteps - 1 DO BEGIN ;For debugging purposes
+  FOR i = 0, nsteps - 1 DO BEGIN ;For debugging purposes
      stat = read_stat_struc_amiga(halodat[i].file + '.amiga.stat')
      main = where(halodat[i].haloid EQ stat.group)
      satellites = where(sqrt((stat.xc - stat[main].xc)^2 + (stat.yc - stat[main].yc)^2 + (stat.zc - stat[main].zc)^2)*1000 LE stat[main].rvir AND stat.ngas gt 0)
@@ -72,7 +79,7 @@ PRO stellarmetal_history,dir = dir,finalid = finalid,laststep = laststep,central
         tmin = (float(step_prior)*dDelta + dDelta)*units.timeunit
      ENDELSE
 
-     tmin = 0 ; For debugging purposes
+ ;    tmin = 0 ; For debugging purposes
 ;-------------------- Read Simulation Data ------------
      rtipsy,halodat[i].file,h,g,d,s
      read_tipsy_arr,halodat[i].file + '.iord',h,iord,part = 'star',type = 'long'
@@ -117,14 +124,18 @@ PRO stellarmetal_history,dir = dir,finalid = finalid,laststep = laststep,central
 
         s = s[inhalo]
         massform_step = massform_step[inhalo]
-        stop
         which_imf = 0
         z_snii = zsnovaii(tmin, tmax + dDelta, s, massform_step, which_imf)
         z_snia = zsnovaia(tmin, tmax + dDelta, s, massform_step)
         zmetals[i] = z_snii.zmassloss + z_snia.zmassloss
         Oxs[i] = z_snii.oxmassloss + z_snia.oxmassloss
         Fes[i] = z_snii.femassloss + z_snia.femassloss
-        print,i,tmin,tmax,zmetals[i],Oxs[i],Fes[i]
+
+        Oxs_stellar[i] = total(Ox[inhalo]*s.mass)*units.massunit
+        Fes_stellar[i] = total(Fe[inhalo]*s.mass)*units.massunit
+        zmetals_stellar[i] = 2.09*Oxs_stellar[i] + 1.06*Fes_stellar[i]
+
+        print,i,tmin,tmax,zmetals[i],Oxs[i],Fes[i],zmetals_stellar[i],Oxs_stellar[i],Fes_stellar[i]
         IF Oxs[i] LT 0 OR  Fes[i] LT 0 THEN stop
         IF NOT finite(Oxs[i]) OR NOT finite(Fes[i]) THEN STOP
 ;        stop
@@ -134,7 +145,10 @@ PRO stellarmetal_history,dir = dir,finalid = finalid,laststep = laststep,central
         zmetals[i] = 0
         Oxs[i] = 0
         Fes[i] = 0
-        print,i,zmetals[i],Oxs[i],Fes[i]
+        zmetals_stellar[i] = 0
+        Oxs_stellar[i] = 0
+        Fes_stellar[i] = 0
+        print,i,zmetals[i],Oxs[i],Fes[i],zmetals_stellar[i],Oxs_stellar[i],Fes_stellar[i]
         CONTINUE
      ENDELSE
 
@@ -157,13 +171,13 @@ PRO stellarmetal_history,dir = dir,finalid = finalid,laststep = laststep,central
         histogramp,abs(gpart[inhalo[ind_unbound]].z[i]),/overplot,color = 245,nbins = 100        
      ENDIF
   ENDFOR
-  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.sfmetals.txt',zmetals,Oxs,Fes,format='(3E)'
+  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.sfmetals.txt',zmetals,Oxs,Fes,zmetals_stellar,Oxs_stellar,Fes_stellar,format='(6E)'
 END
 
 
 PRO master_stellarmetal_history
 
-  dir = '/nobackupp2/crchrist/MolecH/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK/'
+  dir = '/nobackupp8/crchrist/MolecH/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK/'
   finalid = '2'
   stellarmetal_history,dir = dir,finalid = finalid
   finalid = '1'
@@ -173,13 +187,13 @@ PRO master_stellarmetal_history
   finalid = '1'
   stellarmetal_history,dir = dir,finalid = finalid,/nowrite
 
-  dir = '/nobackupp2/crchrist/MolecH/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/'
+  dir = '/nobackupp8/crchrist/MolecH/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/'
   finalid = '2'
   stellarmetal_history,dir = dir,finalid = finalid
   finalid = '1'
   stellarmetal_history,dir = dir,finalid = finalid
 
-  dir = '/nobackupp2/crchrist/MolecH/h603.cosmo50cmb.3072g/h603.cosmo50cmb.3072g14HBWK/'
+  dir = '/nobackupp8/crchrist/MolecH/h603.cosmo50cmb.3072g/h603.cosmo50cmb.3072g14HBWK/'
   finalid = '3'
   stellarmetal_history,dir = dir,finalid = finalid
   finalid = '2'
@@ -187,9 +201,30 @@ PRO master_stellarmetal_history
   finalid = '1'
   stellarmetal_history,dir = dir,finalid = finalid
 
-  dir = '/nobackupp2/crchrist/MolecH/h277.cosmo50cmb.3072g/h277.cosmo50cmb.3072g14HMbwK/'
-  finalid = '2'
+  dir='/nobackupp8/crchrist/MolecH/h285.cosmo50cmb.3072g/h285.cosmo50cmb.3072g14HMbwK/'
+  finalid = '9'
+  stellarmetal_history,dir = dir,finalid = finalid
+  finalid = '4'
   stellarmetal_history,dir = dir,finalid = finalid
   finalid = '1'
   stellarmetal_history,dir = dir,finalid = finalid
+
+  dir='/nobackupp8/crchrist/MolecH/h258.cosmo50cmb.3072g/h258.cosmo50cmb.3072g14HMbwK/'
+  finalids = ['1','4','8']
+  finalid = '8'
+  stellarmetal_history,dir = dir,finalid = finalid
+  finalid = '4'
+  stellarmetal_history,dir = dir,finalid = finalid
+  finalid = '1'
+  stellarmetal_history,dir = dir,finalid = finalid
+
+  dir='/nobackupp8/crchrist/MolecH/h239.cosmo50cmb.3072g/h239.cosmo50cmb.3072g14HMbwK/'
+  finalids='1'
+  stellarmetal_history,dir = dir,finalid = finalid
+
+;  dir = '/nobackupp2/crchrist/MolecH/h277.cosmo50cmb.3072g/h277.cosmo50cmb.3072g14HMbwK/'
+;  finalid = '2'
+;  stellarmetal_history,dir = dir,finalid = finalid
+;  finalid = '1'
+;  stellarmetal_history,dir = dir,finalid = finalid
 END

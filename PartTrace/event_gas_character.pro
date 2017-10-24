@@ -13,6 +13,7 @@
 ;reaccrdiskall
 ;relost
 ;reaccr
+;reoutflow
 
 PRO event_gas_character,history,event_ext,dir = dir,finalid = finalid,laststep = laststep,plot = plot
 
@@ -67,7 +68,7 @@ FOR i = 0, n_elements(halodat.file) - 1 DO BEGIN
    basis = [[ax],[ay],[az]]
 
    gashistory = mrdfits(halodat[i].file + '.grp' + finalid + '.allgas.history.fits',1)
-   accr_step_ind  = where(accr_step  EQ i) ;The ejcted particles that are in the disk at step i
+   accr_step_ind  = where(accr_step  EQ i) ;The ejected particles that are out of the disk at step i/outflowing particles that are out of the halo at step i/accreted particles in the disk at step i etc.
    IF accr_step_ind[0] NE -1 THEN BEGIN
       match,accriord[accr_step_ind],gashistory.iord,accr_ind,gashistory_ind
  ;     accr_ind = accr_step_ind[accr_ind]
@@ -91,16 +92,20 @@ FOR i = 0, n_elements(halodat.file) - 1 DO BEGIN
 ;      histogramp,sqrt(accrhistory[accr_step_ind[accr_ind]].x*accrhistory[accr_step_ind[accr_ind]].x + accrhistory[accr_step_ind[accr_ind]].y*accrhistory[accr_step_ind[accr_ind]].y),nbins = 100
 
       IF keyword_set(plot) THEN BEGIN
+          loadct,39
 ;         histogramp,accrhistory[accr_step_ind[accr_ind]].vz,nbins = 100,min = -100,max = 100,xrange = [-100,100]
 ;         histogramp,accrhistory[accr_step_ind[accr_ind]].vx,nbins = 100,min = -100,max = 100,xrange = [-100,100],color = 100,/overplot
 ;         histogramp,accrhistory[accr_step_ind[accr_ind]].vy,nbins = 100,min = -100,max = 100,xrange = [-100,100],color = 80,/overplot
          histogramp,accrhistory[accr_step_ind[accr_ind]].z,nbins = 50,min = -25,max = 25,xrange = [-25,25]
+         histogramp,accrhistory[accr_step_ind[accr_ind]].z,nbins = 50,min = -25,max = 25,xrange = [-25,25],color = 50,/overplot
          histogramp,accrhistory[accr_step_ind[accr_ind]].x,nbins = 50,min = -25,max = 25,xrange = [-25,25],color = 100,/overplot
          histogramp,accrhistory[accr_step_ind[accr_ind]].y,nbins = 50,min = -25,max = 25,xrange = [-25,25],color = 80,/overplot
+          histogramp,sqrt(accrhistory[accr_step_ind[accr_ind]].y^2 + accrhistory[accr_step_ind[accr_ind]].z^2 + accrhistory[accr_step_ind[accr_ind]].x^2),nbins = 50,min = -25,max = 25,xrange = [-25,25],/overplot
+         stop
       ENDIF
 ;      if i EQ n_elements(halodat.file) - 1 THEN stop
    ENDIF
 ENDFOR
-
 mwrfits,accrhistory,'grp' + finalid + '.' + event_ext + '_history.fits',/create
+history = accrhistory
 END
