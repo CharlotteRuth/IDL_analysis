@@ -34,8 +34,8 @@ IF (file_exist(halofilename + '.std') EQ 0) OR keyword_set(remake) THEN BEGIN
 ;Select the halo
     tipsysatshi,filename,haloid,units.lengthunit,units.massunit,cutout_rad = maxr,outarray = outarray
 ENDIF
-print,'Run ~/tipsy_tools/smooth -s 32g -o ' + dir + filebase + '.' + step + '/' + halofilename + '.hsmooth < ' + dir + filebase + '.' + step + '/'+ halofilename + '.std'
-stop 
+print,'Run ~/tipsy_tools/smooth -s 32g -o ' + halofilename + ' hsmooth < ' + dir + filebase + '.' + step + '/'+ halofilename + '.std'
+;stop 
 ;Add the correct smoothing lengths to the file
 fix_smooth,halofilename         ;Missing so temporarily commented out
 
@@ -47,7 +47,7 @@ IF (file_exist(halofilename + '.aux') EQ 0) OR keyword_set(remake) THEN $
 FOR i = 0, n_elements(angle) - 1 DO $
   IF angle[i] NE 0 THEN $
 ;    IF (file_exist(halofilename + '.' + strtrim(fix(angle[i]),2)) EQ 0) OR keyword_set(remake) THEN $
-      rotatetipsy,halofilename,angle[i]
+      rotatetipsy,halofilename + '.std',angle[i]
 
 ;Create the Line-of-sight files
 impact_param = [2.0,4.0,8.0,14.0,20.0,50.0,100.0,150.0,200.0,250.0,300.0]
@@ -93,6 +93,6 @@ PRO prep_tipsy_master
   FOR i = 0, n_elements(step_arr) - 1 DO BEGIN
      cd,dir + filebase + '.' + step_arr[i]
      pwd
-     prep_tipsy,filebase,haloid_arr[i],step_arr[i],dir,angle = ['90']
+     prep_tipsy,filebase,haloid_arr[i],step_arr[i],dir,angle = ['0.0']
   ENDFOR
 END
