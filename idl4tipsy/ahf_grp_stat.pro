@@ -4,6 +4,8 @@
 ; Author: Alyson Brooks
 ; Last updated: July 26, 2009
 
+;units = tipsyunits('h516.cosmo25cmb.3072g1HBWKS.00444.param')
+;ahf_grp_stat,'/home/christensen/Storage1/UW/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g1HBWKS.00444/h516.cosmo25cmb.3072g1HBWKS.000068',boxsize = units.LENGTHUNIT,munit = units.massunit,vunit = units.vunit
 pro ahf_grp_stat, tipsyfile, boxsize=boxsize, munit = munit, vunit = vunit, h0 = h0, multiplefile = multiplefile
 
 ; INPUTS
