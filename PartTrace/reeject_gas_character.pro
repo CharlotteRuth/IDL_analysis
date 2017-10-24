@@ -126,7 +126,6 @@ FOR i = 0, n_elements(halodat.file) - 1 DO BEGIN
  ;     histogramp,sqrt(ejecthistory[eject_step_ind[eject_ind]].x*ejecthistory[eject_step_ind[eject_ind]].x + ejecthistory[eject_step_ind[eject_ind]].y*ejecthistory[eject_step_ind[eject_ind]].y),nbins = 100,xtitle = 'R'
 
       IF keyword_set(plot) THEN BEGIN
-         stop
          v = sqrt(ejecthistory[eject_step_ind[eject_ind]].vz^2 + ejecthistory[eject_step_ind[eject_ind]].vx^2 +ejecthistory[eject_step_ind[eject_ind]].vy^2) 
          histogramp,v,nbins = 100,min = -100,max = 100,xrange = [-100,100]
          histogramp,ejecthistory[eject_step_ind[eject_ind]].vz,nbins = 100,min = -100,max = 100,xrange = [-100,100],color = 30,/overplot
@@ -166,7 +165,6 @@ histogramp,ejecthistory.y,nbins = 100,min = -100,max = 100,xrange = [-100,100],c
 ;histogramp,ejecthistory[eject_expell_i].y,nbins = 100,min = -100,max = 100,xrange = [-100,100],color = 80,/overplot,linestyle = 2
 histogramp,r,nbins = 100,min = 0,max = 50,xrange = [0,50],xtitle = 'R'
 ;histogramp,r[eject_expell_i],nbins = 100,min = 0,max = 50,/overplot,linestyle = 2
-stop
 v = sqrt(ejecthistory.vz^2 + ejecthistory.vx^2 +ejecthistory.vy^2) 
 histogramp,v,nbins = 100,min = -100,max = 100,xrange = [-100,100],xtitle = 'V'
 ;histogramp,v[eject_expell_i],nbins = 100,min = -100,max = 100,xrange = [-100,100],/overplot,linestyle = 2
@@ -179,7 +177,6 @@ histogramp,ejecthistory.vy,nbins = 100,min = -100,max = 100,xrange = [-100,100],
 ;histogramp,v,nbins = 100,min = 0,max = 200,xrange = [0,200],xtitle = 'V'
 ;histogramp,v[eject_expell_i],nbins = 100,min = 0,max = 200,xrange = [0,200],/overplot,linestyle = 2
 
-stop
 ;mwrfits,expellhistory,'grp' + finalid + '.expell_disk.fits',/create
 IF keyword_set(postdisk) THEN mwrfits,ejecthistory,'grp' + finalid + '.' + ejectext + '_halo.fits',/create ELSE mwrfits,ejecthistory,'grp' + finalid + '.' + ejectext + '_disk.fits',/create
 END

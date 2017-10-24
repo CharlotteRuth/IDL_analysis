@@ -19,7 +19,7 @@ FOR i = 0, nsteps -1 DO BEGIN
    mstar[i] = amigastat[ind].m_star
    mdark[i] = amigastat[ind].m_dark
 ENDFOR
-readcol,'grp' + finalid + '.metals.txt',metal,mox,mfe,mHI,mH2,mcoldgas
+readcol,'grp' + finalid + '.metals.txt',metal,mox,mfe,mcoldgas,mHI,mH2
 mass = [[halodat.haloid],[halodat.time],[halodat.z],[mtot],[mgas],[mstar],[mdark],[metal],[mox],[mfe],[mHI],[mH2],[mcoldgas]]
 ;print,transpose(mass)
 format = '(I,d15.3, d15.3, E15.5, E15.5, E15.5, E15.5, d15.5, d15.5, d15.5, E15.5, E15.5, E15.5)'

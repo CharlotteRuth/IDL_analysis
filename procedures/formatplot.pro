@@ -1,11 +1,11 @@
 
 PRO formatplot, outplot = outplot,thick = thick
-device, decomposed=0
 !Y.STYLE = 1
 !X.STYLE = 1
 !P.THICK = 3.5
 IF KEYWORD_SET(outplot) THEN BEGIN
     set_plot,'ps'
+    device, /helvetica
     IF KEYWORD_SET(THICK) THEN BEGIN
         !P.CHARTHICK=6
         !X.THICK=6
@@ -27,8 +27,9 @@ IF KEYWORD_SET(outplot) THEN BEGIN
         !X.MARGIN = [12,3]
         !Y.MARGIN = [6,2]
     ENDELSE
-;    !p.font=0 
+    !p.font=0 
 ENDIF ELSE BEGIN
+    device, decomposed=0
     set_plot,'x'
     !P.CHARTHICK=1.5
     !X.THICK=1.5

@@ -22,7 +22,6 @@ filebase = filename
 IF keyword_set(onehalo) THEN filename = filename + '.halo.' + strtrim(onehalo)
 rheader, filename, h
 a = h.time
-
 ;Units
 ;name = strmid(filename,26,7, /reverse_offset)
 ;if name eq 'cosmo25' or name eq '.cosmo2' or name eq 'osmo25c' then begin
@@ -66,8 +65,14 @@ ENDIF ELSE BEGIN
     grp = fltarr(h.ngas) + onehalo
     grpallstar = fltarr(h.nstar) + onehalo
 ENDELSE
-read_tipsy_arr,fefile,h,fe,part = 'gas'
-read_tipsy_arr,oxfile,h,ox,part = 'gas'
+;read_tipsy_arr,fefile,h,fe,part = 'gas'
+;read_tipsy_arr,oxfile,h,ox,part = 'gas'
+read_tipsy_arr,fefile,h,fe,type = 'float'
+festar = fe[h.ngas+h.ndark:h.n-1]
+fe = fe[0:h.ngas-1]
+read_tipsy_arr,oxfile,h,ox,type = 'float'
+oxstar = ox[h.ngas+h.ndark:h.n-1]
+ox = ox[0:h.ngas-1]
 read_tipsy_arr,HIfile,h,HI,part = 'gas'
 ;readarr, fefile,   h, fe, part = 'gas',/ascii
 ;readarr, oxfile,   h, ox, part = 'gas',/ascii
@@ -170,25 +175,27 @@ ENDIF ELSE BEGIN
     unique = [onehalo]
 ENDELSE
 
-metals = replicate({maxdist:dblarr(1), mvir:dblarr(1), grp:dblarr(1), ntot:dblarr(1), ngas:dblarr(1), nstar:dblarr(1), nhot:lonarr(1), ncold:lonarr(1), inner_gasmass:dblarr(1), cool_inner_gasmass:dblarr(1), coolgasmass:dblarr(1), hotgasmass:dblarr(1), massHI:dblarr(1), ninner:lonarr(1), ox_inner:dblarr(1), fe_inner:dblarr(1), ox_innerAtom:dblarr(1), fe_innerAtom:dblarr(1), ox_cold:dblarr(1), fe_cold:dblarr(1), ox_hot:dblarr(1), fe_hot:dblarr(1), ox_sfr:dblarr(1), fe_sfr:dblarr(1), smass:dblarr(1), gmass:dblarr(1), yeff:dblarr(1), yeff_inner:dblarr(1), smassO:dblarr(1), sat:lonarr(1)},n_elements(unique))
+metals = replicate({maxdist:dblarr(1), mvir:dblarr(1), grp:dblarr(1), ntot:dblarr(1), ngas:dblarr(1), nstar:dblarr(1), nhot:lonarr(1), ncold:lonarr(1), inner_gasmass:dblarr(1), cool_inner_gasmass:dblarr(1), coolgasmass:dblarr(1), hotgasmass:dblarr(1), massHI:dblarr(1), ninner:lonarr(1), ox_inner:dblarr(1), fe_inner:dblarr(1), ox_innerAtom:dblarr(1), fe_innerAtom:dblarr(1), ox_cold:dblarr(1), fe_cold:dblarr(1), ox_hot:dblarr(1), fe_hot:dblarr(1), ox_sfr:dblarr(1), fe_sfr:dblarr(1), ox_stellar:dblarr(1), fe_stellar:dblarr(1), ox_stellar_rband:dblarr(1), fe_stellar_rband:dblarr(1), smass:dblarr(1), gmass:dblarr(1), yeff:dblarr(1), yeff_inner:dblarr(1), smassO:dblarr(1), sat:lonarr(1)},n_elements(unique))
 
 ;Calculate the gas masses, metallicities etc for each of the satellities
 FOR i=0L,n_elements(unique)-1 DO BEGIN
   grpind = unique[i]
   ind = where(grpcoolgas EQ grpind, nind)
+  ind_star = where(grpallstar EQ grpind, nind_star)
 
   IF keyword_set(obs) THEN BEGIN
-      IF file_test(filebase + '.' + strtrim(grpind,2) + '/broadband.fits') THEN BEGIN
-          lums = mrdfits(filebase + '.' + strtrim(grpind,2) + '/broadband.fits', 13, header)
-          IF n_elements(lums) LE 1 THEN lums = mrdfits(filebase + '.' + strtrim(grpind,2) + '/broadband.fits', 14, header)
+;      IF 0 THEN BEGIN ;
+      IF 0 THEN BEGIN ;file_test(filebase + '.' + strtrim(grpind,2) + '/broadband.fits') THEN BEGIN
+          lums = mrdfits(filebase + '.' + strtrim(grpind,2) + '/broadband.fits', 13, header,/silent)
+          IF n_elements(lums) LE 1 THEN lums = mrdfits(filebase + '.' + strtrim(grpind,2) + '/broadband.fits', 14, header,/silent)
           Bn = where(strcmp(strtrim(lums.filter,2),'B_Johnson.res') EQ 1)
           Bmag = lums[Bn].AB_mag1
           Kn = where(strcmp(strtrim(lums.filter,2),'K_Johnson.res') EQ 1)
           Kmag = lums[Kn].AB_mag1
           Vn = where(STRCMP(strtrim(lums.filter,2),'V_Johnson.res') eq 1)
           Vmag = lums[Vn].AB_mag1
-      ENDIF ELSE BEGIN
-          mags = mrdfits(filebase + '.amiga_r200.halos.star99_K_ab.Mv.fits',1)
+     ENDIF ;ELSE BEGIN
+          mags = mrdfits(filebase + '.amiga_virbk.halos.star99_K_ab.Mv.fits',1,/silent)
           ind2grp = where(mags.id EQ grpind)
           magB = mags[ind2grp].B
           magK = mags[ind2grp].K
@@ -200,9 +207,13 @@ FOR i=0L,n_elements(unique)-1 DO BEGIN
           z = fltarr(n_elements(mags.u))
           mgy =(10.D)^(-(0.4D)*(mags_bes + dmod))
           mgy_ivar = mags_ivar/(0.4*alog(10.)*mgy)^2.
-      ENDELSE
+;      ENDELSE
   ENDIF
-
+  mags_stars = mrdfits(filebase + '.stars.star99_K_ab.Mv.fits',1,/silent)
+;  IF file_test(filebase + '.' + strtrim(grpind,2) + '/broadband.fits') THEN BEGIN
+;      print,'K (sunrise/idl): ',Kmag,magK
+;      print,'B (sunrise/idl): ',Bmag,magB
+;  ENDIF
   ;Fill in stat file values
 ;IF 0 THEN BEGIN
   IF NOT keyword_set(onehalo) THEN BEGIN
@@ -242,18 +253,25 @@ FOR i=0L,n_elements(unique)-1 DO BEGIN
       metals[i].hotgasmass = total(g[hotgas[indhot]].mass)*massunit
   ENDIF
 
+  metals[i].ox_stellar = total(oxstar[ind_star]*s[ind_star].mass)/total(s[ind_star].mass)
+  metals[i].fe_stellar = total(festar[ind_star]*s[ind_star].mass)/total(s[ind_star].mass)
+  metals[i].ox_stellar_rband = total(oxstar[ind_star]*10^(mags_stars[ind_star].r/(-2.5)))/total(10^(mags_stars[ind_star].r/(-2.5)))
+  metals[i].fe_stellar_rband = total(festar[ind_star]*10^(mags_stars[ind_star].r/(-2.5)))/total(10^(mags_stars[ind_star].r/(-2.5)))
+
   IF keyword_set(obs) THEN BEGIN
       IF 0 THEN BEGIN
 ;------- get stellar masses from K and B band luminosities using the
 ;        output from get_halo_mags
 ;        Follows Lee 06
+          Bmag = magB
+          Kmag = magK
           a_prime = -0.851
           b_prime =  0.254
           mk = 3.28
           ml = a_prime + b_prime*(Bmag - Kmag)
           Metals[i].smassO = 10^(ml + 0.4*(mk - Kmag))
       ENDIF ELSE BEGIN
-          IF file_test(filebase + '.' + strtrim(grpind,2) + '/broadband.fits') THEN BEGIN
+          IF 0 THEN BEGIN ;file_test(filebase + '.' + strtrim(grpind,2) + '/broadband.fits') THEN BEGIN
               L_B_sol = 4.67e25 ;Watts, from B+M, p 53, Table 2.1
               MLa = -0.942
               MLb = 1.69
@@ -268,10 +286,13 @@ FOR i=0L,n_elements(unique)-1 DO BEGIN
           ENDIF ELSE BEGIN
               kcorrect, mgy, mgy_ivar, z, kcor, mass = star, mtol = mtol_k, absmag = absmag_k, filterlist = ['bessell_U.par','bessell_B.par','bessell_V.par','bessell_R.par','bessell_I.par']
               Metals[i].smassO = star
+;              print,Metals[i].smassO,star,
           ENDELSE
       ENDELSE
   ENDIF ELSE Metals[i].smassO = 0
-
+;  kcorrect, mgy, mgy_ivar, z, kcor, mass = star, mtol = mtol_k, absmag = absmag_k, filterlist = ['bessell_U.par','bessell_B.par','bessell_V.par','bessell_R.par','bessell_I.par']
+  print,'Stellar Mass (actual/observed/kcorrect): ',strtrim(Metals[i].smass,2),strtrim(Metals[i].smassO,2),strtrim(star,2)
+  IF abs(alog10(Metals[i].smass) - alog10(Metals[i].smassO)) GT 3 AND Metals[i].smass NE 0 THEN stop
   indall = where(grp EQ grpind, nind)
   IF nind EQ 0 THEN CONTINUE
   metals[i].ox_sfr = 12.+alog10(total(all_ox_abund[indall]*sfeff[indall])/total(sfeff[indall]))

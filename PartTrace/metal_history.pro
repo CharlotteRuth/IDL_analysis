@@ -17,7 +17,10 @@
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK'
 ;  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK'
 
-PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = centralhalo,debug = debug,nowrite = nowrite
+;keyword parameter "inhalo" outputs the metals in the halo in addition
+;to those in the disk
+
+PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = centralhalo,debug = debug,nowrite = nowrite,inhalo = inhalo,plots= plots
 
 ;-------------------- Read in simulation data for final step
   IF NOT keyword_set(finalid) THEN finalid = '1' 
@@ -45,6 +48,9 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
   Fes = fltarr(nsteps)
   Oxs = fltarr(nsteps)
   coldgas=fltarr(nsteps)
+  zmetals_ha = fltarr(nsteps)
+  Fes_ha = fltarr(nsteps)
+  Oxs_ha = fltarr(nsteps)
   zmetals_H = fltarr(nsteps)
   Fes_H = fltarr(nsteps)
   Oxs_H = fltarr(nsteps)
@@ -97,6 +103,7 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
 ;-------------------- Step through outputs to find the location of the
 ;                     particles
   FOR i = 0, nsteps - 1 DO BEGIN
+      stop
      stat = read_stat_struc_amiga(halodat[i].file + '.amiga.stat')
      main = where(halodat[i].haloid EQ stat.group)
      satellites = where(sqrt((stat.xc - stat[main].xc)^2 + (stat.yc - stat[main].yc)^2 + (stat.zc - stat[main].zc)^2)*1000 LE stat[main].rvir AND stat.ngas gt 0)
@@ -106,16 +113,18 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
      scale = 1.0/(1.0 + z)
 
 ;-------------------- Read Simulation Data ------------
-     rtipsy,halodat[i].file,h,g,d,s,/justhead
+     IF keyword_set(debug) THEN rtipsy,halodat[i].file,h,g,d,s ELSE rtipsy,halodat[i].file,h,g,d,s,/justhead
      read_tipsy_arr,halodat[i].file + '.iord',h,iord,part = 'gas',type = 'long'
      read_tipsy_arr,halodat[i].file + '.HI',h,HI,part = 'gas',type = 'float'
      read_tipsy_arr,halodat[i].file + '.H2',h,H2,part = 'gas',type = 'float'
      read_tipsy_arr,halodat[i].file + '.FeMassFrac',h,Fe,part = 'gas',type = 'float'
      read_tipsy_arr,halodat[i].file + '.OxMassFrac',h,Ox,part = 'gas',type ='float'  
-     match,gpart_save.iord,iord,indg,inda
-     IF n_elements(indg) NE n_elements(gpart_save.iord) THEN BEGIN
-        match2,gpart_save.iord,iord,indg2,inda2
-        IF max(gpart_save[where(indg2 EQ -1)].mass[i]) GT 0 THEN stop 
+     match,gpart_save.iord,iord,indg,inda ;Only look at the gas particles that will ever be in this halo
+
+     ;Make sure that there any gas particle that is not at this time step has a mass of zero at that timestep in gpart_save 
+     IF n_elements(indg) NE n_elements(gpart_save.iord) THEN BEGIN 
+        match2,gpart_save.iord,iord,indg2,inda2 ;Select for only those gas particles that are not still around at this timestep
+        IF max(gpart_save[where(indg2 EQ -1)].mass[i]) GT 0 THEN stop ;Check for h603, 3
      ENDIF
      HI = HI[inda]
      H2 = 2.0*H2[inda]
@@ -158,10 +167,10 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
         test = where(gpart.grp[i] EQ stat[main].group, ntest)
          IF ntest NE 0 THEN inhalo = [inhalo,test]
      ENDIF ELSE BEGIN
-        FOR j = 0, n_elements(satellites) - 1 DO BEGIN
-           test = where(gpart.grp[i] EQ stat[satellites[j]].group, ntest)
-           IF ntest NE 0 THEN inhalo = [inhalo,test]
-        ENDFOR
+        FOR j = 0, n_elements(satellites) - 1 DO BEGIN ; & $
+           test = where(gpart.grp[i] EQ stat[satellites[j]].group, ntest) ; & $
+           IF ntest NE 0 THEN inhalo = [inhalo,test] ; & $
+        ENDFOR ; & $
      ENDELSE
      IF n_elements(inhalo) NE 1 THEN BEGIN
         inhalo = inhalo[1:n_elements(inhalo) - 1]
@@ -183,12 +192,15 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
         print,i,zmetals[i],Oxs[i],Fes[i],coldgas[i],zmetals_H[i],Oxs_H[i],Fes_H[i],HIs[i],H2s[i],Hgas[i]
         CONTINUE
      ENDELSE
- ;-------------------- Gas particles that are part of the disk (in the galaxy, with density GE 0.1, temperature LE 2e4, and abs(z) LE 10kpc) are set to 3
-     disk = where(gpart.rho[i] GE 0.1 AND gpart.temp[i] LE 1.2e4 AND abs(gpart.z[i]) LE 10.0)
+ ;-------------------- Gas particles that are part of the disk (in the galaxy, with density GE 0.1, temperature LE 1.2e4, and abs(z) LE 3kpc) are set to 3
+     disk = where(gpart.rho[i] GE 0.1 AND gpart.temp[i] LE 1.2e4 AND abs(gpart.z[i]) LE 3.0)
 ;     disk = where(gpart.grp[i] EQ halodat[i].haloid AND gpart.rho[i] GE 0.1 AND gpart.temp[i] LE 2e4 AND abs(gpart.z[i]) LE 10.0)
      zmetals[i] = total(2.09*Oxm[disk] + 1.06*Fem[disk])
      Oxs[i] = total(Oxm[disk])
      Fes[i] = total(Fem[disk])
+     zmetals_ha[i] = total(2.09*Oxm + 1.06*Fem)
+     Oxs_ha[i] = total(Oxm)
+     Fes_ha[i] = total(Fem)
      coldgas[i]=total(gpart[disk].mass[i])
      zmetals_H[i] = total((HI + H2)*(2.09*Oxm + 1.06*Fem))/max(HI+H2)
      Oxs_H[i] = total((HI + H2)*Oxm)/max(HI+H2)
@@ -204,21 +216,15 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
         window,2,xsize = 400,ysize = 400
         plot,gpart[inhalo].x[i],gpart[inhalo].z[i],psym = 3,title = halodat[i].file,xtitle = 'X',ytitle = 'Y';,yrange = [-1*stat[main].rvir,stat[main].rvir],xrange = [-1*stat[main].rvir,stat[main].rvir]
         IF disk[0] NE -1 THEN oplot,gpart[disk].x[i],gpart[disk].z[i],psym = 3,color = 245
-        IF (inhalo[ind_unbound])[0] NE -1 THEN oplot,gpart[inhalo[ind_unbound]].x[i],gpart[inhalo[ind_unbound]].z[i],psym = 3,color = 100
         window,3,xsize = 600,ysize = 400
         plot,gpart[inhalo].rho[i],gpart[inhalo].temp[i],psym = 3,/xlog,/ylog,xtitle = 'Density [amu/cc]',ytitle = 'Temperature [K]',xrange = [1e-7,1e4],yrange = [10,1e8],title = halodat[i].file,xstyle = 1
         IF disk[0] NE -1 THEN oplot,gpart[disk].rho[i],gpart[disk].temp[i],psym = 3,color = 245
-        IF (inhalo[ind_unbound])[0] NE -1 THEN oplot,gpart[inhalo[ind_unbound]].rho[i],gpart[inhalo[ind_unbound]].temp[i],psym = 3,color = 100
-        window,0,xsize = 600,ysize = 400
-        plot,magpos[ind_unbound],tanvel[ind_unbound],psym = 3
-
-        window,1,xsize = 600,ysize = 400
-        histogramp,abs(gpart[inhalo].z[i]),nbins = 100
-        histogramp,abs(gpart[inhalo[ind_unbound]].z[i]),/overplot,color = 245,nbins = 100        
+         stop
      ENDIF
      gpart = 0
   ENDFOR
-  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.metals.txt',zmetals,Oxs,Fes,coldgas,zmetals_H,Oxs_H,Fes_H,HIs,H2s,Hgas,format='(10E)'
+;  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.metals.txt',zmetals,Oxs,Fes,coldgas,zmetals_H,Oxs_H,Fes_H,HIs,H2s,Hgas,format='(10E)'
+  IF keyword_set(inhalo) AND NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.halometals.txt',zmetals_ha,Oxs_ha,Fes_ha,format='(3E)'
 END
 
 
@@ -229,6 +235,10 @@ PRO master_metal_history
   metal_history,dir = dir,finalid = finalid
   finalid = '1'
   metal_history,dir = dir,finalid = finalid  
+
+  dir = '/nobackupp8/crchrist/MolecH/h799.cosmo25cmb.3072g/h799.cosmo25cmb.3072g14HBWK/'
+  finalid = '1'
+  metal_history,dir = dir,finalid = finalid,/inhalo
 
   dir = '/nobackupp2/crchrist/MolecH/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/'
   finalid = '2'

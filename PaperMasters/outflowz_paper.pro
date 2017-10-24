@@ -19,40 +19,42 @@ pre_cuthalos = 0                ;pre
 pre_make_halo_starlog = 0       ;pre
 pre_reaccr_gas_character = 0    ;pre ;in Master
 pre_event_gas_character = 0
+pre_metal = 0                   ;run code to calculate metals in halo and disk at each step. Outputs *metals.txt
 run_times_cycling = 0           ;pre ;in Master
 plot_vcirc = 0                  ;pre
 do_writeHImacro = 0             ;pre
 do_line_profile = 0             ;pre
 check_contam = 0
 pre_earlygas = 0                 ;in Master
+pre_stellarz = 0   ;Compute metals produced by stars and in stars
+pre_z_at_ejection = 0
+pre_mzr = 0
 
 plot_multiHaloGuo = 0
 plot_baryonicfrac = 0
 plot_tully_fisher_obs = 0
 plot_baryonic_tully_fisher_obs = 0
 plot_mzr = 0
+plot_mzr_stellar = 0
 
 find_reaccr = 0
 plot_track_mass =0
 plot_fbcum = 0
-plot_fbrad = 0 ;depreciated
-plot_fbz = 0 ;depreciated
 
-plot_ejectz_v_mass = 0;1
-plot_metals_v_mass = 0
-plot_times_ejected = 0 ;1
+plot_ejectz_v_mass = 0 ;1 Metal Mass loading and fraction of metals ejected & expelled
+plot_metals_v_mass = 0 ;1 Fraction of metals produced that are retained
+plot_times_ejected = 0 ;
 plot_times_expelled = 0
-;plot_times_accrdisk = 0
-plot_times_cycling = 0 ;1
-plot_reeject_r = 0 ;1
+plot_times_cycling = 0 ;
+plot_reeject_r = 0 ;
 plot_reaccr_r = 0
-plot_angmom = 0 ;1
-plot_reeject_z = 0
-plot_reeject_v = 0;1
+plot_angmom = 0 ;
+plot_reeject_z = 1 ;1 Metallicity of Ejecta
+plot_reeject_v = 0;
 plot_sfh_reaccr = 0
 plot_outflowr = 0
 
-plot_inflow_outflow_historyz = 1
+plot_inflow_outflow_historyz = 0 ;1 History of metal enrichment
 
 check_coolontime = 0
 
@@ -60,6 +62,8 @@ mu_c50 = 1.84793e16
 mu_c25 = 2.310e15
 lu_c50 = 50000.
 lu_c25 = 25000.
+
+zstep = ['00084','00112','00260','00512'];116
 
 x = 7
 CASE x OF
@@ -369,7 +373,7 @@ CASE x OF
 ;        loadct = fltarr(n_elements(files))
 ;        linestyles = fltarr(n_elements(files))
         psym = fltarr(n_elements(files)) + 14;16
-        psym = [fltarr(nhighres) + 14, fltarr(nlowres) + 6]
+        psym = [fltarr(nhighres) + 14, fltarr(nlowres) + 4]
         obscolor = 100
         obssym = 2
         label = textoidl(['3.2\times10^9','4.4\times10^9','4.4\times10^9','6.8\times10^9','1.1\times10^{10}','1.1\times10^{10}','1.2\times10^{10}','1.4\times10^{10}','2.4\times10^{10}','2.9\times10^{10}','3.4\times10^{10}','3.8\times10^{10}','3.8\times10^{10}','5.9\times10^{10}','10^{11}','1.8\times10^{11}','3.4\times10^{11}','7.7\times10^{11}','8.8\times10^{11}','9.1\times10^{11}']) + 'M' + sunsymbol()
@@ -378,7 +382,8 @@ ENDCASE
 
 n = n_elements(files)
 IF keyword_set(color) THEN BEGIN
-    loadct,39
+;    loadct,39
+    rainbow_colors
     IF NOT keyword_set(ctables) THEN ctables = fltarr(n) + 39
     IF NOT keyword_set(obscolor) THEN obscolor = fgcolor
     IF NOT keyword_set(colors) THEN  colors  = (findgen(n) + 1)*254/n ELSE colors = colors
@@ -410,11 +415,18 @@ ENDELSE
 ; ------------------------------------------ Halo Mags -------------------------------------------------------------------------------
 IF pre_get_halo_mags THEN BEGIN
     uniqdir = uniq(dirs + files)
-;    FOR i = 0, n_elements(uniqdir) - 1 DO BEGIN
-    For i=0,n- 1 DO BEGIN
-       print,dirs[uniqdir[i]] + files[uniqdir[i]] + '.' + finalstep + '/'
-        cd,dirs[uniqdir[i]] + files[uniqdir[i]] + '.' + finalstep + '/'
-        get_halo_mags,massunits[uniqdir[i]],distunits[uniqdir[i]],mag_sys = 'ab',/multiple,/virial_radius
+    FOR i = 0, n_elements(uniqdir) - 1 DO BEGIN
+;    For i = 0, n - 1 DO BEGIN
+        FOR izstep = 0, n_elements(zstep) - 1 DO BEGIN
+            x = file_test(dirs[uniqdir[i]] + files[uniqdir[i]] + '.' + zstep[izstep])
+            zstep_temp = zstep[izstep]
+            IF NOT x THEN BEGIN
+                IF zstep[izstep] EQ '00084' THEN zstep_temp = '00088'
+            ENDIF
+            print,dirs[uniqdir[i]] + files[uniqdir[i]] + '.' + zstep_temp + '/'
+            cd,dirs[uniqdir[i]] + files[uniqdir[i]] + '.' + zstep_temp + '/'
+            get_halo_mags,massunits[uniqdir[i]],distunits[uniqdir[i]],mag_sys = 'ab',/multiple;,/virial_radius
+        ENDFOR
     ENDFOR
 ENDIF
 
@@ -422,23 +434,37 @@ ENDIF
 IF pre_reaccr_gas_character THEN BEGIN
     FOR i = 0,n-1 DO BEGIN
         print,files[masssort[i]] + '.halo.' + haloid[masssort[i]]
-        cd,dirs[i]
+        cd,dirs[masssort[i]]
         ;IF NOT file_test('grp' + haloid[i] + '.reaccrdisk_history.fits') THEN 
         reaccr_gas_character,accrhistory,dir = dirs[masssort[i]], finalid = haloid[masssort[i]]
      ENDFOR
 ENDIF
 
-;event_gas_character
-IF pre_event_gas_character THEN BEGIN
-    FOR i = 0, n - 1 DO BEGIN
+IF pre_stellarz THEN BEGIN
+    FOR i = 13,n-1 DO BEGIN
         print,files[masssort[i]] + '.halo.' + haloid[masssort[i]]
         cd,dirs[masssort[i]]
-;        IF NOT file_test('grp' + haloid[i] + '.reaccrdiskall_history.fits') THEN 
-;        event_gas_character,history,'reaccrdiskall',dir = dirs[masssort[i]], finalid = haloid[masssort[i]]
-;        IF NOT file_test('grp' + haloid[i] + '.relost_history.fits') THEN 
-        event_gas_character,history,'relost',dir = dirs[masssort[i]], finalid = haloid[masssort[i]]
-;        IF NOT file_test('grp' + haloid[i] + '.reaccr_history.fits') THEN 
-        event_gas_character,history,'reaccr',dir = dirs[masssort[i]], finalid = haloid[masssort[i]]
+        stellarmetal_history,dir = dirs[masssort[i]],finalid = haloid[masssort[i]]
+     ENDFOR
+ENDIF
+
+IF pre_metal THEN BEGIN
+   FOR i = 17,18 DO BEGIN
+      print,files[masssort[i]] + '.halo.' + haloid[masssort[i]]
+      cd,dirs[masssort[i]]
+      metal_history,finalid = haloid[masssort[i]],/inhalo
+   ENDFOR
+ENDIF
+
+;event_gas_character
+IF pre_event_gas_character THEN BEGIN
+    FOR i = 0, n-1 DO BEGIN
+        print,files[masssort[i]] + '.halo.' + haloid[masssort[i]]
+        cd,dirs[masssort[i]]
+        IF NOT file_test('grp' + haloid[masssort[i]] + '.reaccrdiskall_history.fits') THEN event_gas_character,history,'reaccrdiskall',dir = dirs[masssort[i]], finalid = haloid[masssort[i]]
+        IF NOT file_test('grp' + haloid[masssort[i]] + '.relost_history.fits') THEN event_gas_character,history,'relost',dir = dirs[masssort[i]], finalid = haloid[masssort[i]]
+        IF NOT file_test('grp' + haloid[masssort[i]] + '.reaccr_history.fits') THEN event_gas_character,history,'reaccr',dir = dirs[masssort[i]], finalid = haloid[masssort[i]]
+        IF NOT file_test('grp' + haloid[masssort[i]] + '.reoutflow_history.fits') THEN event_gas_character,history,'reoutflow',dir = dirs[masssort[i]], finalid = haloid[masssort[i]]
      ENDFOR
 ENDIF
 
@@ -463,6 +489,14 @@ IF pre_cuthalos THEN BEGIN
         IF NOT file_test(outhalos[i]) OR keyword_set(redo) THEN tipsysatshi, outfiles[i], haloid[i], distunits[i], massunits[i], /cutout_rad, outarray = outarray
     ENDFOR
  ENDIF
+
+IF pre_z_at_ejection THEN BEGIN
+   FOR i = 0, n - 1 DO BEGIN
+        print,files[masssort[i]] + '.halo.' + haloid[masssort[i]]
+        cd,dirs[masssort[i]]
+        z_at_ejection,dirs[masssort[i]],files[masssort[i]],haloid[masssort[i]]
+     ENDFOR
+ENDIF
 
 ; ------------------------------------------ Check contamination -------------------
 IF check_contam THEN BEGIN
@@ -574,10 +608,78 @@ IF plot_tully_fisher_obs THEN BEGIN
 ENDIF
 
 ;------------------------------------------ MZR ------------------------------
+
+IF pre_mzr THEN BEGIN
+    uniqdir = uniq(dirs)
+    FOR i = 0, n_elements(uniqdir) - 1 DO BEGIN
+        FOR izstep = 0, n_elements(zstep) - 1 DO BEGIN
+            x = file_test(dirs[uniqdir[i]] + files[uniqdir[i]] + '.' + zstep[izstep])
+            zstep_temp = zstep[izstep]
+            IF NOT x THEN BEGIN
+                IF zstep[izstep] EQ '00084' THEN zstep_temp = '00088'
+            ENDIF
+            filename = dirs[uniqdir[i]] + files[uniqdir[i]] + '.' + zstep_temp + '/' + files[uniqdir[i]] + '.' + zstep_temp
+            print,filename
+            IF file_test(filename + '.amiga.stat') THEN BEGIN
+;                IF NOT file_test(filename + '.metals.fits') THEN BEGIN
+;            IF file_test(filename + '.amiga_vir.halos.star99_K_ab.Mv.fits') THEN metals = mzr(filename,/obs) ELSE 
+                    metals = mzr(filename,/obs) 
+                    mwrfits,metals,filename + '.metals.fits',/create
+;                ENDIF
+            ENDIF
+        ENDFOR
+    ENDFOR
+ENDIF
+
 IF plot_mzr THEN BEGIN
 ;    uniqdir = uniq(outfiles)
-    mzr_plot,outfiles,onehalo = haloid,psym = psym,symsize = symsizes,thicks = thicks,ctables = ctables,obscolor = obscolor,outfile = outplot,obsct = obsct,/readfile;,key = key
+    halos = intarr(1,n)
+    FOR izstep = 0, n_elements(zstep) - 1 DO BEGIN
+        filename = dirs + files + '.'
+        FOR i = 0, n - 1 DO BEGIN
+            x = file_test(dirs[i] + files[i] + '.' + zstep[izstep])
+            zstep_temp = zstep[izstep]
+            IF NOT x THEN BEGIN
+                IF zstep[izstep] EQ '00084' THEN zstep_temp = '00088'
+            ENDIF 
+            filename[i] = filename[i] + zstep_temp + '/' + files[i] + '.' + zstep_temp
+            spawn,'ls ' + dirs[i] + '*.grp' + haloid[i] + '.haloid.dat',files_haloid
+            readcol,files_haloid[0],files_steps,halos_steps,format='a,l',/silent
+            indstep = where(files_steps EQ files[i] + '.' + zstep_temp + '/' + files[i] + '.' + zstep_temp)
+            IF (indstep[0] EQ -1) OR (n_elements(indstep) GT 1) THEN stop
+            halos[0,i] = halos_steps[indstep]
+        ENDFOR
+        print,filename
+        redshift = 0
+        IF zstep[izstep] EQ '00084' THEN redshift = 3
+        IF zstep[izstep] EQ '00116' THEN redshift = 2.2
+        IF zstep[izstep] EQ '00112' THEN redshift = 2.3
+        IF zstep[izstep] EQ '00260' THEN redshift = 0.8
+        mzr_plot,filename,halos = halos,psym = psym,symsize = symsizes,thicks = thicks,ctables = ctables,outfile = outplot,obsct = obsct,/readfile,redshift = redshift,/color;,/simStellarMass;,key = key
+    ENDFOR
 ENDIF
+
+IF plot_mzr_stellar THEN BEGIN
+;    uniqdir = uniq(outfiles)
+    halos = intarr(1,n)
+    izstep = n_elements(zstep) - 1
+    filename = dirs + files + '.'
+    FOR i = 0, n - 1 DO BEGIN
+        x = file_test(dirs[i] + files[i] + '.' + zstep[izstep])
+        zstep_temp = zstep[izstep]
+        IF NOT x THEN BEGIN
+            IF zstep[izstep] EQ '00084' THEN zstep_temp = '00088'
+        ENDIF 
+        filename[i] = filename[i] + zstep_temp + '/' + files[i] + '.' + zstep_temp
+        spawn,'ls ' + dirs[i] + '*.grp' + haloid[i] + '.haloid.dat',files_haloid
+        readcol,files_haloid[0],files_steps,halos_steps,format='a,l',/silent
+        indstep = where(files_steps EQ files[i] + '.' + zstep_temp + '/' + files[i] + '.' + zstep_temp)
+        IF (indstep[0] EQ -1) OR (n_elements(indstep) GT 1) THEN stop
+        halos[0,i] = halos_steps[indstep]
+    ENDFOR
+    print,filename
+    mzr_plot,filename,halos = halos,psym = psym,symsize = symsizes,thicks = thicks,ctables = ctables,outfile = outplot,obsct = obsct,/readfile,/stellar,xrange = [3,12],/color;,/simStellarMass ;,key = key
+ ENDIF
 
 ;------------------------------------------ Tracking the Mass ---------------
 IF plot_track_mass THEN BEGIN
@@ -596,87 +698,11 @@ IF plot_fbcum THEN BEGIN
 ;    eject_plots,dirs[masssort],halo = haloid[masssort],outplot = outplot, keys = key[masssort], color = colors, thicks = thicks,label = label,ctables = ctables,yrange_fbcum = [0,0.1],formatthick = formatthick,molecularH = molecularH,linestyles = linestyles,/unscale
 ENDIF
 
-;------------------------- Radius where feedback comes from ---------
-IF plot_fbrad THEN BEGIN
-    IF keyword_set(outplot) AND keyword_set(normalize)     THEN device,filename = outplot + '_fbrad_norm.eps',/encapsulated,/color,/times,ysize=ysize,xsize=xsize,bits_per_pixel= 8
-    IF keyword_set(outplot) AND NOT keyword_set(normalize) THEN device,filename = outplot + '_fbrad.eps',     /encapsulated,/color,/times,ysize=ysize,xsize=xsize,bits_per_pixel= 8
-    IF NOT keyword_set(outplot) THEN window,0
-    
-    FOR i = 0, N_ELEMENTS(files)-1 DO BEGIN
-        splitdir = strsplit(dirs[i],'/')
-        IF strpos(dirs[i],'/steps') EQ -1 THEN cd,strmid(dirs[i],0,splitdir[N_ELEMENTS(splitdir)-1]) $
-        ELSE cd,strmid(dirs[i],0,splitdir[N_ELEMENTS(splitdir)-2])
-        loadct,ctables[i]
-;        splitbase = strsplit(filenames[i],'.')
-;        base = strmid(filenames[i],0,splitbase[N_ELEMENTS(splitbase) - 1] - 1)
-        
-        totalmass = 1
-;        eject_gas_character,dirhead[i],ejecthistory,expellhistory,totalmass = totalmass
-        ejecthistory =  mrdfits(dirs[i] + 'grp1.eject_disk.fits',1)
-        expellhistory = mrdfits(dirs[i] + 'grp1.expell_disk.fits',1)
-        IF 0 THEN BEGIN
-            IF i EQ 0 AND     keyword_set(normalize) THEN histogramp,SQRT(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),weight = ejecthistory.mass,xrange = xrange_fb,/normalize,xtitle = 'Radius [kpc]',ytitle = '1/M dM/dr',                         max = xrange_fb[1],/nodata,nbins = 100
-;histogramp,SQRT(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),weight = totalmass,xrange = xrange_fb,/normalize,xtitle = 'Radius [kpc]',ytitle = '1/M dM/dr',                         max = xrange_fb[1],/nodata,nbins = 100
-            IF i EQ 0 AND NOT keyword_set(normalize) THEN histogramp,SQRT(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),xrange = xrange_fb,       xtitle = 'Radius [kpc]',ytitle = 'dN/dr',nbins = 100,max = xrange_fb[1],title = label,yrange = [0,4500],/nodata ;,xmargin = [16,3]
-         
-            IF     keyword_set(normalize) THEN histogramp,SQRT(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),weight = ejecthistory.mass,/overplot,normalize = normalize,color = colors[i],thick = thicks[i],max = xrange_fb[1],linestyle = linestyles[i],nbins = 100
-;histogramp,SQRT(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),weight = totalmass/1e8,/overplot,normalize = normalize,color = colors[i],thick = thicks[i],max = xrange_fb[1],linestyle = linestyles[i],nbins = 100
-            IF NOT keyword_set(normalize) THEN histogramp,SQRT(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),/overplot,                      color = colors[i],thick = thicks[i],max = xrange_fb[1],linestyle = linestyles[i],nbins = 100
-            
-            IF     keyword_set(normalize) THEN histogramp,SQRT(expellhistory.x*expellhistory.x + expellhistory.y*expellhistory.y),weight = ejecthistory.mass,/normalize,/overplot,color = colors[i],thick = thicks[i],max = xrange_fb[1],linestyle = 2,nbins = 100
-            IF NOT keyword_set(normalize) THEN histogramp,SQRT(expellhistory.x*expellhistory.x + expellhistory.y*expellhistory.y),/overplot,                  color = colors[i],thick = thicks[i],max = xrange_fb[1],linestyle = 2,nbins = 100
-        ENDIF ELSE BEGIN
-            histogram_eject  = weighted_histogram(SQRT(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),    weight = ejecthistory.mass, nbins = 100,min = 0,max = xrange_fb[1],locations = locations)
-            histogram_expell = weighted_histogram(SQRT(expellhistory.x*expellhistory.x + expellhistory.y*expellhistory.y),weight = expellhistory.mass,nbins = 100,min = 0,max = xrange_fb[1],locations = locations)        
-            IF i EQ 0 THEN plot,locations,histogram_expell/histogram_eject,xtitle = 'Radius [kpc]',/nodata,yrange = [0,1]
-            oplot,locations,histogram_expell/histogram_eject,color = colors[i],thick = thicks[i],linestyle = linestyles[i]
-        ENDELSE
-        print,max(weighted_histogram(sqrt(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),weight = totalmass/1e8,max = xrange_fb[1],nbins = 100))
-        
-        undefine,totalmass
-        undefine,ejecthistory
-        undefine,expellhistory
-    ENDFOR    
-    legend,keys,color = color,linestyle = linestyle,thick = thick,ctables = ctables /top,/right,box = 0
-    IF keyword_set(outplot) THEN device,/close
-ENDIF
-
-;------------------------- metallicity of feedback gas ---------
-IF plot_fbz THEN BEGIN
-    IF keyword_set(outplot) THEN device,filename = outplot + '_fbrad.eps',     /encapsulated,/color,/times,ysize=ysize,xsize=xsize,bits_per_pixel= 8
-    
-    FOR i = 0, N_ELEMENTS(files)-1 DO BEGIN
-        splitdir = strsplit(dir[i],'/')
-        IF strpos(dir[i],'/steps') EQ -1 THEN cd,strmid(dir[i],0,splitdir[N_ELEMENTS(splitdir)-1]) $
-        ELSE cd,strmid(dir[i],0,splitdir[N_ELEMENTS(splitdir)-2])
-        loadct,ctables[i]
-;        splitbase = strsplit(filenames[i],'.')
-;        base = strmid(filenames[i],0,splitbase[N_ELEMENTS(splitbase) - 1] - 1)
-        
-        totalmass = 1
-;        eject_gas_character,dirhead[i],ejecthistory,expellhistory,totalmass = totalmass
-        ejecthistory =  mrdfits(dirhead[i] + 'grp1.eject_disk.fits',1)
-        expellhistory = mrdfits(dirhead[i] + 'grp1.expell_disk.fits',1)
-        xrange_z= [0,0.4]
-        IF i EQ 0 THEN histogramp,ejecthistory.metallicity/zsolar,xtitle = 'Z/Z'+sunsymbol(),ytitle = 'dN/dr',/nodata,nbins = 100,title = label,max = xrange_z[1],xrange = xrange_z ;,xmargin = [16,3]
-        histogramp,               ejecthistory.metallicity/zsolar,/overplot,color = colors[i],thick = thicks[i],max = xrange_z[1],linestyle = linestyles[i],nbins = 100
-        histogramp,               ejecthistory.metallicity/zsolar,/overplot,color = colors[i],thick = thicks[i],max = xrange_z[1],linestyle = 2,nbins = 100
-        print,max(weighted_histogram(sqrt(ejecthistory.x*ejecthistory.x + ejecthistory.y*ejecthistory.y),weight = totalmass/1e8,max = xrange_fb[1],nbins = 100))
-        
-        undefine,totalmass
-        undefine,ejecthistory
-        undefine,expellhistory
-    ENDFOR    
-    legend,keys,color = color,linestyle = linestyle,thick = thick,ctables = ctables /top,/right,box = 0
-    IF keyword_set(outplot) THEN device,/close
-    stop
-ENDIF
-
 IF find_reaccr THEN find_reaccr,dirs[masssort],files[masssort],halo = haloid[masssort]
 
 ;--------------------- Eject v Mass ------------------------------
-IF plot_ejectz_v_mass THEN ejectz_v_mass,dirs[masssort[0:n_elements(masssort)-4]],files[masssort[0:n_elements(masssort)-4]],halo = haloid[masssort[0:n_elements(masssort)-4]],/colors,outplot = outplot,z_cut = [2,1,0.5,-1e-10],symbols = [psym[0],psym[0] + 1,17,18,16,34],formatthick = formatthick,z_colors = [30,80,120,254],gmass = gmass;,/rewrite
-IF plot_metals_v_mass THEN metals_v_mass,dirs,files,haloid,outplot = outplot,formatthick = formatthick,/color
+IF plot_ejectz_v_mass THEN ejectz_v_mass,dirs[masssort[0:n_elements(masssort)-1]],files[masssort[0:n_elements(masssort)-1]],halo = haloid[masssort[0:n_elements(masssort)-1]],/colors,outplot = outplot,z_cut = [2,1,0.5,-1e-10],symbols = [psym[0],psym[0] + 1,17,18,16,34],formatthick = formatthick,gmass = gmass;,/rewrite
+IF plot_metals_v_mass THEN metals_v_mass,dirs,files,haloid,outplot = outplot,formatthick = formatthick,/color,/stellarmass
 
 ;noh603 = [0,1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19]
 ;IF plot_times_ejected THEN times_ejected,dirs,files,halo = haloid,colors = colors,outplot = outplot,/outflow
@@ -686,7 +712,7 @@ IF plot_times_ejected THEN times_ejected,dirs,files,halo = haloid,colors = color
 ;IF plot_times_expelled THEN times_ejected,dirs,files,halo = haloid,colors = colors,outplot = outplot,/expelled
 IF plot_times_expelled THEN times_ejected,dirs,files,halo = haloid,colors = colors,outplot = outplot,/accrdisk,/expelled
 ;IF run_times_cycling THEN time_cycling_exp,dirs,files,halo = haloid
-IF run_times_cycling THEN time_cycling,dirs,files,halo = haloid
+IF run_times_cycling THEN time_cycling,dirs[masssort[0:n_elements(masssort) - 1]],files[masssort[0:n_elements(masssort) - 1]],halo = haloid[masssort[0:n_elements(masssort) - 1]],/nowrite
 IF plot_times_cycling THEN plot_time_cycling,dirs,files,halo = haloid,colors = [50,254],outplot = outplot,symbols = [14,15];,/expelled 
 ;IF plot_times_cycling THEN plot_time_cycling,dirs,files,halo = haloid,colors = colors,outplot = outplot
 ;IF plot_reeject_r THEN plot_half_eject,dirs[masssort],files[masssort],halo = haloid[masssort],colors = colors,outplot = outplot,/normalize,symbols = [psym[0],psym[0] + 1],formatthick = formatthick,sfr = 0;,/stellarmass
@@ -694,8 +720,8 @@ IF plot_reeject_r THEN plot_half_eject,dirs[masssort],files[masssort],halo = hal
 IF plot_reaccr_r THEN plot_half_accr,dirs[masssort],files[masssort],halo = haloid[masssort],colors = colors,outplot = outplot,formatthick = formatthick
 IF plot_angmom THEN plot_angmom,dirs[masssort],files[masssort],halo = haloid[masssort],colors = colors,outplot = outplot,formatthick = formatthick
 IF plot_reeject_z THEN BEGIN
-    reeject_metallicity,reverse(dirs[masssort]),reverse(files[masssort]),finalid =reverse(haloid[masssort]),colors = reverse(colors),outplot = outplot,formatthick = formatthick,/normalize,modez = modez ;keys = reverse(key[masssort])
-    reeject_metallicity,reverse(dirs[masssort]),reverse(files[masssort]),finalid =reverse(haloid[masssort]),colors = reverse(colors),outplot = outplot,formatthick = formatthick,/normalize,modez = modezabs,/absolute ;keys = reverse(key[masssort])
+    reeject_metallicity,reverse(dirs[masssort]),reverse(files[masssort]),finalid =reverse(haloid[masssort]),colors = reverse(colors),outplot = outplot,formatthick = formatthick,/normalize,avez = avez,red_avez = red_avez ;keys = reverse(key[masssort])
+    reeject_metallicity,reverse(dirs[masssort]),reverse(files[masssort]),finalid =reverse(haloid[masssort]),colors = reverse(colors),outplot = outplot,formatthick = formatthick,/normalize,avez = avezabs,red_avez = red_avezabs,/absolute ;keys = reverse(key[masssort])
 
     formatplot,outplot = outplot,thick = formatthick
     IF keyword_set(outplot) THEN BEGIN
@@ -704,12 +730,13 @@ IF plot_reeject_z THEN BEGIN
     ENDIF ELSE BEGIN
         xsize = 800
         ysize = 500
-    ENDELSE
+     ENDELSE
+    loadct,0
     IF keyword_set(outplot) THEN device,filename = outplot + '_vm_zm.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize*1.8,xoffset =  2,yoffset =  2 ELSE window, 0, xsize = xsize, ysize = ysize*1.8
     multiplot,[1,2]
-    plot_z_m,modezabs,reverse(dirs[masssort]),reverse(files[masssort]),halo = reverse(haloid[masssort]),outplot = outplot,/normalize,formatthick = formatthick,colors = [colors[1]],symbols = [psym[0] + 1],/absolute
+    plot_z_m,avezabs,reverse(dirs[masssort]),reverse(files[masssort]),halo = reverse(haloid[masssort]),outplot = outplot,/normalize,formatthick = formatthick,colors = [colors[1]],symbols = [psym[0] + 1],red_avez = red_avezabs,/absolute,/legend
     multiplot
-    plot_z_m,modez,   reverse(dirs[masssort]),reverse(files[masssort]),halo = reverse(haloid[masssort]),outplot = outplot,/normalize,formatthick = formatthick,colors = [colors[1]],symbols = [psym[0] + 1]
+    plot_z_m,avez,   reverse(dirs[masssort]),reverse(files[masssort]),halo = reverse(haloid[masssort]),outplot = outplot,/normalize,formatthick = formatthick,colors = [colors[1]],symbols = [psym[0] + 1],red_ave = red_avez
     multiplot,/reset
     IF keyword_set(outplot) THEN device, /close ELSE stop
 ENDIF
@@ -765,8 +792,8 @@ IF plot_sfh_reaccr THEN BEGIN
 ENDIF
 
 IF plot_inflow_outflow_historyz THEN BEGIN
-;   inflow_outflow_history,dirs[masssort[18]],haloid = haloid[masssort[18]],outplot = outplot,colors = colors[18],label = label[18],yrange_max = 0.295*(fltarr(n_elements(masssort[18])) + 1),/allpositive,pmulti = [1,1]
-   inflow_outflow_historyz,dirs[masssort[0:n_elements(masssort) - 1]],haloid = haloid[masssort[0:n_elements(masssort) - 1]],outplot = outplot,colors = colors,label = label,/debug
+;   inflow_outflow_historyz,dirs[masssort[13]],haloid = haloid[masssort[13]],outplot = outplot,colors = colors[13],label = label[13],/plot_halo
+   inflow_outflow_historyz,dirs[masssort[0:n_elements(masssort) - 1]],haloid = haloid[masssort[0:n_elements(masssort) - 1]],outplot = outplot,colors = colors,label = label,pmulti = [4,5];/plot_halo;,/debug;,pmulti = [4,5];,/debug
 ENDIF
 
 IF plot_outflowr THEN BEGIN
