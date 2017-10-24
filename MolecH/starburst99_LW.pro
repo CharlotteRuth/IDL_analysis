@@ -25,15 +25,15 @@ age_rad_fit = fit[0] + $
               fit[3]*alog10(age_fit)*alog10(age_fit)*alog10(age_fit) + $
               fit[4]*alog10(age_fit)*alog10(age_fit)*alog10(age_fit)*alog10(age_fit)
 window,0
-plot,age_fit,age_rad_fit,/xlog,xrange = [1e6,1e11],yrange = [0,47],xtitle = 'Age [yr]',ytitle = 'LOG_10(I_LW per Stellar Mass) [photons s^-1 M_sol^-1]',thick = thick
+plot,age_fit,age_rad_fit,/xlog,xtitle = 'Age [yr]',ytitle = 'LOG_10(I_LW per Stellar Mass) [photons s^-1 M_sol^-1]',thick = thick,xrange = [1e7,1e8],yrange = [42,46];[1e6,1e11],yrange = [0,47]
 ;oplot,age_fit,age_rad_fit - alog10(2.0),linestyle = 1
 oplot,[1e7,1e7],[0,50]
 legend,['Back of the Envelope Fit'],linestyle = 0,/left,/bottom
 ;stop
 
 ;-------------- My Starburst99 Simulation ------------------------------------
-IF 0 THEN BEGIN
-readcol,'/astro/users/christensen/Gasoline_H2/SB99/output/SimpleLW.spectrum1',ageSB,waveSB,totSB,sspSB,nebulaSB
+IF 1 THEN BEGIN
+readcol,'/home/christensen/Code/IDL/IDL_analysis/SB99/output/SimpleLW.spectrum1',ageSB,waveSB,totSB,sspSB,nebulaSB
 ; units of year, angstrom, ergs/s/A/1e6 solar masses
 mass = 1e6 ;solar masses
 totSB = totSB - 6
@@ -51,7 +51,7 @@ oplot,ageSB[indwSB],nebSB_phot[indwSB],linestyle = 1, color = 210,thick = thick 
 oplot,ageSB[indwSB],sspSB_phot[indwSB],linestyle = 3, color = 210,thick = thick ;SSP
 oplot,ageSB[indwSB],totSB_phot[indwSB],linestyle = 2, color = 240,thick = thick ;Total
 legend,['SSP','Nebula','Total'],linestyle = [3,1,2],color = [210,210,240],/right,/bottom
-;stop
+stop
 ENDIF
 
 ;-------------- Sunrise SSP -----------------------------------------------------
