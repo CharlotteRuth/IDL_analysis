@@ -82,12 +82,12 @@ IF NOT keyword_set(gal) THEN gal = 1
 !P.CHARSIZE = 1.25
 
 IF NOT KEYWORD_SET(step) THEN BEGIN
-    command = "ls "+dir+filebase + "*/" + filebase + ".00???.amiga.grp | grep amiga.grp | sed 's/.amiga.grp//g'"
+    command = "ls "+dir+filebase + "*/" + filebase + ".00*???.amiga.grp | grep amiga.grp | sed 's/.amiga.grp//g'"
     spawn,command,file       ; return the files without the .amiga.grp
     grpfile = file+'.amiga.grp'
     statfile = file+'.amiga.stat'
     step_st = strmid(file,4,5,/reverse_offset)
-    step = fix(strmid(file,2,3,/reverse_offset))
+    step = fix(step_st) ;strmid(file,2,3,/reverse_offset))
 ENDIF ELSE BEGIN
     step_st = strtrim(STRING(step),2)
     IF ((where(step lt 100))[0] ne -1) THEN step_st[where(step lt 100)] = '000'+step_st[where(step lt 100)]
@@ -96,10 +96,11 @@ ENDIF ELSE BEGIN
     grpfile = dir+filebase+'.'+step_st+'/'+filebase+'.'+step_st+'.amiga.grp'
     statfile = dir+filebase+'.'+step_st+'/'+filebase+'.'+step_st+'.amiga.stat'
 ENDELSE
-time = step/512.*13.66
+time = step/float(max(step))*13.66
 nsteps = n_elements(step)
 ;name_steps = dir+filebase+'.'+step_st+'.dir/'+filebase+'.'+step_st
-name_steps = dir+filebase+'.'+step_st+'/'+filebase+'.'+step_st
+IF max(step) LT 1000 THEN name_steps = dir+filebase+'.'+step_st+'/'+filebase+'.'+step_st $ ;up to 512
+ELSE name_steps = dir+filebase+'.0'+step_st+'/'+filebase+'.0'+step_st ;up to 4096
 ind_steps = intarr(nsteps)
 FOR i = 0, nsteps - 1 DO BEGIN
     ind_steps[i] = WHERE(strcmp(file, name_steps[i]) eq 1)
@@ -157,7 +158,6 @@ for i =nsteps-1,1,-1 do begin
     print,''
     print,'I:  ',strtrim(i,2),'; step: ',step[i],'; ',grpfile[ind_steps[i]]
     print,'I2: ',strtrim(i-1,2),'; step: ',step[i-1],', ',grpfile[ind_steps[i-1]]
-
     progenitor_all = read_ascii_array(grpfile[ind_steps[i -1]]) ;get halo ids for previous timestep
     rtipsy,file[ind_steps[i - 1]],h_prog,g_prog,d_prog,s_prog,/justhead
     progenitor_all = progenitor_all[h_prog.ngas:h_prog.ngas+h_prog.ndark -1]

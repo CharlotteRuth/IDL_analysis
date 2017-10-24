@@ -41,7 +41,7 @@ iord_star = iord_star[where(inhalo EQ 1)]
 ;halostars = mrdfits(files[0] + '.grp' + haloid + '.star.history.fits',1)
 ;match,sl.iorderstar,halostars.iord,keep,temp
 match,sl.iorderstar,iord_star,keep,temp
-sl = sl[keep] ;Only keep the stars that are ever in the halo
+sl = sl[keep] ;Only keep the stars that are ever in the halo (main galaxy or satellite)
 
 files = reverse(files)
 halo = reverse(halo)

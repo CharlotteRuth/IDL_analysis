@@ -28,7 +28,7 @@ plot_multiHaloGuo = 0
 plot_baryonicfrac = 0
 plot_tully_fisher_obs = 0
 plot_baryonic_tully_fisher_obs = 0
-plot_mzr = 0
+plot_mzr = 1
 
 find_reaccr = 0
 plot_track_mass =0
@@ -36,7 +36,7 @@ plot_fbcum = 0
 plot_fbrad = 0 ;depreciated
 plot_fbz = 0 ;depreciated
 
-plot_eject_v_mass = 0 ;1
+plot_ejectz_v_mass = 0 ;1
 plot_metals_v_mass = 0
 plot_times_ejected = 0 ;1
 plot_times_expelled = 0
@@ -50,7 +50,7 @@ plot_reeject_v = 0;1
 plot_sfh_reaccr = 0
 plot_outflowr = 0
 
-plot_inflow_outflow_history = 1
+plot_inflow_outflow_history = 0
 
 check_coolontime = 0
 
@@ -549,7 +549,8 @@ ENDIF
 ;------------------------------------------ MZR ------------------------------
 IF plot_mzr THEN BEGIN
 ;    uniqdir = uniq(outfiles)
-    mzr_plot,outfiles,onehalo = haloid,psym = psym,symsize = symsizes,thicks = thicks,ctables = ctables,obscolor = obscolor,outfile = outplot,obsct = obsct,/readfile;,key = key
+;    mzr_plot,outfiles,onehalo = haloid,psym = psym,symsize = symsizes,thicks = thicks,ctables = ctables,obscolor = obscolor,outfile = outplot,obsct = obsct,/readfile;,key = key
+    mzr_plot,outfiles,psym = psym,symsize = symsizes,thicks = thicks,ctables = ctables,obscolor = obscolor,outfile = outplot,obsct = obsct,/readfile
 ENDIF
 
 ;------------------------------------------ Tracking the Mass ---------------
@@ -648,7 +649,7 @@ ENDIF
 IF find_reaccr THEN find_reaccr,dirs[masssort],files[masssort],halo = haloid[masssort]
 
 ;--------------------- Eject v Mass ------------------------------
-IF plot_eject_v_mass THEN eject_v_mass,dirs[masssort],files[masssort],halo = haloid[masssort],/colors,outplot = outplot,z_cut = [2,1,0.5,-1e-10],symbols = [psym[0],psym[0] + 1,17,18,16,34],formatthick = formatthick,z_colors = [30,80,120,254],gmass = gmass;,/rewrite
+IF plot_ejectz_v_mass THEN ejectz_v_mass,dirs[masssort],files[masssort],halo = haloid[masssort],/colors,outplot = outplot,z_cut = [2,1,0.5,-1e-10],symbols = [psym[0],psym[0] + 1,17,18,16,34],formatthick = formatthick,z_colors = [30,80,120,254],gmass = gmass;,/rewrite
 IF plot_metals_v_mass THEN metals_v_mass,dirs,files,haloid,outplot = outplot,formatthick = formatthick,/color
 
 ;noh603 = [0,1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19]

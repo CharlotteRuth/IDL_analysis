@@ -256,8 +256,8 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
   ENDIF ELSE BEGIN
      gloc = mrdfits(gloc_filename)
      gloc_temp = gloc
-     gloc_temp[where(gloc NE 3 AND gloc NE -1)] = 0
-     gloc_temp[where(gloc EQ 3 OR  gloc EQ -1)] = 1    
+     IF (where(gloc NE 3 AND gloc NE -1))[0] NE -1 THEN gloc_temp[where(gloc NE 3 AND gloc NE -1)] = 0
+     IF (where(gloc EQ 3 OR  gloc EQ -1))[0] NE -1 THEN gloc_temp[where(gloc EQ 3 OR  gloc EQ -1)] = 1    
      stepsarr = fltarr(nsteps) + 1
      indiskarr = gloc_temp#stepsarr
      indiskarr[where(indiskarr NE 0)] = 1
@@ -279,10 +279,10 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 
 ;------------------- Re-accretion of gas onto the halo (reaccr_iord.fits)
   gloc_temp = gloc
-  gloc_temp[where(gloc EQ  1 OR gloc EQ 2)] = 3 ;Set halo and disk gas to 3
-  gloc_temp[where(gloc EQ -1)] = 3 ;Set gas that formed stars to disk
+  IF (where(gloc EQ 1 OR gloc EQ 2))[0] NE -1 THEN gloc_temp[where(gloc EQ  1 OR gloc EQ 2)] = 3 ;Set halo and disk gas to 3
+  IF (where(gloc EQ -1))[0] NE -1 THEN gloc_temp[where(gloc EQ -1)] = 3 ;Set gas that formed stars to disk
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
-  ind_accr = where(gloc_diff EQ -3) ;Select for instances particles were first out of disk and then in it
+  ind_accr = where(gloc_diff EQ -3) ;Select for instances particles were first out of halo and then in it
   istep = fix(ind_accr/npart)
   ipart = ind_accr - istep*npart
   indstart = where(gloc_temp[*,0] EQ 3)
@@ -332,9 +332,9 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 
 ;-------------------- Gas (re)accreted to disk, need not have been heated by supernova
   gloc_temp = gloc
-  gloc_temp[where(gloc_temp EQ  1 OR gloc_temp EQ 2)] = 0 ;Set all unbound halo gas to zero
-  gloc_temp[where(gloc_temp EQ 2)] = 0 ;Set all bound halo gas to zero
-  gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
+  IF (where(gloc_temp EQ 1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ  1)] = 0 ;Set all unbound halo gas to zero
+  IF (where(gloc_temp EQ 2))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ 2)] = 0 ;Set all bound halo gas to zero
+  IF (where(gloc_temp EQ -1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
   ind_accr = where(gloc_diff EQ -3) ;Select for instances particles were first out of the disk and then in it
   istep_later = [fix(ind_accr/npart)]
@@ -364,11 +364,11 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 ;                     longer be part of the disk
 ;                      -- need not have been heated by supernova)
   gloc_temp = gloc
-  gloc_temp[where(gloc_temp EQ  1)] = 0 ;Set disk-unbound halo gas to zero
-  gloc_temp[where(gloc_temp EQ  2)] = 0 ;Set disk-bound halo gas to zero
-  gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
+  IF (where(gloc_temp EQ  1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ  1)] = 0 ;Set disk-unbound halo gas to zero
+  IF (where(gloc_temp EQ  2))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ  2)] = 0 ;Set disk-bound halo gas to zero
+  IF (where(gloc_temp EQ  -1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
-  ind_heat = where(gloc_diff EQ 3) ;Select for instances particles were first in disk and then not it the disk
+  IF (where(gloc_diff EQ  3))[0] NE -1 THEN ind_heat = where(gloc_diff EQ 3) ;Select for instances particles were first in disk and then not it the disk
   istep_heat = fix(ind_heat/npart)
   ipart_heat = ind_heat - istep_heat*npart
   heat_time = z_to_t(halodat[istep_heat + 1].z)
@@ -391,15 +391,15 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 ;---------------------- First Accretion (gas that either starts as
 ;                       disk or becomes disk
   gloc_temp = gloc
-  gloc_temp[where(gloc_temp EQ  1 OR gloc_temp EQ  2)] = 0 ;Set all unbound and bound halo gas to zero
-  gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
+  IF (where(gloc_temp EQ 1 OR gloc_temp EQ  2))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ  1 OR gloc_temp EQ  2)] = 0 ;Set all unbound and bound halo gas to zero
+  IF (where(gloc_temp EQ -1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
   FOR j = 0, nsteps - 2 DO gloc_temp[where((gloc_temp[*,j] EQ 3)),j + 1] = 3
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
-  ind_accrfirst = where(gloc_diff EQ -3) ;Select for instances particles were first out of the disk and then in it
+  IF (where(gloc_diff EQ -3))[0] NE -1 THEN ind_accrfirst = where(gloc_diff EQ -3) ;Select for instances particles were first out of the disk and then in it
   istepfirst_later = [fix(ind_accrfirst/npart)]
   ipartfirst_later = [ind_accrfirst - istepfirst_later*npart]
 ;  uniqi_first2 = [where(gloc_temp[*,0] EQ 3),(istepfirst_later + 1)*npart + ipartfirst_later]
-  IF (where(gloc_temp[*,0] EQ 3)) NE -1 THEN BEGIN ;Includes particles that start in the disk
+  IF (where(gloc_temp[*,0] EQ 3))[0] NE -1 THEN BEGIN ;Includes particles that start in the disk
      istepfirst = [lonarr(n_elements(where(gloc_temp[*,0] EQ 3))) - 1,istepfirst_later]
      ipartfirst = [where(gloc_temp[*,0] EQ 3),ipartfirst_later]
   ENDIF ELSE BEGIN
@@ -415,10 +415,10 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 ;                      -- must be heated by supernova)
   gloc_temp = gloc;[indcoolon,*]
   IF indcooloff[0] NE -1 THEN gloc_temp[indcooloff,*] = -10
-  gloc_temp[where(gloc_temp EQ  1 OR gloc_temp EQ  2)] = 0 ;Set disk-unbound and disk-bound halo gas to zero
-  gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
+  IF (where(gloc_temp EQ 1 OR gloc_temp EQ 2))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ 1 OR gloc_temp EQ 2)] = 0 ;Set disk-unbound and disk-bound halo gas to zero
+  IF (where(gloc_temp EQ -1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
-  ind_heat = where(gloc_diff EQ 3) ;Select for instances particles were first in disk and then not it the disk
+  IF (where(gloc_diff EQ 3))[0] NE -1 THEN ind_heat = where(gloc_diff EQ 3) ;Select for instances particles were first in disk and then not it the disk
   istep_heat = fix(ind_heat/npart)
   ipart_heat = ind_heat - istep_heat*npart
   heat_time = z_to_t(halodat[istep_heat + 1].z)
@@ -462,10 +462,10 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 ;--------------------------- Accretion and reaccretion of material heated by supernova
   gloc_temp = gloc
 ;  gloc_temp[indcooloff,*] = -10
-  gloc_temp[where(gloc_temp EQ  1 OR gloc_temp EQ 2)] = 0 ;Set all unbound halo gas to zero
-  gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
+  IF (where(gloc_temp EQ 1 OR gloc_temp EQ  2))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ  1 OR gloc_temp EQ 2)] = 0 ;Set all unbound halo gas to zero
+  IF (where(gloc_temp EQ -1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
-  ind_accr = where(gloc_diff EQ -3) ;Select for instances particles were first out of the disk and then in it
+  IF (where(gloc_diff EQ -3))[0] NE -1 THEN ind_accr = where(gloc_diff EQ -3) ;Select for instances particles were first out of the disk and then in it
   istep = [fix(ind_accr/npart)]
   ipart = [ind_accr - istep*npart]
   uniqi = [(istep + 1)*npart + ipart]
@@ -517,11 +517,11 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
   gloc_temp = gloc;[indcoolon,*]
   IF indcooloff[0] NE -1 THEN gloc_temp[indcooloff,*] = -10
   FOR j = 0,nsteps - 2 DO gloc_temp[where((gloc_temp[*,nsteps - 1 - j] EQ 1 OR gloc_temp[*,nsteps - 1 - j] EQ 0) AND gloc_temp[*,nsteps - 2 - j] EQ 2),nsteps - 2 - j] = 1
-  gloc_temp[where(gloc_temp EQ  1)] = 0 ;Set disk-unbound halo gas to zero
+  IF (where(gloc_temp EQ 1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ  1)] = 0 ;Set disk-unbound halo gas to zero
 ;  gloc_temp[where(gloc_temp EQ  2)] = 0 ;Set disk-bound halo gas to zero
-  gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
+  IF (where(gloc_temp EQ -1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
-  ind_eject = where(gloc_diff EQ 3) ;Select for instances particles were first in disk and then unbound from the disk (marks the last step in the disk)
+  IF (where(gloc_diff EQ -3))[0] NE -1 THEN ind_eject = where(gloc_diff EQ 3) ;Select for instances particles were first in disk and then unbound from the disk (marks the last step in the disk)
   istep_eject = fix(ind_eject/npart)
   ipart_eject = ind_eject - istep_eject*npart
   eject_time = z_to_t(halodat[istep_eject + 1].z)
@@ -559,12 +559,12 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
 ;--------------------------- Accretion and reaccretion of ejected material
   gloc_temp = gloc
 ;  gloc_temp[indcooloff,*] = -10
-  gloc_temp[where(gloc_temp EQ  1)] = 0 ;Set all unbound halo gas to zero
+  IF (where(gloc_temp EQ 1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ 1)] = 0 ;Set all unbound halo gas to zero
   gloc_temp[where(gloc_temp[*,0] EQ 2),0] = 0
   FOR j = 1, nsteps - 1 DO gloc_temp[where((gloc_temp[*,j] EQ 2) AND gloc_temp[*,j - 1] EQ 0),j] = 0
-  gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
+  IF (where(gloc_temp EQ -1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ -1)] = 3 ;Set gas that formed stars to disk
   gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
-  ind_accr = where(gloc_diff EQ -3) ;Select for instances particles were first out of the disk and then in it
+  IF (where(gloc_diff EQ -3))[0] NE -1 THEN ind_accr = where(gloc_diff EQ -3) ;Select for instances particles were first out of the disk and then in it
   istep = [fix(ind_accr/npart)]
   ipart = [ind_accr - istep*npart]
   uniqi = [(istep + 1)*npart + ipart]
@@ -611,10 +611,10 @@ PRO gas_gal_disk_history,dir = dir,finalid = finalid,laststep = laststep,central
      gloc_temp = gloc
      IF indcooloff[0] NE -1 THEN gloc_temp[indcooloff,*] = -10
      gloc_temp[ipart_eject_true,istep_eject_true] = 4 ;Mark ejected gas by setting to 4
-     gloc_temp[where(gloc_temp EQ -1)] = 3  ;Set gas that formed stars to disk
+     IF (where(gloc_temp EQ -1))[0] NE -1 THEN gloc_temp[where(gloc_temp EQ -1)] = 3  ;Set gas that formed stars to disk
      FOR j = 1, nsteps - 1 DO gloc_temp[where((gloc_temp[*,j] EQ 1 OR gloc_temp[*,j] EQ 2) AND gloc_temp[*,j - 1] EQ 4),j] = 4
      gloc_diff = gloc_temp[*,0:nsteps - 2] - gloc_temp[*,1:nsteps - 1]
-     ind_expell = where(gloc_diff EQ 4) ;Select for instances particles were first in disk and then out of the halo
+     IF (where(gloc_diff EQ 4))[0] NE -1 THEN ind_expell = where(gloc_diff EQ 4) ;Select for instances particles were first in disk and then out of the halo
      istep = fix(ind_expell/npart)
      ipart = ind_expell - istep*npart
      match2,gpart[ipart].iord,iord_part_true,true_expell,indtemp
@@ -649,7 +649,7 @@ ENDIF
   everindisk  = where(indiskarr NE 0)
   accrdisk    = intarr(npart) - 1 ;Gas that is ever in the disk
   FOR i = 0L, n_elements(everindisk) - 1 DO BEGIN ;iterate through gas particles were ever in the disk
-     indisk = where(gloc[everindisk[i],*] EQ 3)   
+     IF (where(gloc[everindisk[i],*] EQ 3))[0] NE -1 THEN indisk = where(gloc[everindisk[i],*] EQ 3)   
      accrdisk[everindisk[i]] = indisk[0]
   ENDFOR
   neverindisk = where(accrdisk EQ -1, complement = everindisk)
@@ -676,7 +676,7 @@ ENDIF
 ;-------------------- Find earlierst step when the particle was in the halo
   accr = intarr(npart) - 1 ;Gas that is ever in the disk
   FOR i = 0L, n_elements(accr) - 1 DO BEGIN ;iterate through gas particles were ever in the disk
-     accreted = where(gloc[i,*] EQ 2 OR gloc[i,*] EQ 1 OR gloc[i,*] EQ 3)   
+     IF (where(gloc[i,*] EQ 2 OR gloc[i,*] EQ 1 OR gloc[i,*] EQ 3))[0] NE -1 THEN accreted = where(gloc[i,*] EQ 2 OR gloc[i,*] EQ 1 OR gloc[i,*] EQ 3)   
      accr[i] = accreted[0]
   ENDFOR
   neverinhalo = where(accr EQ -1, complement = everinhalo)
@@ -701,8 +701,8 @@ ENDIF
 ;-------------------- Gas Loss 
   lost        = intarr(npart) - 1 ;Gas that is in the halo and then out of the halo
   FOR i = 0L, n_elements(lost) - 1 DO BEGIN ;iterate through gas particles that were ever in the disk
-     outhalo = where(gloc[i,*] EQ 0)   
-     indhalo = where(gloc[i,*] GE 1)
+     IF (where(gloc[i,*] EQ 0))[0] NE -1 THEN outhalo = where(gloc[i,*] EQ 0)   
+     IF (where(gloc[i,*] GE 1))[0] NE -1 THEN indhalo = where(gloc[i,*] GE 1)
      temp = min(indhalo,firsthalo) ;First timestep that it is in the halo
      firsthalo = indhalo[firsthalo]
 ;    outhalo = where(gloc[indcoolon[i],*] EQ 0)
@@ -749,8 +749,8 @@ ENDIF
   indcoolon   = where(coolong NE 0, complement = indcooloff) 
 
   FOR i = 0L, n_elements(indcoolon) - 1 DO BEGIN ;iterate through gas particles that are heated by SN 
-     indisk  = where(gloc[indcoolon[i],*] EQ 3)
-     outhalo = where(gloc[indcoolon[i],*] EQ 0)
+     IF (where(gloc[indcoolon[i],*] EQ 3))[0] NE -1 THEN indisk  = where(gloc[indcoolon[i],*] EQ 3)
+     IF (where(gloc[indcoolon[i],*] EQ 0))[0] NE -1 THEN outhalo = where(gloc[indcoolon[i],*] EQ 0)
      IF indisk[0] NE -1 THEN BEGIN
         temp = min(indisk,firstdisk) ;First timestep it is in the disk
         temp = max(indisk,lastdisk)  ;Last  timestep it is in the disk
@@ -762,7 +762,7 @@ ENDIF
         IF (where(outhalo GT firstdisk))[0] NE -1 THEN      expell[indcoolon[i]] = outhalo[(where(outhalo GT firstdisk))[0]] ;set the expell array to the timestep when the particle is first out of the halo following being in the disk
         IF (gloc[indcoolon[i],it] EQ 0)      THEN expellfinal[indcoolon[i]] = outhalo[(where(outhalo GT firstdisk))[0]] ;set the expellfinal array to the timestep when the particle is first out of the halo following being in the disk 
     ENDIF
-    indhalo = where(gloc[indcoolon[i],*] GE 1) ;Step indices during which particle is in the halo
+    IF (where(gloc[indcoolon[i],*] GE 1))[0] NE -1 THEN indhalo = where(gloc[indcoolon[i],*] GE 1) ;Step indices during which particle is in the halo
     temp = min(indhalo,firsthalo) ;First timestep that it is in the halo
     firsthalo = indhalo[firsthalo]
 ;    outhalo = where(gloc[indcoolon[i],*] EQ 0)

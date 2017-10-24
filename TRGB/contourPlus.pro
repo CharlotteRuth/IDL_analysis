@@ -44,8 +44,7 @@ xbins=(FINDGEN(nxbins)*xbinsize)+xmin+xbinsize/2.
 ybins=(FINDGEN(nybins)*ybinsize)+ymin+ybinsize/2.
 
 hist=HIST_2D(x,y,bin1=xbinsize,bin2=ybinsize,min1=xmin,min2=ymin,max1=xmax,max2=ymax,_EXTRA=extra)
-IF (KEYWORD_SET(out)) THEN export=hist
-
+export=hist
 PLOTSYM, 0, .1, /FILL
 
 IF (MAX(hist) LT threshold*1.5) THEN BEGIN
@@ -65,11 +64,9 @@ ENDIF ELSE BEGIN
 ;   COMMENTED TO GET USERSYM RATHER THAN PSYM=3
 ;   plot,x,y,xrange=[xmin,xmax],yrange=yrange,psym=3,_EXTRA=extra
 
-   
     IF NOT (KEYWORD_SET(nlevels)) THEN nlevels=MAX(hist)/threshold
     IF NOT (KEYWORD_SET(levels)) THEN levels=threshold*FINDGEN(nlevels)+threshold
     IF (KEYWORD_SET(log)) THEN levels=10.^(ALOG10(MAX(hist))-FINDGEN(nlevels))
-
     IF (KEYWORD_SET(nolines)) THEN contour,hist,xbins,ybins,yrange=yrange,levels=levels,/overplot,/FILL,_EXTRA=extra ,color=!P.BACKGROUND ELSE BEGIN
         IF (KEYWORD_SET(nofill)) THEN contour,hist,xbins,ybins,yrange=yrange,levels=levels,_EXTRA=extra,/overplot ELSE BEGIN
         contour,hist,xbins,ybins,yrange=yrange,levels=levels,_EXTRA=extra,/overplot,/FILL,color=!P.BACKGROUND ;,C_COLOR=REPLICATE(!P.BACKGROUND,nlevels)

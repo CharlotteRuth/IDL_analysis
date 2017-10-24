@@ -21,7 +21,7 @@ IF keyword_set(outplot) THEN BEGIN
     bgcolor = 255
     xsize = 18
     ysize = 12
-    IF keyword_set(stellarmass) THEN outplot = outplot + '_sm_' ELSE outplot = outplot + '_vm'
+    IF keyword_set(stellarmass) THEN outplot = outplot + '_sm' ELSE outplot = outplot + '_vm'
 ENDIF ELSE BEGIN
     fgcolor = 255
     bgcolor = 0
@@ -30,12 +30,13 @@ ENDIF ELSE BEGIN
 ENDELSE
 device,decomposed = 0
 IF keyword_set(colors) THEN BEGIN
-    loadct,39
+;    loadct,39
+    distinct_colors,n_colors = 12
 ;    IF n_elements(colors) EQ 0 AND colors[0] EQ 0  THEN colors = [50,254,fgcolor]
-    gascolor = 60
-    starcolor = 254
-    diskcolor = 200
-    cgmcolor = 20
+    gascolor = 10
+    starcolor = 5
+    diskcolor = 7
+    cgmcolor = 2
     colors = [cgmcolor,gascolor,starcolor,diskcolor]
 ENDIF ELSE BEGIN
     loadct,0    

@@ -175,19 +175,20 @@ FOR i = 0l, ntimesteps - 1 DO BEGIN
     ENDIF
     ;Now fill up the history structure
     ;first for stars
-    history[stars(0:nold-1)].mark[i]=long(h.ngas+h.ndark+ind2stars)+1
+    IF nold NE 0 THEN BEGIN
+        history[stars(0:nold-1)].mark[i]=long(h.ngas+h.ndark+ind2stars)+1
 ;    FOR j=0L,nold-1 DO BEGIN
-    history[ngas : ngas + nold - 1].mass[i]=s[ind2stars].mass*massunit
-    history[ngas : ngas + nold - 1].x[i]=s[ind2stars].x*lengthunit*h.time
-    history[ngas : ngas + nold - 1].y[i]=s[ind2stars].y*lengthunit*h.time
-    history[ngas : ngas + nold - 1].z[i]=s[ind2stars].z*lengthunit*h.time
-    history[ngas : ngas + nold - 1].vx[i]=s[ind2stars].vx*velunit*h.time
-    history[ngas : ngas + nold - 1].vy[i]=s[ind2stars].vy*velunit*h.time
-    history[ngas : ngas + nold - 1].vz[i]=s[ind2stars].vz*velunit*h.time
-    history[ngas : ngas + nold - 1].rho[i]=0.
-    history[ngas : ngas + nold - 1].temp[i]=0.
-    history[ngas : ngas + nold - 1].metallicity[i]=2.09*ox_star[ind2stars]+1.06*fe_star[ind2stars];s[ind2stars].metals
-    history[ngas : ngas + nold - 1].haloid[i]=haloind[ind2stars+h.ngas+h.ndark]
+        history[ngas : ngas + nold - 1].mass[i]=s[ind2stars].mass*massunit
+        history[ngas : ngas + nold - 1].x[i]=s[ind2stars].x*lengthunit*h.time
+        history[ngas : ngas + nold - 1].y[i]=s[ind2stars].y*lengthunit*h.time
+        history[ngas : ngas + nold - 1].z[i]=s[ind2stars].z*lengthunit*h.time
+        history[ngas : ngas + nold - 1].vx[i]=s[ind2stars].vx*velunit*h.time
+        history[ngas : ngas + nold - 1].vy[i]=s[ind2stars].vy*velunit*h.time
+        history[ngas : ngas + nold - 1].vz[i]=s[ind2stars].vz*velunit*h.time
+        history[ngas : ngas + nold - 1].rho[i]=0.
+        history[ngas : ngas + nold - 1].temp[i]=0.
+        history[ngas : ngas + nold - 1].metallicity[i]=2.09*ox_star[ind2stars]+1.06*fe_star[ind2stars] ;s[ind2stars].metals
+        history[ngas : ngas + nold - 1].haloid[i]=haloind[ind2stars+h.ngas+h.ndark]
  ;   ENDFOR
 ;    FOR j=0L,nold-1 DO BEGIN
 ;       history[stars(j)].mass[i]=s[ind2stars(j)].mass*massunit 
@@ -203,6 +204,7 @@ FOR i = 0l, ntimesteps - 1 DO BEGIN
 ;       history[stars(j)].haloid[i]=haloind[ind2stars(j)+h.ngas+h.ndark]
 ;    ENDFOR
  ;   ;now for stars that are still gas at this step
+    ENDIF
     IF nprog NE 0 THEN BEGIN
        history[stars(nold:nstars-1)].mark[i]=long(gasind)+1
        history[ngas + nold :ngas + nold + nprog - 1].mass[i]=g[gasind].mass*massunit

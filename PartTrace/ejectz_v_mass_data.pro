@@ -5,6 +5,8 @@ PRO ejectz_v_mass_data,dir,file,halo,z_bins,zmax,mlbin
   nz = n_elements(z_bins)
   relostmass = fltarr(nz) ;Mass of gas lost from disk over entire history
   relostmassmet = fltarr(nz) ;Mass of metals lost from disk over entire history
+  relostmassr = fltarr(nz) ;Mass of gas lost from disk over entire history
+  relostmassmetr = fltarr(nz) ;Mass of metals lost from disk over entire history
   reejectmass  = fltarr(nz) ;Mass of gas (re)ejected over entire history
   reejectmassmet = fltarr(nz) ;Mass of metals (re)ejected over entire history 
   reejectmassr  = fltarr(nz) ;Mass of gas (re)ejected in redshift bins
@@ -15,10 +17,16 @@ PRO ejectz_v_mass_data,dir,file,halo,z_bins,zmax,mlbin
   reexpellmassmetr = fltarr(nz) ;Mass of metals (re)expelled in redshift bins
   diskgmass = fltarr(nz) ;Mass reaccreted onto disk after ejection
   diskgmassmet = fltarr(nz) ;Mass of metals reaccreted onto disk after ejection
+  diskgmassr = fltarr(nz) ;Mass reaccreted onto disk after ejection
+  diskgmassmetr = fltarr(nz) ;Mass of metals reaccreted onto disk after ejection
   diskgmass_lost = fltarr(nz) ;Mass of accretions onto the disk
   diskgmass_lostmet = fltarr(nz) ;Metal mass of accretions onto the disk
+  diskgmass_lostr = fltarr(nz) ;Mass of accretions onto the disk
+  diskgmass_lostmetr = fltarr(nz) ;Metal mass of accretions onto the disk
   diskgmass_expell = fltarr(nz) ;Mass reaccreted onto disk after expulsion
   diskgmass_expellmet = fltarr(nz);Mass of metals reaccreted onto disk after expulsion
+  diskgmass_expellr = fltarr(nz) ;Mass reaccreted onto disk after expulsion
+  diskgmass_expellmetr = fltarr(nz);Mass of metals reaccreted onto disk after expulsion
   halogmass = fltarr(nz) ;Mass accreted onto the halo
   halogmassmet = fltarr(nz) ;Metal mass accreted onto the halo
   sfmassr = fltarr(nz)
@@ -66,12 +74,29 @@ PRO ejectz_v_mass_data,dir,file,halo,z_bins,zmax,mlbin
   diskregmassm_lost = [diskaccrm_lost[where(diskaccrz_lost LT zmax)]]
   diskregmassz_lost = [diskaccrz_lost[where(diskaccrz_lost LT zmax)]]
   diskregmassmet_lost = [diskaccrhist_lost[where(diskaccrz_lost LT zmax)].metallicity]
+  diskregmasst_lost = z_to_t(diskregmassz_lost)
   ind_diskaccri_lost_uniq = rem_dup(diskregmassi_lost);
   diskaccri_lost_uniq = diskregmassi_lost[ind_diskaccri_lost_uniq]
   diskaccrz_lost_uniq = diskregmassz_lost[ind_diskaccri_lost_uniq]
-  diskaccrm_lost_uniq = diskregmassm_lost[ind_diskaccri_lost_uniq]
-  diskregmassm_lost[ind_diskaccri_lost_uniq] = 0 ;Set mass and metallicity of first accretion to zero. That way, diskregmassm_lost is only for stuff that is reaccreted after being lost
-  diskregmassmet_lost[ind_diskaccri_lost_uniq] = 0
+;  diskaccrm_lost_uniq = diskregmassm_lost[ind_diskaccri_lost_uniq]
+
+  inflowm = mrdfits(dir + '/grp' + halo + '.mass_at_reaccr.fits',/silent) ;'mass_at_accr_rvir';'.mass_at_accr.fits'
+  inflowi = mrdfits(dir + '/grp' + halo + '.reaccr_iord.fits',/silent)
+  inflow_data = mrdfits(dir + '/grp' + halo + '.reaccr_history.fits',1,/silent)
+  ind_inflow_uniq = rem_dup(inflowi) ;uniq(inflowi,sort(inflowi)) 
+  inflowm_uniq = inflowm[ind_inflow_uniq]
+  inflowi_uniq = inflowi[ind_inflow_uniq]
+  inflow_data_uniq = inflow_data[ind_inflow_uniq]
+
+  match2,inflowi_uniq,diskaccri_lost_uniq,ind_halo,ind_disk  
+  IF n_elements(diskaccri_lost_uniq) NE n_elements(where(ind_halo NE -1)) THEN stop ;Sanity check that all particle accreted to disk are also accreted to the halo
+  diskaccrm_lost_uniq = inflowm_uniq[ind_halo[where(ind_halo NE -1)]]
+  diskaccrmet_lost_uniq = inflow_data_uniq[ind_halo[where(ind_halo NE -1)]].metallicity
+  diskregmassm_lost[ind_diskaccri_lost_uniq] = diskregmassm_lost[ind_diskaccri_lost_uniq] - diskaccrm_lost_uniq
+  diskregmassmet_lost[ind_diskaccri_lost_uniq] = diskregmassmet_lost[ind_diskaccri_lost_uniq] - diskaccrmet_lost_uniq 
+
+;  diskregmassm_lost[ind_diskaccri_lost_uniq] = 0 ;Set mass and metallicity of first accretion to zero. That way, diskregmassm_lost is only for stuff that is reaccreted after being lost
+;  diskregmassmet_lost[ind_diskaccri_lost_uniq] = 0
 
 ;--------------- Note that these include the initial accretion as well
 ;                as the accretion after ejection ------------
@@ -96,6 +121,7 @@ PRO ejectz_v_mass_data,dir,file,halo,z_bins,zmax,mlbin
   diskregmassm = [diskaccrm[where(diskaccrz LT zmax)]] 
   diskregmassmet = [diskaccrmet[where(diskaccrz LT zmax)]]
   diskregmassz = [diskaccrz[where(diskaccrz LT zmax)]]
+  diskregmasst = [diskaccrt[where(diskaccrz LT zmax)]]
 
 ;Gas that is (re)accreted onto the halo  
   haloaccrm = mrdfits(dir + '/grp' + halo + '.mass_at_reaccr.fits',0,/silent)
@@ -159,6 +185,7 @@ PRO ejectz_v_mass_data,dir,file,halo,z_bins,zmax,mlbin
   relostm = [relostm[where(relostz LT zmax)]]
   relostmet = [relostmet[where(relostz LT zmax)]]
   relostz = [relostz[where(relostz LT zmax)]]
+  relostt = z_to_t(relostz)
 ;  relost_total = total(relostm[uniq(relosti,sort(relosti))])
 ;  relostmet_total=total(relosthist[uniq(relosti,sort(relosti))].metallicity*relostm[uniq(relosti,sort(relosti))])
   relost_total = total(relostm[rem_dup(relosti)])
@@ -210,10 +237,12 @@ PRO ejectz_v_mass_data,dir,file,halo,z_bins,zmax,mlbin
      diskaccrm_expell = [diskaccrhist[ind_reinflow_expell].mass]
      diskaccrmet_expell = [diskaccrhist[ind_reinflow_expell].metallicity]
      diskaccrz_expell = [diskaccrhist[ind_reinflow_expell].red]
+     diskaccrt_expell = z_to_t(diskaccrz_expell)
   ENDIF ELSE BEGIN
      diskaccrm_expell = [0]
      diskaccrmet_expell = [0]
      diskaccrz_expell = [0]
+     diskaccrt_expell = [0]
   ENDELSE
 
 ;Accreted stars
@@ -237,8 +266,11 @@ PRO ejectz_v_mass_data,dir,file,halo,z_bins,zmax,mlbin
   printf,lun,allgmass_total,halogmass_total,float(diskgmass_total),float(diskgmet_total),float(relost_total),float(relostmet_total),reeject_total,float(reejectmet_total),reexpell_total,float(reexpellmet_total),float(sfmass_total),sfmassmet_total,smass_accr_total,format='(13E14)'  
   FOR iz = 0, n_elements(z_bins) - 1 DO BEGIN
      IF z_bins[iz] LT 0.1 THEN mlbin2 = mlbin ELSE mlbin2 = mlbin/2
+;     diskaccr_prist_mass[iz]=total([    where(diskregmassz_lost     GE z_bins[iz] AND diskregmassz_lost LT zmax)])
      relostmass[iz]       = total(relostm[      where(relostz      GE z_bins[iz] AND relostz   LT zmax)])
-     relostmassmet[iz]    = total(relostmet[      where(relostz      GE z_bins[iz] AND relostz   LT zmax)]*relostm[      where(relostz      GE z_bins[iz] AND relostz   LT zmax)])
+     relostmassmet[iz]    = total(relostm[      where(relostz      GE z_bins[iz] AND relostz   LT zmax)]*relostmet[      where(relostz      GE z_bins[iz] AND relostz   LT zmax)])
+     relostmassr[iz]       = total(relostm[     where(relostt      GE t_bins[iz] - mlbin2 AND relostt      LE t_bins[iz] + mlbin2 AND relostz LT zmax)])/mlbin
+     relostmassmetr[iz]    = total(relostm[     where(relostt      GE t_bins[iz] - mlbin2 AND relostt      LE t_bins[iz] + mlbin2 AND relostz LT zmax)]*relostmet[     where(relostt     GE t_bins[iz] - mlbin2 AND relostt      LE t_bins[iz] + mlbin2 AND relostz LT zmax)])/mlbin    
      reejectmass[iz]      = total(reejectm[     where(reejectz     GE z_bins[iz] AND reejectz  LT zmax)])
      reejectmassmet[iz]   = total(reejectm[     where(reejectz     GE z_bins[iz] AND reejectz  LT zmax)]*reejectmet[     where(reejectz     GE z_bins[iz] AND reejectz  LT zmax)])
      reejectmassr[iz]     = total(reejectm[     where(reejectt     GE t_bins[iz] - mlbin2 AND reejectt      LE t_bins[iz] + mlbin2 AND reejectz LT zmax)])/mlbin
@@ -247,24 +279,31 @@ PRO ejectz_v_mass_data,dir,file,halo,z_bins,zmax,mlbin
      reexpellmassmet[iz]  = total(reexpellm[    where(reexpellz    GE z_bins[iz] AND reexpellz LT zmax)]*reexpellmet[    where(reexpellz    GE z_bins[iz] AND reexpellz LT zmax)])
      reexpellmassr[iz]    = total(reexpellm[    where(reexpellt    GE t_bins[iz] - mlbin2 AND reexpellt     LE t_bins[iz] + mlbin2 AND reexpellz LT zmax)])/mlbin
      reexpellmassmetr[iz] = total(reexpellm[    where(reexpellt    GE t_bins[iz] - mlbin2 AND reexpellt     LE t_bins[iz] + mlbin2 AND reexpellz LT zmax)]*reexpellmet[    where(reexpellt    GE t_bins[iz] - mlbin2 AND reexpellt     LE t_bins[iz] + mlbin2 AND reexpellz LT zmax)])/mlbin
-;Gas either accreted for the first time or reaccreted after being lost
+;Gas reaccreted after being lost
      diskgmass_lost[iz]   = total(diskregmassm_lost[    where(diskregmassz_lost     GE z_bins[iz] AND diskregmassz_lost LT zmax)])
      diskgmass_lostmet[iz]= total(diskregmassm_lost[    where(diskregmassz_lost     GE z_bins[iz] AND diskregmassz_lost LT zmax)]*diskregmassmet_lost[    where(diskregmassz_lost     GE z_bins[iz] AND diskregmassz_lost LT zmax)])
+     diskgmass_lostr[iz]   = total(diskregmassm_lost[    where(diskregmasst_lost    GE t_bins[iz] - mlbin2 AND diskregmasst_lost     LE t_bins[iz] + mlbin2 AND diskregmassz_lost LT zmax)])/mlbin
+     diskgmass_lostmetr[iz]= total(diskregmassm_lost[    where(diskregmasst_lost    GE t_bins[iz] - mlbin2 AND diskregmasst_lost     LE t_bins[iz] + mlbin2 AND diskregmassz_lost LT zmax)]*diskregmassmet_lost[    where(diskregmasst_lost    GE t_bins[iz] - mlbin2 AND diskregmasst_lost     LE t_bins[iz] + mlbin2 AND diskregmassz_lost LT zmax)])/mlbin
 ;Gas either accreted for the first time or after being ejected
      diskgmass[iz]        = total(diskregmassm[    where(diskregmassz     GE z_bins[iz] AND diskregmassz LT zmax)])
      diskgmassmet[iz]     = total(diskregmassm[    where(diskregmassz     GE z_bins[iz] AND diskregmassz LT zmax)]*diskregmassmet[    where(diskregmassz     GE z_bins[iz] AND diskregmassz LT zmax)])
+     diskgmassr[iz]        = total(diskregmassm[    where(diskregmasst    GE t_bins[iz] - mlbin2 AND diskregmasst     LE t_bins[iz] + mlbin2 AND diskregmassz LT zmax)])/mlbin
+     diskgmassmetr[iz]     = total(diskregmassm[    where(diskregmasst    GE t_bins[iz] - mlbin2 AND diskregmasst     LE t_bins[iz] + mlbin2 AND diskregmassz LT zmax)]*reexpellmet[    where(diskregmasst    GE t_bins[iz] - mlbin2 AND diskregmasst     LE t_bins[iz] + mlbin2 AND diskregmassz LT zmax)])/mlbin
 ;Gas accreted to the DISK for the first time or after being expelled
      diskgmass_expell[iz] = total(diskaccrm_expell[    where(diskaccrz_expell     GE z_bins[iz] AND diskaccrz_expell LT zmax)])
      diskgmass_expellmet[iz] = total(diskaccrm_expell[    where(diskaccrz_expell     GE z_bins[iz] AND diskaccrz_expell LT zmax)]*diskaccrmet_expell[    where(diskaccrz_expell     GE z_bins[iz] AND diskaccrz_expell LT zmax)])
+     diskgmass_expellr[iz] = total(diskaccrm_expell[    where(diskaccrt_expell    GE t_bins[iz] - mlbin2 AND diskaccrt_expell     LE t_bins[iz] + mlbin2 AND diskaccrz_expell LT zmax)])/mlbin
+     diskgmass_expellmetr[iz] = total(diskaccrm_expell[    where(diskaccrt_expell    GE t_bins[iz] - mlbin2 AND diskaccrt_expell     LE t_bins[iz] + mlbin2 AND diskaccrz_expell LT zmax)]*diskaccrmet_expell[    where(diskaccrt_expell    GE t_bins[iz] - mlbin2 AND diskaccrt_expell     LE t_bins[iz] + mlbin2 AND diskaccrz_expell LT zmax)])/mlbin
 
      halogmass[iz]        = total(haloaccrm[    where(haloaccrz    GE z_bins[iz] AND haloaccrz LT zmax)])
      halogmassmet[iz]     = total(haloaccrm[    where(haloaccrz    GE z_bins[iz] AND haloaccrz LT zmax)]*haloaccrmet[    where(haloaccrz    GE z_bins[iz] AND haloaccrz LT zmax)])
      sfmassr[iz] = total(sldata[where(sldata.timeform GE t_bins[iz] - mlbin2 AND sldata.timeform LE t_bins[iz] + mlbin2 AND sldata.timeform GT tmin)].massform)*units.massunit/mlbin
-     printf,lun,z_bins[iz],relostmass[iz],relostmassmet[iz],reejectmass[iz],reejectmassmet[iz],reejectmassr[iz],reejectmassmetr[iz],reexpellmass[iz],reexpellmassmet[iz],reexpellmassr[iz],reexpellmassmetr[iz],float(diskgmass_lost[iz]),diskgmass_lostmet[iz],diskgmass[iz],diskgmassmet[iz],diskgmass_expell[iz],diskgmass_expellmet[iz],halogmass[iz],halogmassmet[iz],sfmassr[iz],format='(F,20E18)'
-     print,     z_bins[iz],relostmass[iz],relostmassmet[iz],reejectmass[iz],reejectmassmet[iz],reejectmassr[iz],reejectmassmetr[iz],reexpellmass[iz],reexpellmassmet[iz],reexpellmassr[iz],reexpellmassmetr[iz],float(diskgmass_lost[iz]),diskgmass_lostmet[iz],diskgmass[iz],diskgmassmet[iz],diskgmass_expell[iz],diskgmass_expellmet[iz],halogmass[iz],halogmassmet[iz],sfmassr[iz],format='(F,20E18)'
+     printf,lun,z_bins[iz],relostmass[iz],relostmassmet[iz],relostmassr[iz],relostmassmetr[iz],reejectmass[iz],reejectmassmet[iz],reejectmassr[iz],reejectmassmetr[iz],reexpellmass[iz],reexpellmassmet[iz],reexpellmassr[iz],reexpellmassmetr[iz],float(diskgmass_lost[iz]),diskgmass_lostmet[iz],float(diskgmass_lostr[iz]),diskgmass_lostmetr[iz],diskgmass[iz],diskgmassmet[iz],diskgmassr[iz],diskgmassmetr[iz],diskgmass_expell[iz],diskgmass_expellmet[iz],diskgmass_expellr[iz],diskgmass_expellmetr[iz],halogmass[iz],halogmassmet[iz],sfmassr[iz],format='(F,28E18)'
+     print,     z_bins[iz],relostmass[iz],relostmassmet[iz],relostmassr[iz],relostmassmetr[iz],reejectmass[iz],reejectmassmet[iz],reejectmassr[iz],reejectmassmetr[iz],reexpellmass[iz],reexpellmassmet[iz],reexpellmassr[iz],reexpellmassmetr[iz],float(diskgmass_lost[iz]),diskgmass_lostmet[iz],float(diskgmass_lostr[iz]),diskgmass_lostmetr[iz],diskgmass[iz],diskgmassmet[iz],diskgmassr[iz],diskgmassmetr[iz],diskgmass_expell[iz],diskgmass_expellmet[iz],diskgmass_expellr[iz],diskgmass_expellmetr[iz],halogmass[iz],halogmassmet[iz],sfmassr[iz],format='(F,28E18)'
 ;stop
 ;allgmass_total_temp,halogmass_total_temp,diskgmass_total_temp,relost_total_temp,reeject_total,reexpell_total_temp,sfmass_total_temp,smass_accr_total_temp
 ;z_bins_temp,relostmass_temp,reejectmass_temp,reejectmassr_temp,reexpellmass_temp,reexpellmassr_temp,diskgmass_lost_temp,diskgmass_temp,halogmass_temp,sfmassr_temp
+;     stop
   ENDFOR
   close,lun
   free_lun,lun

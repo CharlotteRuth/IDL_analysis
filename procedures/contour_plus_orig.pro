@@ -79,21 +79,22 @@ IF (MAX(hist) LT threshold*1.5) THEN BEGIN
     plot,x,y,xrange=[xmin,xmax],yrange=yrange,psym=8,_EXTRA=EXTRA
 ENDIF ELSE BEGIN
 ;now create array for indices of stars that fall outside of contours
-    ind=[0l]
-    FOR i=0l,N_ELEMENTS(x)-1 DO BEGIN
-        mindistx=MIN(ABS(xbins-x[i]),xminpos)
-        mindisty=MIN(ABS(ybins-y[i]),yminpos)
-        IF (hist[xminpos,yminpos] LT threshold) THEN ind=[ind,i]
-    ENDFOR
-    ind=ind[1:*]
-    plot,x[ind],y[ind],xrange=[xmin,xmax],yrange=yrange,psym=8,_EXTRA=extra
+;    ind=[0l]
+;    FOR i=0l,N_ELEMENTS(x)-1 DO BEGIN
+;        mindistx=MIN(ABS(xbins[0:nxbins - 1]-x[i]),xminpos)
+;        mindisty=MIN(ABS(ybins[0:nxbins - 1]-y[i]),yminpos)
+;        IF (hist[xminpos,yminpos] LT threshold) THEN ind=[ind,i]
+;    ENDFOR
+;    ind=ind[1:*]
+;    plot,x[ind],y[ind],xrange=[xmin,xmax],yrange=yrange,psym=8,_EXTRA=extra
+    plot,x,y,xrange=[xmin,xmax],yrange=yrange,psym=8,_EXTRA=extra
 
 ;    plot,x,y,xrange=[xmin,xmax],yrange=yrange,psym=8,_EXTRA=EXTRA
 ;    oplot,x,y,psym=8,color = basecolor
  
 ;    contour,hist,xbins_plot,ybins_plot,levels=levels,/FILL,C_COLOR = C_COLOR,/overplot,_EXTRA=EXTRA,closed = 1,/cell_fill ;,min_value = threshold
     contour,hist,xbins_plot,ybins_plot,yrange=yrange,levels=levels,/overplot,/FILL,C_COLOR = C_COLOR,_EXTRA=extra ;,C_COLOR=REPLICATE(!P.BACKGROUND,nlevels)
-    contour,hist,xbins_plot,ybins_plot,yrange=yrange,levels=levels,/overplot,color=!P.BACKGROUND
+;    contour,hist,xbins_plot,ybins_plot,yrange=yrange,levels=levels,/overplot,color=!P.BACKGROUND
 
 ;    contour,hist,xbins[0:N_ELEMENTS(xbins) - 2],ybins[0:N_ELEMENTS(ybins) - 2],levels=levels,/FILL,C_COLOR = C_COLOR,/overplot,_EXTRA=EXTRA
 ;yrange=yrange,levels=levels,/overplot,/FILL,_EXTRA=extra,C_COLOR = (INDGEN(nlevels)+1)*240/nlevels ;,C_COLOR=REPLICATE(!P.BACKGROUND,nlevels)

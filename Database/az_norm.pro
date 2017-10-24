@@ -1,1 +1,3 @@
-../../Datafiles/Database/az_norm.pro
+function az_norm, a
+return, sqrt(az_dotp(a,a))
+end
