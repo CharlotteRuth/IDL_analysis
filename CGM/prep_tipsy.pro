@@ -4,16 +4,16 @@
 ;dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h603.cosmo50cmb.3072g/h603.cosmo50cmb.3072g14HBWK/steps/h603.cosmo50cmb.3072g14HBWK.00512.dir'
 
 ;For standard cosmology, redshift to spatial converstion = 1/0.011674743077949343
-PRO prep_tipsy,filebase,haloid,step,dir,angle = angle,smoothfile = smoothfile,maxr = maxr,remake = remake
+PRO prep_tipsy,filebase,haloid,step,dir,angle = angle,smoothfile = smoothfile,maxr = maxr,remake = remake,pfile = pfile
 
 IF NOT keyword_set(angle) THEN angle = [0,45.0,90.0]
 IF NOT keyword_set(maxr) THEN maxr = 300 ;kpc
 maxv = 300.
 filename = filebase + '.' + step
-pfile = '../../' + filebase + '.param'
+IF NOT keyword_set(pfile) THEN pfile = '../../' + filebase + '.param'
 units = tipsyunits(pfile)
 outarray =['smoothlength','FeMassFrac','OxMassFrac','HI','H2','iord','HeI','HeII','hsm']
-outarray =['FeMassFrac','OxMassFrac','HI','H2']
+outarray =['FeMassFrac','OxMassFrac','HI','H2','HeI','HeII']
 
 stat = read_stat_struc_amiga(filename + '.amiga.stat')
 ind = where(stat.group EQ haloid)
@@ -34,10 +34,10 @@ IF (file_exist(halofilename + '.std') EQ 0) OR keyword_set(remake) THEN BEGIN
 ;Select the halo
     tipsysatshi,filename,haloid,units.lengthunit,units.massunit,cutout_rad = maxr,outarray = outarray
 ENDIF
-print,'Run ~/tipsy_tools/smooth -s 32g -o ' + dir + filebase + '.' + step + '/' + halofilename + '.hsmooth < ' + dir + filebase + '.' + step + '/'+ halofilename + '.std'
+print,'Run ~/Code/tipsy_tools/smooth -s 32g -o ' + dir + filebase + '.' + step + '/' + halofilename + '.hsmooth < ' + dir + filebase + '.' + step + '/'+ halofilename + '.std'
 stop 
 ;Add the correct smoothing lengths to the file
-fix_smooth,halofilename         ;Missing so temporarily commented out
+;fix_smooth,halofilename         ;Missing so temporarily commented out
 
 ;Create the auxilary files
 IF (file_exist(halofilename + '.aux') EQ 0) OR keyword_set(remake) THEN $
