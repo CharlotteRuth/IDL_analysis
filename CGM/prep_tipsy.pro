@@ -22,8 +22,6 @@ mstar = string(strtrim((round(10*alog10(stat[ind].m_star)))/10.0,2),format='(A4)
 outfile = strtrim(haloid,2) + '_' + mdark + '_' + mstar + '_'
 shortbase = (strsplit(filebase,'.',/extract))[0] + '.g' + (strsplit((strsplit(filebase,'.',/extract))[2],'g',/extract))[1]
 LOSfile = 'LOS.' + shortbase + '.' + step + '.' + strtrim(haloid,2)
-rtipsy,filename,h,g,d,s,/justhead
-redshift = string(strtrim(round(100.0*(1/h.time - 1)/100.0),2),format='(A5)')
 first = strpos(filebase,'cosmo') + 5
 last = strpos(filebase,'cmb')
 box = strmid(filebase,first,last - first)
@@ -34,8 +32,10 @@ IF (file_exist(halofilename + '.std') EQ 0) OR keyword_set(remake) THEN BEGIN
 ;Select the halo
     tipsysatshi,filename,haloid,units.lengthunit,units.massunit,cutout_rad = maxr,outarray = outarray
 ENDIF
-print,'Run ~/tipsy_tools/smooth -s 32g -o ' + dir + filebase + '.' + step + '/' + halofilename + '.hsmooth < ' + dir + filebase + '.' + step + '/'+ halofilename + '.std'
-stop 
+rtipsy,halofilename + '.std',h,g,d,s,/justhead
+redshift = string(strtrim(round(100.0*(1/h.time - 1)/100.0),2),format='(A5)')
+print,'Run /home/christensen/Code/smooth/smooth -s 32g -o ' + halofilename + ' hsmooth < ' + halofilename + '.std'
+;stop ;Take out stop after having created the .hsm file
 ;Add the correct smoothing lengths to the file
 fix_smooth,halofilename         ;Missing so temporarily commented out
 
@@ -86,6 +86,7 @@ END
 
 PRO prep_tipsy_master
   dir = '/nobackupp8/crchrist/MolecH/h239.cosmo50cmb.3072g/h239.cosmo50cmb.3072g14HMbwK/'
+  dir = '/home/christensen/Storage2/UW/MolecH/Cosmo/h239.cosmo50cmb.3072g/h239.cosmo50cmb.3072g14HMbwK/'
   filebase = 'h239.cosmo50cmb.3072g14HMbwK'
   step_arr = ['00048','00060','00084','00128','00228','00328','00424']
   haloid_arr = ['6','5','2','1','1','1','1']
