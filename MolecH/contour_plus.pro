@@ -1,7 +1,7 @@
 PRO CONTOUR_PLUS, x,y,weight = weight,XBINSIZE=xbinsize,YBINSIZE=ybinsize, $
                   XMIN=xmin,YMIN=ymin,XMAX=xmax,YMAX=ymax,LEVELS=levels,$
                   THRESHOLD=threshold,REVERSE=reverse,NLEVELS=nlevels, LOGLEVEL=loglevel,$
-                  LENSCALE = LENSCALE,C_COLOR = C_COLOR, verbose = verbose,_EXTRA=EXTRA
+                  LENSCALE = LENSCALE,C_COLOR = C_COLOR, verbose = verbose, FILL = FILL, _EXTRA=EXTRA
 
 ; PROGRAM: CONTOUR_PLUS
 ;
@@ -49,8 +49,7 @@ ybins=FINDGEN(nybins + 1)*(ymax - ymin)/nybins + ymin
 xbins_plot=(xbins[0:nxbins - 1] + xbins[1:nxbins])/2
 ybins_plot=(ybins[0:nybins - 1] + ybins[1:nybins])/2
 
-hist=HIST_2D_weighted(x,y,nxbins = nxbins, nybins = nybins, weight = weight,bin1=xbinsize,bin2=ybinsize,min1=xmin,min2=ymin,max1=xmax,max2=ymax)
-
+hist=HIST_2D_weighted(x,y,nxbins = nxbins, nybins = nybins, weight = weight,bin1=xbinsize,bin2=ybinsize,min1=float(xmin),min2=float(ymin),max1=float(xmax),max2=float(ymax))
 IF KEYWORD_SET(verbose) THEN BEGIN
     window,1
     yh = histogram(hist[where(hist ne 0)],locations = xh,nbins = 100)
@@ -94,8 +93,7 @@ ENDIF ELSE BEGIN
  
 ;    contour,hist,xbins_plot,ybins_plot,levels=levels,/FILL,C_COLOR = C_COLOR,/overplot,_EXTRA=EXTRA,closed = 1,/cell_fill ;,min_value = threshold
     contour,hist,xbins_plot,ybins_plot,yrange=yrange,levels=levels,/overplot,/FILL,_EXTRA=extra,C_COLOR=REPLICATE(!P.BACKGROUND,nlevels)
-    contour,hist,xbins_plot,ybins_plot,yrange=yrange,levels=levels,/overplot
-stop
+    IF keyword_set(FILL) THEN contour,hist,xbins_plot,ybins_plot,yrange=yrange,levels=levels,/overplot,/FILL,C_COLOR = C_COLOR ELSE contour,hist,xbins_plot,ybins_plot,yrange=yrange,levels=levels,/overplot
 ;    contour,hist,xbins[0:N_ELEMENTS(xbins) - 2],ybins[0:N_ELEMENTS(ybins) - 2],levels=levels,/FILL,C_COLOR = C_COLOR,/overplot,_EXTRA=EXTRA
 ;yrange=yrange,levels=levels,/overplot,/FILL,_EXTRA=extra,C_COLOR = (INDGEN(nlevels)+1)*240/nlevels ;,C_COLOR=REPLICATE(!P.BACKGROUND,nlevels)
 ;     contour,hist,xbins[0:N_ELEMENTS(xbins) - 2],ybins[0:N_ELEMENTS(ybins) - 2],levels=levels,/overplot;yrange=yrange,levels=levels,/overplot
