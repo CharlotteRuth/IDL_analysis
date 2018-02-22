@@ -250,7 +250,7 @@ FOR i = 0, n - 1 DO BEGIN ;Iterate through the files
    inflowzdiskcum_all_uniq =      weighted_histogram(inflowdiskt_all_uniq, weight =  inflowdiskm_all_uniq*inflowdiskmet_all_uniq, min = 1e-6, max = round(ageUniverse/1e9), locations = timearr,/cum,binsize = 0.05) 
    inflowzdiskcum_all_uniq_disk = weighted_histogram(inflowdiskt_all_uniq, weight =  inflowdiskm_all_uniq*inflowdiskmet_all_uniq_disk, min = 1e-6, max = round(ageUniverse/1e9), locations = timearr,/cum,binsize = 0.05) 
    inflowmdiskhist_all_uniq = weighted_histogram(inflowdiskt_all_uniq, weight =  inflowdiskm_all_uniq,  min = 1e-6, max = round(ageUniverse/1e9), locations = timearr,binsize = 0.05) 
-   inflowzdiskhist_all_uniq = weighted_histogram(inflowdiskt_all_uniq, weight =  inflowdiskm_all_uniq*inflowdiskmet_all_uniq, min = 1e-6, max = round(ageUniverse/1e9), locations = timearr,binsize = 0.05)
+   inflowzdiskhist_all_uniq      = weighted_histogram(inflowdiskt_all_uniq, weight =  inflowdiskm_all_uniq*inflowdiskmet_all_uniq, min = 1e-6, max = round(ageUniverse/1e9), locations = timearr,binsize = 0.05)
    inflowzdiskhist_all_uniq_disk = weighted_histogram(inflowdiskt_all_uniq, weight =  inflowdiskm_all_uniq*inflowdiskmet_all_uniq_disk, min = 1e-6, max = round(ageUniverse/1e9), locations = timearr,binsize = 0.05) 
    IF keyword_set(debug) THEN BEGIN
 ;-------------------- Inflow Disk (reaccretion of all gas that leaves
@@ -595,9 +595,15 @@ FOR i = 0, n - 1 DO BEGIN ;Iterate through the files
    oplot,time,zstars_cum/yscale,color = cstar,thick = thicks[i],linestyle = 5 ;Metals produced by stars
    zstars_cum_spline = spline(time[uniq(time)],zstars_cum[uniq(time)],timearr)
    zstars_cum_spline[where(timearr lt min(time))] = 0
+
    ;Metals produced + metals (re)accreted + metals lost
    ;Metals produced (zstar_cum_spline) + metals accreted as stars (inflowzstarcum)+ accretion to disk (inflowzdiskcum_all)- lost from the disk (relostzcum)
-   IF keyword_set(debug) THEN oplot,timearr[indtarr],(zstars_cum_spline[indtarr] + inflowzstarcum[indtarr]+ inflowzdiskcum_all[indtarr] - relostzcum[indtarr] - miss_disk_out)/yscale,linestyle = 3,thick = thicks[i],color = csim
+   IF keyword_set(debug) THEN BEGIN
+       oplot,timearr[indtarr],(zstars_cum_spline[indtarr] + inflowzstarcum[indtarr]+ inflowzdiskcum_all[indtarr] - relostzcum[indtarr] - miss_disk_out)/yscale,linestyle = 3,thick = thicks[i],color = csim
+       zindisk_calc = (zstars_cum_spline[indtarr] + inflowzstarcum[indtarr]+ inflowzdiskcum_all[indtarr] - relostzcum[indtarr] - miss_disk_out)
+       zindisk_calc_spline = spline(timearr[indtarr],zindisk_calc,time)
+       print,(zindisk_calc_spline - (zmetals + zstars_in))/zstars_cum*100
+   ENDIF
    ;Metals produced (zstars_cum_spline) + accretion to the disk (inflowzdiskcum_all)
 ;   oplot,timearr[indtarr],zstar_cum_spline[indtarr] + inflowzdiskcum_all[indtarr] - inflowzdiskcum_all_uniq[indtarr] - relostzcum[indtarr] - miss_disk_out,linestyle = 3,thick = thicks[i],color = 100
 ; Metals expelled from the halo (blue solid)
@@ -622,7 +628,8 @@ FOR i = 0, n - 1 DO BEGIN ;Iterate through the files
    IF i MOD 4 EQ 3 THEN print,'Max/min: ',max(inflowzdiskcum_all - inflowzdiskcum_all_uniq),min(-1*relostzcum[indtarr] - miss_disk_out),max(inflowzdiskcum_all - inflowzdiskcum_all_uniq),min(-1*relostzcum[indtarr] - miss_disk_out)/yscale
  
   IF keyword_set(pmulti) THEN multiplot ELSE $
-      IF keyword_set(outplot) THEN device,/close ;ELSE stop
+      IF keyword_set(outplot) THEN device,/close ELSE $
+        IF keyword_set(debug) THEN stop
 
 ;************** Plot History of Halo Metal Content *************************
    IF NOT keyword_set(pmulti) AND keyword_set(plot_halo) THEN BEGIN
@@ -643,7 +650,7 @@ FOR i = 0, n - 1 DO BEGIN ;Iterate through the files
 ; Reaccretion of metals onto the halo (pea green dashed)
       oplot,timearr,inflowzcum - inflowzcum_uniq,color = cheat_halo,thick = thicks[i],linestyle = 2
 ; Reaccretion of metals after they were expelled from the virial radius (blue solid)
-      oplot,timearr,reinflow_expellzcum,color = cexpell,thick = thicks[i],linestyle = linestyle[2]
+      oplot,timearr,reinflow_expellzcum,color = cexpell,thick = thicks[i],linestyle = 0 ;linestyle[2]
 
 ; Metals outflow from the halo (pea green solid)
       oplot,timearr[indtarr],-1*outflowzcum[indtarr] - miss_halo_out,color = cheat_halo,thick = thicks[i]
@@ -685,7 +692,7 @@ FOR i = 0, n - 1 DO BEGIN ;Iterate through the files
 ;    oplot,timearr[where(inflowmdiskhist_all NE 0)],inflowzdiskhist_all[where(inflowmdiskhist_all NE 0)]/inflowmdiskhist_all[where(inflowmdiskhist_all NE 0)],color = 50,linestyle = 2
 ;Metallicity of all gas that returns to the disk after being lost (i.e., I'm ignoring the metallicity of the gas particles accreted for the first time.)
       inflowmdiskhist_all_return = inflowmdiskhist_all - inflowmdiskhist_all_uniq
-      inflowzdiskhist_all_return = inflowzdiskhist_all - inflowzdiskhist_all_uniq_disk
+      inflowzdiskhist_all_return = inflowzdiskhist_all - inflowzdiskhist_all_uniq
       oplot,timearr[where(inflowmdiskhist_all NE 0)],inflowzdiskhist_all[where(inflowmdiskhist_all NE 0)]/inflowmdiskhist_all[where(inflowmdiskhist_all NE 0)]/zsolar,linestyle = 5,color = cpristine,thick = thicks[i]
       oplot,timearr[where(inflowmdiskhist_all_return NE 0)],inflowzdiskhist_all_return[where(inflowmdiskhist_all_return NE 0)]/inflowmdiskhist_all_return[where(inflowmdiskhist_all_return NE 0)]/zsolar,linestyle = 2,color = cheat,thick = thicks[i]
 ;Metallicity of all gas removed from the disk
@@ -706,6 +713,12 @@ FOR i = 0, n - 1 DO BEGIN ;Iterate through the files
         IF keyword_set(label) THEN legend,[label[i]],box = 0,/right,/top
       IF i NE 1 THEN $
         IF keyword_set(label) THEN legend,[label[i]],box = 0,/right,/bottom
+      dataout = [[timearr],[reejectmhist],[reejectzhist],[inflowmdiskhist_all],[inflowzdiskhist_all],[inflowmdiskhist_all_uniq],[inflowzdiskhist_all_uniq],[relostmhist],[relostzhist],[inflowmdiskhist],[inflowzdiskhist],[reejectmhist],[reejectzhist]]
+      outbase = strsplit(pfile,'.param',/extract,/regex)
+      openw,1,outbase[0] + '.grp' + haloid[i] + '.inflow_outflow_z.dat'
+      printf,1,'timearr ','reejectmhist ','reejectzhist ','inflowmdiskhist_all ','inflowzdiskhist_all ','inflowmdiskhist_all_uniq ','inflowzdiskhist_all_uniq ','relostmhist ','relostzhist ','inflowmdiskhist ','inflowzdiskhist ','reejectmhist ','reejectzhist ',format = '(13A)'
+      printf,1,transpose(dataout),format = '(13e)'
+      close,1
 
 ;Calculate the average metallicity enhancement of the outflow
       ;Only complete analysis since z = 3.5

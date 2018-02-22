@@ -407,33 +407,34 @@ ENDELSE
 IF keyword_set(outplot) THEN  device,filename = outplot + '_neteject_expell_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xmass,primehalo_stars_zmass,psym = symcat(symbols[0]),/ylog,/xlog,xrange = xrange,xtitle = xtitle,ytitle = 'Metal Mass [M' + sunsymbol() + ']',symsize = symsize,/nodata,yrange = [1e4,8e8];Metals produced by stars since start of time
 oplot,xmass,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1]),psym = symcat(symbols[4]),color = colore[4],symsize = symsize;Net Metals lost
-oplot,xmass,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1]),psym = symcat(sym_outline(symbols[4])),color = fgcolor,symsize = symsize
+oplot,xmass,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1]),psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),color = fgcolor,symsize = symsize
 ;oplot,xmass,(reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1]),psym = symcat(symbols[1]),color = colore[1],symsize = symsize;Net Metals ejected
 ;oplot,xmass,(reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1]),psym = symcat(sym_outline(symbols[1])),color = fgcolor,symsize = symsize
 oplot,xmass,reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1],psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1],psym = symcat(sym_outline(symbols[0])),color = fgcolor,symsize = symsize
+oplot,xmass,reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),color = fgcolor,symsize = symsize
 ;oplot,xmass,(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(17),color = fgcolor,symsize = symsize
 ;oplot,xmass,(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4])),color = fgcolor,symsize = symsize
 oplot,xmass, primehalo_stars_zmass + diskgmassmet_uniq_total, psym = symcat(symbol_s),color = color_s,symsize = symsize ;Metals produced by the main progenitor (consider using currenthalo_stars_zmass if I want metals produced by stars in main halo at z = 0)
-oplot,xmass, primehalo_stars_zmass + diskgmassmet_uniq_total, psym = symcat(sym_outline(symbol_s)),color = fgcolor,symsize = symsize
+oplot,xmass, primehalo_stars_zmass + diskgmassmet_uniq_total, psym = symcat(sym_outline(symbol_s),thick = thicks[0]),color = fgcolor,symsize = symsize
 ;legend,['Net metals expelled','Net metals ejected','Net metals lost','Metals produced','Metals produced + accreted'],psym = [symbols[0:1],symbols[4],symbol_s,17],color = [colore[0:1],colore[4],color_s,fgcolor],/bottom,/right,box = 0
 ;legend,['Net metals expelled','Net metals lost','Metals produced','Metals produced + accreted'],psym = [symbols[0],symbols[4],symbol_s,17],color = [colore[0],colore[4],color_s,fgcolor],/bottom,/right,box = 0
 legend,['Net metals expelled','Net metals removed','Metals produced + accreted'],psym = [symbols[0],symbols[4],symbol_s],color = [colore[0],colore[4],color_s],/bottom,/right,box = 0
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
 ;Total Metals
+distinct_colors,n_colors = 12
 IF keyword_set(outplot) THEN  device,filename = outplot + '_eject_expell_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xmass,reexpellmassmet[*,nz - 1],psym = symcat(symbols[0]),/ylog,/xlog,xrange = xrange,xtitle = xtitle,ytitle = 'Metal Mass [M' + sunsymbol() + ']',symsize = symsize,/nodata,yrange = [1e4,2e9]
 oplot,xmass,reexpellmassmet[*,nz - 1],psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,reexpellmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0])),color = fgcolor,symsize = symsize
+oplot,xmass,reexpellmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),color = fgcolor,symsize = symsize
 oplot,xmass,reejectmassmet[*,nz - 1],psym = symcat(symbols[1]),color = colore[1],symsize = symsize;Metals ejected
-oplot,xmass,reejectmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1])),color = fgcolor,symsize = symsize
+oplot,xmass,reejectmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),color = fgcolor,symsize = symsize
 oplot,xmass,relostmassmet[*,nz - 1],psym = symcat(symbols[4]),color = colore[4],symsize = symsize;Metals lost
-oplot,xmass,relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4])),color = fgcolor,symsize = symsize
+oplot,xmass,relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),color = fgcolor,symsize = symsize
 ;oplot,xmass,(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(17),color = fgcolor,symsize = symsize
 ;oplot,xmass,(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4])),color = fgcolor,symsize = symsize
 oplot,xmass, primehalo_stars_zmass, psym = symcat(symbol_s),color = color_s,symsize = symsize ;Metals produced by the main progenitor (consider using currenthalo_stars_zmass if I want metals produced by stars in main halo at z = 0)
-oplot,xmass, primehalo_stars_zmass, psym = symcat(sym_outline(symbol_s)),color = fgcolor,symsize = symsize
+oplot,xmass, primehalo_stars_zmass, psym = symcat(sym_outline(symbol_s),thick = thicks[0]),color = fgcolor,symsize = symsize
 ;legend,['Metals expelled','Metals ejected','Metals lost','Metals produced','Metals produced + accreted'],psym = [symbols[0:1],symbols[4],symbol_s,17],color = [colore[0:1],colore[4],color_s,fgcolor],/bottom,/right,box = 0
 legend,['Metals expelled','Metals ejected','Metals removed','Metals produced'],psym = [symbols[0:1],symbols[4],symbol_s],color = [colore[0:1],colore[4],color_s],/bottom,/right,box = 0
 IF keyword_set(outplot) THEN device, /close ELSE stop
@@ -443,10 +444,12 @@ IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_produced_zmass.
 ;plot,xmass,primehalo_stars_zmass/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(4,thick = 8),/xlog,xrange = xrange,xtitle = xtitle,ytitle = textoidl('Z_{produced}/(Z_{produced} + Z_{externally accreted})'),symsize = symsize,yrange = [0.85,1.01]
 ;oplot,[1e6,1e12],[1,1]
 binsize = 0.1
-plot,alog10([vmass[0],vmass[0]]),[diskgmassmet_uniq_total[0],diskgmassmet_uniq_total[0]]/primehalo_stars_zmass[0],xrange = [min(alog10(xrange)) - binsize/2,max(alog10(xrange)) + binsize/2],xtitle = textoidl('Log(M_{vir}/M')+sunsymbol()+')',ytitle = textoidl('Z_{accreted}/(Z_{produced} + Z_{accreted})'),thick = 14,/nodata,yrange = [0,0.15]
+plot,alog10([vmass[0],vmass[0]]),[diskgmassmet_uniq_total[0],diskgmassmet_uniq_total[0]]/primehalo_stars_zmass[0],xrange = [min(alog10(xrange)) - binsize/2,max(alog10(xrange)) + binsize/2],xtitle = textoidl('Log(M_{vir}/M')+sunsymbol()+')',ytitle = textoidl('Z_{accreted as gas}/Z_{produced}'),thick = 14,/nodata,yrange = [0,0.15]
+distinct_colors,n_colors = 12
 FOR i = 0, n_elements(dirs) - 1 DO polyfill,[alog10(xmass[i]) - binsize/2,alog10(xmass[i]) - binsize/2,alog10(xmass[i]) + binsize/2,alog10(xmass[i]) + binsize/2],[0,diskgmassmet_uniq_total[i],diskgmassmet_uniq_total[i],0]/primehalo_stars_zmass[i],/line_fill,orientation = 45,color = cpristine
 FOR i = 0, n_elements(dirs) - 1 DO oplot,[alog10(xmass[i]) - binsize/2,alog10(xmass[i]) - binsize/2,alog10(xmass[i]) + binsize/2,alog10(xmass[i]) + binsize/2],[0,diskgmassmet_uniq_total[i],diskgmassmet_uniq_total[i],0]/primehalo_stars_zmass[i]
 ;,thick = 14,linestyle = 0;,color = 
+;Metals accreted as gas/metals produced by stars in main progenitor
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
 ;------------ Expelled Metal Mass as a Function of Halo Mass and Time
@@ -455,19 +458,20 @@ IF keyword_set(z_cut) THEN BEGIN
     plot,xmass,reexpellmassmet[*,0],/ylog,/xlog,xrange = xrange,yrange = [1e3,2e8],xtitle = xtitle,ytitle = 'Mass of Metals Expelled [M' + sunsymbol() + ']',/nodata
     FOR iz = 0, nz - 1 DO BEGIN
        oplot,xmass,reexpellmassmet[*,iz],psym = symcat(ex_psym[iz]),color  = z_colors[iz],symsize = symsize  
-       oplot,xmass,reexpellmassmet[*,iz],psym = symcat(sym_outline(ex_psym[iz])),symsize = symsize
+       oplot,xmass,reexpellmassmet[*,iz],psym = symcat(sym_outline(ex_psym[iz]),thick = thicks[0]),symsize = symsize
     ENDFOR
     legend,'z = ' + string(z_bins_legend,format = '(A3)') + ' ',psym = ex_psym,color  = z_colors,/right,/bottom,box = 0
     IF keyword_set(outplot) THEN device, /close ELSE stop    
 ENDIF
 
 ;------------ Ejected Metal Mass as a Function of Halo Mass and Time
+distinct_colors,n_colors = 12
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_zeject_mass_time.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
     plot,xmass,reejectmassmet[*,0],/ylog,/xlog,xrange = xrange,yrange = [1e3,2e8],xtitle = xtitle,ytitle = 'Mass of Metals Ejected [M' + sunsymbol() + ']',/nodata
     FOR iz = 0, nz - 1 DO BEGIN
        oplot,xmass,reejectmassmet[*,iz],psym = symcat(ej_psym[iz]),color  = z_colors[iz] ,symsize = symsize 
-       oplot,xmass,reejectmassmet[*,iz],psym = symcat(sym_outline(ej_psym[iz])),symsize = symsize
+       oplot,xmass,reejectmassmet[*,iz],psym = symcat(sym_outline(ej_psym[iz]),thick = thicks[0]),symsize = symsize
     ENDFOR
     legend,'z = ' + string(z_bins_legend,format = '(A3)') + ' ',psym = ej_psym,color  = z_colors,/right,/bottom,box = 0
     IF keyword_set(outplot) THEN device, /close ELSE stop    
@@ -476,12 +480,13 @@ ENDIF
 ;------------ Fraction of Metal Mass Lost that is Expelled & Ejected
 IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_lostgas_eject_expell_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xmass,reexpellmassmet[*,nz - 1]/relostmassmet[*,nz - 1],/xlog,xrange = xrange,yrange = [0,0.6],xtitle = xtitle,ytitle = 'Metal Outflow Mass/Metal Mass Removed',/nodata
+distinct_colors,n_colors = 12
 oplot,xmass,reexpellmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,reexpellmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,reexpellmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xmass, reejectmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass, reejectmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass, reejectmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xmass,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1])/relostmassmet[*,nz - 1],psym = symcat(symbols[4]),color = colore[4],symsize = symsize;Net Metals lost
-oplot,xmass,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1])/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4])),color = fgcolor,symsize = symsize
+oplot,xmass,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1])/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),color = fgcolor,symsize = symsize
 legend,['Metal Mass Expelled','Metal Mass Ejected','Net Metal Mass Removed'],psym = [symbols[0:1],symbols[4]],color = [colore[0:1],colore[4]],box = 0,/top,/right;position = [2.2e11,0.4];/bottom,/right
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
@@ -490,14 +495,15 @@ IF 1 THEN BEGIN
 ;------------ Fraction of Net Metals in produced+accreted that are Expelled & Ejected
 ;XXX Change this to net metals ejected/expelled
 IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_netgas_eject_expell_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+distinct_colors,n_colors = 12
 plot,[1,1e12],[1,1],/xlog,xrange = xrange,xtitle = xtitle,ytitle = 'Fraction of Net Metals Removed/Ejected/Expelled',yrange = [0,1.2]
 ;zavail_zmax_total + diskgmassmet_uniq_total
 oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xmass, (reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass, (reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass, (reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xmass, (relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xmass, (relostmassmet[*,nz - 1]- diskgmass_lostmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4])),symsize = symsize
+oplot,xmass, (relostmassmet[*,nz - 1]- diskgmass_lostmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 legend,['Net Metal Mass Expelled','Net Metal Mass Ejected','Net Metal Mass Removed'],psym = [symbols[0:1],symbols[4]],color = [colore[0:1],colore[4]],box = 0,/top,/right;position = [2.2e11,0.4];/bottom,/right
 IF keyword_set(outplot) THEN device, /close ELSE stop
 ENDIF
@@ -505,14 +511,15 @@ ENDIF
 IF 1 THEN BEGIN
 ;------------ Fraction of Metals in produced+accreted that are Expelled & Ejected
 IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_gas_eject_expell_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+distinct_colors,n_colors = 12
 plot,[1,1e12],[1,1],/xlog,xrange = xrange,xtitle = xtitle,ytitle = 'Fraction of Metals Removed/Ejected/Expelled',yrange = [0,3.5]
 ;zavail_zmax_total + diskgmassmet_uniq_total
 oplot,xmass,(reexpellmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,(reexpellmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,(reexpellmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xmass, (reejectmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass, (reejectmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass, (reejectmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xmass, (relostmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xmass, (relostmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4])),symsize = symsize
+oplot,xmass, (relostmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 ;oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0])),symsize = symsize,color = colore[0]
 ;oplot,xmass, (reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1])),color = colore[1],symsize = symsize
 ;oplot,xmass, (relostmassmet[*,nz - 1]- diskgmass_lostmet[*,nz - 1])/(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4])),symsize = symsize,color = colore[4]
@@ -522,24 +529,53 @@ ENDIF
 
 ;Fraction of metals reaccreted
 IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_reaccreted_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],/nodata,/xlog,xrange = xrange,xtitle = xtitle,ytitle = 'Fraction of Metals and Mass Reaccreted',yrange = [0,1.1]
+distinct_colors,n_colors = 12
+plot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],/nodata,/xlog,xrange = xrange,xtitle = xtitle,ytitle = 'Fraction of Metals and Mass Reaccreted',yrange = [0,1.1],title = 'z = 0'
 oplot,[1e9,1e12],[1,1],linestyle = 1
 oplot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4])),symsize = symsize
+oplot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 ;oplot,xmass,diskgmass_expellmet[*,nz - 1]/reexpellmassmet[*,nz - 1],psym = symcat(symbols[0]),color = colore[0],symsize = symsize
 ;oplot,xmass,diskgmass_expellmet[*,nz - 1]/reexpellmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0])),symsize = symsize
 ;oplot,xmass,diskgmassmet[*,nz - 1]/reejectmassmet[*,nz - 1],psym = symcat(symbols[1]),color = colore[1],symsize = symsize
 ;oplot,xmass,diskgmassmet[*,nz - 1]/reejectmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1])),symsize = symsize
 
 ;oplot,xmass,diskgmass_lost[*,nz - 1]/relostmass[*,nz - 1],psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xmass,diskgmass_lost[*,nz - 1]/relostmass[*,nz - 1],psym = symcat(sym_outline(symbols[4])),symsize = symsize,color = colore[4],thick = 4
+oplot,xmass,diskgmass_lost[*,nz - 1]/relostmass[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = 8),symsize = symsize,color = colore[4]
 ;oplot,xmass,diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1],psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1],psym = symcat(sym_outline(symbols[0])),symsize = symsize,color = colore[0],thick = 4
+oplot,xmass,diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = 8),symsize = symsize,color = colore[0]
 ;oplot,xmass,diskgmass[*,nz - 1]/reejectmass[*,nz - 1],psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass,diskgmass[*,nz - 1]/reejectmass[*,nz - 1],psym = symcat(sym_outline(symbols[1])),symsize = symsize,color = colore[1],thick = 4
+oplot,xmass,diskgmass[*,nz - 1]/reejectmass[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = 8),symsize = symsize,color = colore[1]
 legend,['Reaccretion after removal from disk','Reaccretion after ejection',textoidl('Reaccretion after expullsion beyond R_{vir}')],psym = [sym_outline(symbols[4]),sym_outline(symbols[1]),sym_outline(symbols[0])],color = [colore[4],colore[1],colore[0]],box = 0,/top,/left
 
 IF keyword_set(outplot) THEN device, /close ELSE stop
+
+;Fraction of metals reaccreted
+IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_reaccreted_zmass_z0_z2.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize*1.6,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize*1.6
+distinct_colors,n_colors = 12
+multiplot,[1,2],mytitle = 'Fraction of Metals and Mass Reaccreted',mxtitle = xtitle,mxTitSize = !x.charsize,myTitSize = !y.charsize
+plot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],/nodata,/xlog,xrange = xrange,yrange = [0,1]
+oplot,[1e9,1e12],[1,1],linestyle = 1
+oplot,xmass,diskgmass_lost[*,0]/relostmass[*,0],psym = symcat(sym_outline(symbols[4]),thick = 8),symsize = symsize,color = colore[4]
+oplot,xmass,diskgmass_expell[*,0]/reexpellmass[*,0],psym = symcat(sym_outline(symbols[0]),thick = 8),symsize = symsize,color = colore[0]
+oplot,xmass,diskgmass[*,0]/reejectmass[*,0],psym = symcat(sym_outline(symbols[1]),thick = 8),symsize = symsize,color = colore[1]
+oplot,xmass,diskgmass_lostmet[*,0]/relostmassmet[*,0],psym = symcat(symbols[4]),color = colore[4],symsize = symsize
+oplot,xmass,diskgmass_lostmet[*,0]/relostmassmet[*,0],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
+legend,['Reaccretion after removal from disk','Reaccretion after ejection',textoidl('Reaccretion after expullsion beyond R_{vir}')],psym = [sym_outline(symbols[4]),sym_outline(symbols[1]),sym_outline(symbols[0])],color = [colore[4],colore[1],colore[0]],box = 0,/top,/right
+legend,['z = 2'],box = 0,/top,/left
+multiplot
+
+plot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],/nodata,/xlog,xrange = xrange,yrange = [0,1]
+distinct_colors,n_colors = 12
+oplot,[1e9,1e12],[1,1],linestyle = 1
+oplot,xmass,diskgmass_lost[*,nz - 1]/relostmass[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = 8),symsize = symsize,color = colore[4]
+oplot,xmass,diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = 8),symsize = symsize,color = colore[0]
+oplot,xmass,diskgmass[*,nz - 1]/reejectmass[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = 8),symsize = symsize,color = colore[1]
+oplot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(symbols[4]),color = colore[4],symsize = symsize
+oplot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
+legend,['z = 0'],box = 0,/top,/left
+multiplot,/reset
+IF keyword_set(outplot) THEN device, /close ELSE stop
+
 
 ;Fraction of mass reaccreted
 ;IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_reaccreted_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
@@ -553,14 +589,15 @@ IF keyword_set(outplot) THEN device, /close ELSE stop
 ;IF keyword_set(outplot) THEN device, /close ELSE stop
 
 IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_reaccreted_metallicity.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+distinct_colors,n_colors = 12
 plot,xmass,diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1],/nodata,/xlog,xrange = xrange,xtitle = xtitle,ytitle = 'Fraction of Metals Reaccreted/Fraction Mass Reaccreted',yrange = [0,1]
 ;oplot,[1e9,1e12],[1,1],linestyle = 1
 oplot,xmass,(diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1])/(diskgmass_lost[*,nz - 1]/relostmass[*,nz - 1]),psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xmass,(diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1])/(diskgmass_lost[*,nz - 1]/relostmass[*,nz - 1]),psym = symcat(sym_outline(symbols[4])),symsize = symsize
+oplot,xmass,(diskgmass_lostmet[*,nz - 1]/relostmassmet[*,nz - 1])/(diskgmass_lost[*,nz - 1]/relostmass[*,nz - 1]),psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 oplot,xmass,(diskgmass_expellmet[*,nz - 1]/reexpellmassmet[*,nz - 1])/(diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1]),psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,(diskgmass_expellmet[*,nz - 1]/reexpellmassmet[*,nz - 1])/(diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1]),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,(diskgmass_expellmet[*,nz - 1]/reexpellmassmet[*,nz - 1])/(diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1]),psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xmass,(diskgmassmet[*,nz - 1]/reejectmassmet[*,nz - 1])/(diskgmass[*,nz - 1]/reejectmass[*,nz - 1]),psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass,(diskgmassmet[*,nz - 1]/reejectmassmet[*,nz - 1])/(diskgmass[*,nz - 1]/reejectmass[*,nz - 1]),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass,(diskgmassmet[*,nz - 1]/reejectmassmet[*,nz - 1])/(diskgmass[*,nz - 1]/reejectmass[*,nz - 1]),psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 legend,['Reaccretion after removal from disk','Reaccretion after ejection',textoidl('Reaccretion after expullsion beyond R_{vir}')],psym = [symbols[4],symbols[1],symbols[0]],color = [colore[4],colore[1],colore[0]],box = 0,/bottom,/left
 
 IF keyword_set(outplot) THEN device, /close ELSE stop
@@ -569,9 +606,10 @@ IF 1 THEN BEGIN
 ;------------ Fraction of Metals Expelled
 ;XXX Need total metals in the disk
 IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_gas_expelled_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+distinct_colors,n_colors = 12
 plot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),/xlog,xrange = xrange,yrange = [0,1],xtitle = xtitle,ytitle = 'Net Fraction of Metals Expelled',/nodata;yrange = [0,1]
 oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 IF keyword_set(outplot) THEN device, /close ELSE stop
 ENDIF
 
@@ -580,10 +618,11 @@ IF 1 THEN BEGIN
 ;Fraction of metals expelled over time
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_gas_expelled_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+    distinct_colors,n_colors = 12
     plot,xmass,(reexpellmassmet - diskgmass_expellmet)/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(symbols[0]),/xlog,xrange = xrange,yrange = [0,1],xtitle = xtitle,ytitle = 'Net Fraction of Metals Expelled',/nodata,symsize = symsize; yrange = [0,1]
     FOR iz = 0, nz - 1 DO BEGIN
        oplot,xmass,(reexpellmassmet[*,iz] - diskgmass_expellmet[*,iz])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(ex_psym[iz]),color  = z_colors[iz],symsize = symsize
-       oplot,xmass,(reexpellmassmet[*,iz] - diskgmass_expellmet[*,iz])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(ex_psym[iz])),symsize = symsize
+       oplot,xmass,(reexpellmassmet[*,iz] - diskgmass_expellmet[*,iz])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(ex_psym[iz]),thick = thicks[0]),symsize = symsize
     ENDFOR
     legend,'z = ' + string(z_bins_legend,format = '(A3)') + ' ',psym = ex_psym,color  = z_colors,/right,/top,box = 0
     IF keyword_set(outplot) THEN device, /close ELSE stop
@@ -593,9 +632,10 @@ ENDIF
 IF 1 THEN BEGIN
 ;------------ Fraction of Metals produced+accreted that is Ejected
 IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_gas_ejected_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+distinct_colors,n_colors = 12
 plot,xmass, (reejectmassmet[*,nz - 1]- diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),/xlog,xrange = xrange,yrange = [0,1.0],xtitle = xtitle,ytitle = 'Net Fraction of Metals Ejected',/nodata;yrange = [0,1]
 oplot,xmass, (reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass, (reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass, (reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 IF keyword_set(outplot) THEN device, /close ELSE stop
 ENDIF
 
@@ -604,10 +644,11 @@ IF 1 THEN BEGIN
 ;XXX Need total metals in the disk
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_gas_ejected_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+    distinct_colors,n_colors = 12
     plot,xmass,(reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(symbols[0]),/xlog,xrange = xrange,yrange = [0,1.3],xtitle = xtitle,symsize = symsize,ytitle = 'Net Fraction of Metals Ejected',/nodata; yrange = [0,1]
     FOR iz = 0, nz - 1 DO BEGIN
        oplot,xmass,(reejectmassmet[*,iz] - diskgmassmet[*,iz])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize
-       oplot,xmass,(reejectmassmet[*,iz] - diskgmassmet[*,iz])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(ej_psym[iz])),symsize = symsize
+       oplot,xmass,(reejectmassmet[*,iz] - diskgmassmet[*,iz])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(ej_psym[iz]),thick = thicks[0]),symsize = symsize
     ENDFOR
     legend,'z = ' + string(z_bins_legend,format = '(A3)') + ' ',psym = ej_psym,color  = z_colors,/right,/top,box = 0
     IF keyword_set(outplot) THEN device, /close ELSE stop
@@ -618,27 +659,29 @@ ENDIF
 
 ;------------ Fraction of Lost Metals Ejected or Expelled
 IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_expelled_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+distinct_colors,n_colors = 12
 plot,xmass,reejectmassmet[*,nz - 1]/relostmassmet[*,nz - 1],ytitle = textoidl('M_Z/M_{Z,lost}'),xtitle = xtitle,yrange = [0,0.6],xrange = xrange,psym = symcat(18),/nodata,/xlog
-loadct,0
+;loadct,0
 IF keyword_set(outplot) THEN bar_thick = 14 ELSE bar_thick = 4
 FOR i = 0,n_elements(xmass) - 1 DO oplot,[xmass[i],xmass[i]],[0,1.0],color = 100,thick = bar_thick
 IF keyword_set(colors) THEN distinct_colors,n_colors = 12 ;loadct,39
 FOR i = 0,n_elements(xmass) - 1 DO oplot,[xmass[i],xmass[i]],[0,reejectmassmet[i,nz - 1]/relostmassmet[i,nz - 1]],color = colore[1],thick = bar_thick
 FOR i = 0,n_elements(xmass) - 1 DO oplot,[xmass[i],xmass[i]],[0,reexpellmassmet[i,nz - 1]/relostmassmet[i,nz - 1]],color = colore[0],thick = bar_thick
 oplot,xmass,reejectmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(symbols[1]),symsize = symsize,color = colore[1]
-oplot,xmass,reejectmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass,reejectmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xmass,reexpellmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(symbols[0]),symsize = symsize,color = colore[0]
-oplot,xmass,reexpellmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,reexpellmassmet[*,nz - 1]/relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 legend,['Metals Expelled','Metals Ejected'],psym = symbols[0:1],color = colore[0:1],/top,/right,box = 0
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
 ;------------ Fraction of Ejected Metals Expelled Over Time
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_frac_gas_expelled_zmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+    distinct_colors,n_colors = 12
     plot,xmass,reexpellmassmet[*,nz - 1]/reejectmassmet[*,nz - 1],/xlog,xrange = xrange,yrange = [0,1],xtitle = xtitle,ytitle = 'Fraction of Metal Mass Ejected that is Expelled',psym = 4,symsize = symsize
 ;    FOR iz = 0, nz - 1 DO BEGIN
 ;       oplot,xmass,reexpellmassmet[*,iz]/reejectmassmet[*,iz],psym = symcat(z_psym[iz]),color  = z_colors[iz],symsize = symsize
-;       oplot,xmass,reexpellmassmet[*,iz]/reejectmassmet[*,iz],psym = symcat(sym_outline(z_psym[iz])),symsize = symsize
+;       oplot,xmass,reexpellmassmet[*,iz]/reejectmassmet[*,iz],psym = symcat(sym_outline(z_psym[iz]),thick = thicks[0]),symsize = symsize
 ;    ENDFOR
 ;    legend,'z = ' + string(z_bins_legend,format = '(A3)') + ' ',psym = z_psym,color  = z_colors,/right,/top,box=0
     IF keyword_set(outplot) THEN device, /close ELSE stop    
@@ -649,16 +692,19 @@ mlrange = [10,1000]
 ;------------ Mass Loading
 xarr = vcirc ;xmass
 xarrt = vcirct
+yield = 0.01 ;0.015
+yield_str = '0.01' ;'0.015'
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total,yrange = [0.001,0.05],ytitle = textoidl('Effective metal mass loading factor'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [16,140],/xlog,xstyle = 1
-oplot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[0])),symsize = symsize
-oplot,xarr,reejectmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xarr,reejectmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[1])),symsize = symsize
-oplot,xarr,relostmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xarr,relostmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[4])),symsize = symsize
+plot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total/yield,yrange = [0.001/yield,0.05/yield],ytitle = textoidl('Effective metal mass loading factor/' + yield_str),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [16,140],/xlog,xstyle = 1
+distinct_colors,n_colors = 12
+oplot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
+oplot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
+oplot,xarr,reejectmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
+oplot,xarr,reejectmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
+oplot,xarr,relostmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
+oplot,xarr,relostmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 fits_expell = robust_linefit( alog10(xarr), alog10(reexpellmass[*,nz - 1]/sfmass_total), reexpellmass_fit, sigma_expell )
-fits_eject = robust_linefit( alog10(xarr), alog10(reejectmass[*,nz - 1]/sfmass_total), reejectmass_fit, sigma_eject )
+fits_eject = robust_linefit( alog10(xarr), alog10(reejectmass[*,nz - 1]/sfmass_total/yield), reejectmass_fit, sigma_eject )
 print,'Expell (total): ',fits_expell
 print,'Eject (total): ',fits_eject
 ;oplot,mlrange,10^fits_expell[0]*mlrange^(fits_expell[1]),color = colore[0],linestyle = 0,psym = -3,thick = thicks[0]
@@ -673,16 +719,17 @@ IF keyword_set(outplot) THEN device, /close ELSE stop
 xarr = vcirc ;xmass
 xarrt = vcirct
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_netmass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xarr,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/sfmass_total,yrange = [0.001,0.05],ytitle = textoidl('Net metal loss/stellar mass formed'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [16,140],/xlog,xstyle = 1
-oplot,xarr,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/sfmass_total,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xarr,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[0])),symsize = symsize
-oplot,xarr,(reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/sfmass_total,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xarr,(reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[1])),symsize = symsize
-oplot,xarr,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1])/sfmass_total,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xarr,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[4])),symsize = symsize
-fits_expell = robust_linefit( alog10(xarr), alog10((reexpellmassmet[*,nz - 1]-diskgmass_expellmet[*,nz - 1])/sfmass_total), reexpellmass_fit, sigma_expell )
-fits_eject = robust_linefit( alog10(xarr), alog10((reejectmassmet[*,nz - 1]-diskgmassmet[*,nz - 1])/sfmass_total), reejectmass_fit, sigma_eject )
-fits_lost = robust_linefit( alog10(xarr), alog10((relostmassmet[*,nz - 1]-diskgmass_lostmet[*,nz - 1])/sfmass_total), relostmass_fit, sigma_eject )
+plot,xarr,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/sfmass_total/yield,yrange = [0.001/yield,0.05/yield],ytitle = textoidl('Net metal loss/stellar mass formed/' + yield_str),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [16,140],/xlog,xstyle = 1
+distinct_colors,n_colors = 12
+oplot,xarr,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/sfmass_total/yield,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
+oplot,xarr,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/sfmass_total/yield,psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
+oplot,xarr,(reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/sfmass_total/yield,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
+oplot,xarr,(reejectmassmet[*,nz - 1] - diskgmassmet[*,nz - 1])/sfmass_total/yield,psym = symcat(sym_outline(symbols[1])),thick = thicks[0],symsize = symsize
+oplot,xarr,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1])/sfmass_total/yield,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
+oplot,xarr,(relostmassmet[*,nz - 1] - diskgmass_lostmet[*,nz - 1])/sfmass_total/yield,psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
+fits_expell = robust_linefit( alog10(xarr), alog10((reexpellmassmet[*,nz - 1]-diskgmass_expellmet[*,nz - 1])/sfmass_total/yield), reexpellmass_fit, sigma_expell )
+fits_eject = robust_linefit( alog10(xarr), alog10((reejectmassmet[*,nz - 1]-diskgmassmet[*,nz - 1])/sfmass_total/yield), reejectmass_fit, sigma_eject )
+fits_lost = robust_linefit( alog10(xarr), alog10((relostmassmet[*,nz - 1]-diskgmass_lostmet[*,nz - 1])/sfmass_total/yield), relostmass_fit, sigma_eject )
 print,'Expell (total): ',fits_expell
 print,'Eject (total): ',fits_eject
 print,'Lost (total): ',fits_lost
@@ -699,15 +746,16 @@ xarr = vcirc ;xmass
 xarrt = vcirct
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_netmass_z.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xarr,(reexpellmass[*,nz - 1] - diskgmass_expell[*,nz - 1])/sfmass_total,ytitle = textoidl('Net mass loss/M_{Stellar, formed}*Z_{wind}/Z_{ISM}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [16,140],/xlog,xstyle = 1,yrange = [0.1,40]
+distinct_colors,n_colors = 12
 oplot,xarr,10^0.2*(reejectmass[*,nz - 1] - diskgmass[*,nz - 1])/sfmass_total,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xarr,10^0.2*(reejectmass[*,nz - 1] - diskgmass[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xarr,10^0.2*(reejectmass[*,nz - 1] - diskgmass[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xarr,10^0.2*(reexpellmass[*,nz - 1] - diskgmass_expell[*,nz - 1])/sfmass_total,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xarr,10^0.2*(reexpellmass[*,nz - 1] - diskgmass_expell[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xarr,10^0.2*(reexpellmass[*,nz - 1] - diskgmass_expell[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xarr,10^0.2*(relostmass[*,nz - 1] - diskgmass_lost[*,nz - 1])/sfmass_total,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xarr,10^0.2*(relostmass[*,nz - 1] - diskgmass_lost[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[4])),symsize = symsize
-fits_expell = robust_linefit( alog10(xarr), alog10(10^0.2*(reexpellmass[*,nz - 1]-diskgmass_expell[*,nz - 1])/sfmass_total), reexpellmass_fit, sigma_expell )
-fits_eject = robust_linefit( alog10(xarr), alog10(10^0.2*(reejectmass[*,nz - 1]-diskgmass[*,nz - 1])/sfmass_total), reejectmass_fit, sigma_eject )
-fits_lost = robust_linefit( alog10(xarr), alog10(10^0.2*(relostmass[*,nz - 1]-diskgmass_lost[*,nz - 1])/sfmass_total), relostmass_fit, sigma_eject )
+oplot,xarr,10^0.2*(relostmass[*,nz - 1] - diskgmass_lost[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
+fits_expell = robust_linefit( alog10(xarr), alog10(10^0.2*(reexpellmass[*,nz - 1]-diskgmass_expell[*,nz - 1])/sfmass_total/yield), reexpellmass_fit, sigma_expell )
+fits_eject = robust_linefit( alog10(xarr), alog10(10^0.2*(reejectmass[*,nz - 1]-diskgmass[*,nz - 1])/sfmass_total/yield), reejectmass_fit, sigma_eject )
+fits_lost = robust_linefit( alog10(xarr), alog10(10^0.2*(relostmass[*,nz - 1]-diskgmass_lost[*,nz - 1])/sfmass_total/yield), relostmass_fit, sigma_eject )
 print,'Expell (total): ',fits_expell
 print,'Eject (total): ',fits_eject
 print,'Lost (total): ',fits_lost
@@ -729,15 +777,16 @@ xarr = vcirc ;xmass
 xarrt = vcirct
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_netmass_z_vcirc.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xarr,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],ytitle = textoidl('Net mass loss/M_{Stellar, formed}*Z_{wind}/Z_{ISM}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [16,140],/xlog,xstyle = 1,yrange = [0.01,100]
+distinct_colors,n_colors = 12
 oplot,xarr,(reejectmassmetr[*,nz - 1] - diskgmassmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xarr,(reejectmassmetr[*,nz - 1] - diskgmassmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[1])),symsize = symsize
-oplot,xarr,10^0.2*(reejectmass[*,nz - 1] - diskgmass[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xarr,(reejectmassmetr[*,nz - 1] - diskgmassmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
+oplot,xarr,10^0.2*(reejectmass[*,nz - 1] - diskgmass[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xarr,(reexpellmassmetr[*,nz - 1] - diskgmass_expellmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xarr,(reexpellmassmetr[*,nz - 1] - diskgmass_expellmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[0])),symsize = symsize
-oplot,xarr,10^0.2*(reexpellmass[*,nz - 1] - diskgmass_expell[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xarr,(reexpellmassmetr[*,nz - 1] - diskgmass_expellmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
+oplot,xarr,10^0.2*(reexpellmass[*,nz - 1] - diskgmass_expell[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xarr,(relostmassmetr[*,nz - 1] - diskgmass_lostmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xarr,(relostmassmetr[*,nz - 1] - diskgmass_lostmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[4])),symsize = symsize
-oplot,xarr,10^0.2*(relostmass[*,nz - 1] - diskgmass_lost[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[4])),symsize = symsize
+oplot,xarr,(relostmassmetr[*,nz - 1] - diskgmass_lostmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
+oplot,xarr,10^0.2*(relostmass[*,nz - 1] - diskgmass_lost[*,nz - 1])/sfmass_total,psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 fits_expell = robust_linefit( alog10(xarr), alog10((reexpellmassmetr[*,nz - 1]-diskgmass_expellmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1]), reexpellmass_fit, sigma_expell )
 fits_eject = robust_linefit( alog10(xarr), alog10((reejectmassmetr[*,nz - 1]-diskgmassmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1]), reejectmass_fit, sigma_eject )
 fits_lost = robust_linefit( alog10(xarr), alog10((relostmassmetr[*,nz - 1]-diskgmass_lostmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1]), relostmass_fit, sigma_eject )
@@ -753,12 +802,13 @@ xarr = smass ;xmass
 xarrt = smasst
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_netmass_z_smass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xarr,(reexpellmassmetr[*,nz - 1] - diskgmass_expellmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],ytitle = textoidl('Net mass loss/M_{Stellar, formed}*Z_{wind}/Z_{ISM}'),xtitle = textoidl('M_{stellar} [M_{\odot}]'),/nodata,/ylog,xrange = [1e6,2e10],/xlog,xstyle = 1,yrange = [0.1,100]
+distinct_colors,n_colors = 12
 oplot,xarr,(reejectmassmetr[*,nz - 1] - diskgmassmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xarr,(reejectmassmetr[*,nz - 1] - diskgmassmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xarr,(reejectmassmetr[*,nz - 1] - diskgmassmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xarr,(reexpellmassmetr[*,nz - 1] - diskgmass_expellmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xarr,(reexpellmassmetr[*,nz - 1] - diskgmass_expellmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xarr,(reexpellmassmetr[*,nz - 1] - diskgmass_expellmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xarr,(relostmassmetr[*,nz - 1] - diskgmass_lostmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xarr,(relostmassmetr[*,nz - 1] - diskgmass_lostmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[4])),symsize = symsize
+oplot,xarr,(relostmassmetr[*,nz - 1] - diskgmass_lostmetr[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 fits_expell = robust_linefit( alog10(xarr), alog10((reexpellmassmet[*,nz - 1]-diskgmass_expellmet[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1]), reexpellmass_fit, sigma_expell )
 fits_eject = robust_linefit( alog10(xarr), alog10((reejectmassmet[*,nz - 1]-diskgmassmet[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1]), reejectmass_fit, sigma_eject )
 fits_lost = robust_linefit( alog10(xarr), alog10((relostmassmet[*,nz - 1]-diskgmass_lostmet[*,nz - 1])/sfmassr[*,nz - 1]/metallicity_ISMr[*,nz - 1]), relostmass_fit, sigma_eject )
@@ -774,9 +824,10 @@ xarr = smass ;xmass
 xarrt = smasst
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_netmass_z_smass_lostred.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xarr,(reexpellmassmet - diskgmass_expellmet)/sfmassr/metallicity_ISMr,ytitle = textoidl('\zeta_{net}'),xtitle = textoidl('M_{stellar} [M_{\odot}]'),/nodata,/ylog,xrange = [6e5,2e10],/xlog,xstyle = 1,yrange = [0.3,300]
+distinct_colors,n_colors = 12
 FOR iz = 0, nz - 1 DO BEGIN
    oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(symbols[4]),color =  z_colors[iz],symsize = symsize
-   oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[4])),symsize = symsize
+   oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 ENDFOR
 ;FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(symbols[4]),color =  z_colors[iz],symsize = symsize
 ;FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[4])),symsize = symsize
@@ -791,9 +842,10 @@ xarr = vcirc ;xmass
 xarrt = vcirct
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_netmass_z_vcirc_lostred.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xarr,(reexpellmassmet - diskgmass_expellmet)/sfmassr/metallicity_ISMr,ytitle = textoidl('\zeta_{net}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,200],/xlog,xstyle = 1,yrange = [0.3,300]
+distinct_colors,n_colors = 12
 FOR iz = 0, nz - 1 DO BEGIN
     oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(symbols[4]),color =  z_colors[iz],symsize = symsize
-    oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[4])),symsize = symsize
+    oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 ENDFOR
 ;FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(symbols[4]),color =  z_colors[iz],symsize = symsize
 ;FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],(relostmassmetr[*,iz] - diskgmass_lostmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[4])),symsize = symsize
@@ -802,9 +854,13 @@ pos_ind = where(((relostmassmetr-diskgmass_lostmetr)/sfmassr/metallicity_ISMr) G
 fits_lost = robust_linefit( alog10(xarrt[pos_ind]), alog10((relostmassmetr[pos_ind]-diskgmass_lostmetr[pos_ind])/sfmassr[pos_ind]/metallicity_ISMr[pos_ind]), relostmass_fit, sigma_eject )
 print,'Lost (total): ',fits_lost
 oplot,[10,1e3],10^fits_lost[0]*[10,1e3]^(fits_lost[1]),linestyle = 0,psym = -3,thick = thicks[0]
-oplot,findgen(200),(78/findgen(200))^3.81+0.19,linestyle = 2 ;Best fit to Tremonti '04 from Peeples+'11
-oplot,findgen(200),(111.8/findgen(200))^2.31+1.35,linestyle = 1 ;PPO4N2 from Peeples+ 2011
-oplot,findgen(200),(55.5/findgen(200))^3.04+0.32,linestyle = 3 ;KK04 from Peeples+2011
+oplot,findgen(50),(78/findgen(50))^3.81+0.19,linestyle = 2 ;Best fit to Tremonti '04 from Peeples+'11
+oplot,findgen(50),(111.8/findgen(50))^2.31+1.35,linestyle = 1 ;PPO4N2 from Peeples+ 2011
+oplot,findgen(50),(55.5/findgen(50))^3.04+0.32,linestyle = 3 ;KK04 from Peeples+2011
+vcircarr =  findgen(150) + 50
+oplot,vcircarr,(78/vcircarr)^3.81+0.19,linestyle = 2,thick = 10 ;Best fit to Tremonti '04 from Peeples+'11
+oplot,vcircarr,(111.8/vcircarr)^2.31+1.35,linestyle = 1,thick = 10 ;PPO4N2 from Peeples+ 2011
+oplot,vcircarr,(55.5/vcircarr)^3.04+0.32,linestyle = 3,thick = 10 ;KK04 from Peeples+2011
 legend,['Exponential fit to simulations','Fit to Tremonti et al., 2004','Fit to Pettini & Pegal, 2004, NII','Fit to Kobulnicky & Kewley 2004'],linestyle = [0,2,1,3],/top,/right,box = 0
 
 IF keyword_set(outplot) THEN device, /close ELSE stop
@@ -816,9 +872,10 @@ xarr = smass ;xmass
 xarrt = smasst
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_netmass_z_smass_ejectred.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xarr,(reejectmassmet - diskgmassmet)/sfmassr/metallicity_ISMr,ytitle = textoidl('Net mass loss/M_{Stellar, formed}*Z_{wind}/Z_{ISM}'),xtitle = textoidl('M_{stellar} [M_{\odot}]'),/nodata,/ylog,xrange = [6e5,2e10],/xlog,xstyle = 1,yrange = [0.1,2e2]
+distinct_colors,n_colors = 12
 FOR iz = 0, nz - 1 DO BEGIN
     oplot,xarrt[*,iz],(reejectmassmetr[*,iz] - diskgmassmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(symbols[1]),color =  z_colors[iz],symsize = symsize
-    oplot,xarrt[*,iz],(reejectmassmetr[*,iz] - diskgmassmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[1])),symsize = symsize
+    oplot,xarrt[*,iz],(reejectmassmetr[*,iz] - diskgmassmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 ENDFOR
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
@@ -828,22 +885,24 @@ xarr = smass ;xmass
 xarrt = smasst
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_netmass_z_smass_expellred.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xarr,(reexpellmassmet - diskgmass_expellmet)/sfmassr/metallicity_ISMr,ytitle = textoidl('Net mass loss/M_{Stellar, formed}*Z_{wind}/Z_{ISM}'),xtitle = textoidl('M_{stellar} [M_{\odot}]'),/nodata,/ylog,xrange = [1e6,2e10],/xlog,xstyle = 1,yrange = [0.1,100]
+distinct_colors,n_colors = 12
 FOR iz = 0, nz - 1 DO BEGIN
     oplot,xarrt[*,iz],(reexpellmassmetr[*,iz] - diskgmass_expellmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(symbols[0]),color =  z_colors[iz],symsize = symsize
-    oplot,xarrt[*,iz],(reexpellmassmetr[*,iz] - diskgmass_expellmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[0])),symsize = symsize
+    oplot,xarrt[*,iz],(reexpellmassmetr[*,iz] - diskgmass_expellmetr[*,iz])/sfmassr[*,iz]/metallicity_ISMr[*,iz],psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 ENDFOR
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
 
 ;------------ Total massloading vs stellar mass
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_smass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = xsize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = xsize
-plot,smass,reexpellmassmet[*,nz - 1]/sfmass_total,yrange = [0.001,0.05],ytitle = textoidl('Effective metal mass loading factor'),xtitle = textoidl('M_*/M')+sunsymbol(),/nodata,/ylog,xrange = [1e7,1e11],/xlog,POSITION=ASPECT(1, Margin=0.10)
-oplot,smass,reexpellmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,smass,reexpellmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[0])),symsize = symsize
-oplot,smass,reejectmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,smass,reejectmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[1])),symsize = symsize
-oplot,smass,relostmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,smass,relostmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[4])),symsize = symsize
+plot,smass,reexpellmassmet[*,nz - 1]/sfmass_total/yield,yrange = [0.001/yield,0.05/yield],ytitle = textoidl('Effective metal mass loading factor/'+yield_str),xtitle = textoidl('M_*/M')+sunsymbol(),/nodata,/ylog,xrange = [1e7,1e11],/xlog,POSITION=ASPECT(1, Margin=0.10)
+distinct_colors,n_colors = 12
+oplot,smass,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
+oplot,smass,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
+oplot,smass,reejectmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
+oplot,smass,reejectmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
+oplot,smass,relostmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
+oplot,smass,relostmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 legend,['Metals Expelled','Metals Ejected','Metals Removed from Disk'],psym = [symbols[0],symbols[1],symcat(symbols[4])],color = [colore[0],colore[1],colore[4]],/bottom,/left,box=0
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
@@ -852,9 +911,10 @@ xarr = vcirc ;xmass
 xarrt = vcirct
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_mass_time.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-    plot,xarr,reejectmassmetr[*,0]/sfmassr[*,0],psym = symcat(symbols[0]),/xlog,xrange = [10,200],yrange = [0.001,0.1],ytitle = textoidl('\eta_{Z,ejected}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog
-    FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(ej_psym[iz]),color  = z_colors[iz]
-    FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(sym_outline(ej_psym[iz]))
+    plot,xarr,reejectmassmetr[*,0]/sfmassr[*,0]/yield,psym = symcat(symbols[0]),/xlog,xrange = [10,200],yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,ejected}/')+yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog
+    distinct_colors,n_colors = 12
+    FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(ej_psym[iz]),color  = z_colors[iz]
+    FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(sym_outline(ej_psym[iz]),thick = thicks[0])
     legend,'z = ' + string(z_bins_legend,format = '(A3)'),psym = ej_psym,color  = z_colors,/right,/top,box = 0
     IF keyword_set(outplot) THEN device, /close ELSE stop    
  ENDIF
@@ -862,7 +922,8 @@ IF keyword_set(z_cut) THEN BEGIN
 ;------------ Mass Loading Over Time with current xaxis
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_mass_time_eject.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-    plot,xarrt[*,0],reejectmassmetr[*,0]/sfmassr[*,0],/xlog,yrange = [0.001,0.1],ytitle = textoidl('\eta_{Z,ejected}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,150]
+    plot,xarrt[*,0],reejectmassmetr[*,0]/sfmassr[*,0]/yield,/xlog,yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,ejected}/') + yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,150]
+    distinct_colors,n_colors = 12
     vc_arr = findgen(200)
     eta_m15 = vc_arr
     eta_m15[where(vc_arr LT 60)] = 2.9*(vc_arr[where(vc_arr LT 60)]/60)^(-3.2)
@@ -874,17 +935,17 @@ IF keyword_set(z_cut) THEN BEGIN
 ;    legend,['Energy-driven','Momentum-driven','Muratov et al. 2015','Fit to data'],linestyle = [2,3,5,0],thick = [2,2,2,2],color = [100,100,100,fgcolor],box = 0,/bottom,/left
 ;    loadct,39
     FOR iz = 0, nz - 1 DO BEGIN
-       oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
-       oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(sym_outline(ej_psym[iz])),symsize = symsize*0.6
+       oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
+       oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(sym_outline(ej_psym[iz]),thick = thicks[0]),symsize = symsize*0.6
 ;       fits_eject = robust_linefit( alog10(xarrt[*,iz]), alog10(reejectmassr[*,iz]/sfmassr[*,iz]), reejectmass_fit, sigma_eject )
 ;       print,fits_eject
 ;       oplot,mlrange,10^fits_eject[0]*mlrange^(fits_eject[1]),color = z_colors[iz],linestyle = 0,psym = -3,thick = thicks[0]
     ENDFOR
-    fits_eject = robust_linefit( alog10(xarrt), alog10(reejectmassmetr/sfmassr), reejectmass_fit, sigma_eject )
-    fits_eject_z0 = robust_linefit( alog10(xarrt[*,3]), alog10(reejectmassmetr[*,3]/sfmassr[*,3]), reejectmass_fit, sigma_eject )
-    fits_eject_z0_5 = robust_linefit( alog10(xarrt[*,2]), alog10(reejectmassmetr[*,2]/sfmassr[*,2]), reejectmass_fit, sigma_eject )
-    fits_eject_z1 = robust_linefit( alog10(xarrt[*,1]), alog10(reejectmassmetr[*,1]/sfmassr[*,1]), reejectmass_fit, sigma_eject )
-    fits_eject_z2 = robust_linefit( alog10(xarrt[*,0]), alog10(reejectmassmetr[*,0]/sfmassr[*,0]), reejectmass_fit, sigma_eject )
+    fits_eject = robust_linefit( alog10(xarrt), alog10(reejectmassmetr/sfmassr/yield), reejectmass_fit, sigma_eject )
+    fits_eject_z0 = robust_linefit( alog10(xarrt[*,3]), alog10(reejectmassmetr[*,3]/sfmassr[*,3]/yield), reejectmass_fit, sigma_eject )
+    fits_eject_z0_5 = robust_linefit( alog10(xarrt[*,2]), alog10(reejectmassmetr[*,2]/sfmassr[*,2]/yield), reejectmass_fit, sigma_eject )
+    fits_eject_z1 = robust_linefit( alog10(xarrt[*,1]), alog10(reejectmassmetr[*,1]/sfmassr[*,1]/yield), reejectmass_fit, sigma_eject )
+    fits_eject_z2 = robust_linefit( alog10(xarrt[*,0]), alog10(reejectmassmetr[*,0]/sfmassr[*,0]/yield), reejectmass_fit, sigma_eject )
     print,'Eject: ',fits_eject
     print,'Eject: (z = 0): ',fits_eject_z0
     print,'Eject: (z = 0.5): ',fits_eject_z0_5
@@ -898,10 +959,11 @@ IF keyword_set(z_cut) THEN BEGIN
 ;----------- Metal Mass Loading Over Time vs stellar mass            --------------------------
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_smass_time_eject.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = xsize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = xsize
-    plot,smasst[*,0],reejectmassmetr[*,0]/sfmassr[*,0],/xlog,yrange = [0.001,0.1],ytitle = textoidl('\eta_{Z,ejected}'),xtitle = textoidl('M_*/M')+sunsymbol(),/nodata,/ylog,xrange = [6e5,1e10],POSITION=ASPECT(1, Margin=0.10)
+    plot,smasst[*,0],reejectmassmetr[*,0]/sfmassr[*,0]/yield,/xlog,yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,ejected}/') + yield_str,xtitle = textoidl('M_*/M')+sunsymbol(),/nodata,/ylog,xrange = [6e5,1e10],POSITION=ASPECT(1, Margin=0.10)
+    distinct_colors,n_colors = 12
     FOR iz = 0, nz - 1 DO BEGIN
-       oplot,smasst[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
-       oplot,smasst[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(sym_outline(ej_psym[iz])),symsize = symsize*0.6
+       oplot,smasst[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
+       oplot,smasst[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(sym_outline(ej_psym[iz]),thick = thicks[0]),symsize = symsize*0.6
     ENDFOR
     legend,'z = ' + string(z_bins_legend,format = '(A3)'),psym = ej_psym,color  = z_colors,/left,/bottom,box = 0
     IF keyword_set(outplot) THEN device, /close ELSE stop    
@@ -911,17 +973,18 @@ IF keyword_set(z_cut) THEN BEGIN
 ;------------ Mass Loading Over Time with current xaxis
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_mass_time_expell.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-    plot,xarrt[*,0],reexpellmassmetr[*,0]/sfmassr[*,0],/xlog,yrange = [0.001,0.1],ytitle = textoidl('\eta_{Z,expelled}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,200]
+    plot,xarrt[*,0],reexpellmassmetr[*,0]/sfmassr[*,0]/yield,/xlog,yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,expelled}/') + yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,200]
+    distinct_colors,n_colors = 12
  ;   oplot,xarr,reexpellmass[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[0])),symsize = symsize
 ;    oplot,mlrange,10^fits_expell[0]*mlrange^(fits_expell[1]),linestyle = 0,psym = -3,thick = 1
     FOR iz = 0, nz - 1 DO BEGIN
-       oplot,xarrt[*,iz],reexpellmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(ex_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
-       oplot,xarrt[*,iz],reexpellmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(sym_outline(ex_psym[iz])),symsize = symsize*0.6
+       oplot,xarrt[*,iz],reexpellmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(ex_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
+       oplot,xarrt[*,iz],reexpellmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(sym_outline(ex_psym[iz]),thick = thicks[0]),symsize = symsize*0.6
 ;       fits_expell = robust_linefit( alog10(xarrt[*,iz]), alog10(reexpellmassr[*,iz]/sfmassr[*,iz]), reexpellmass_fit, sigma_expell )
 ;       print,fits_expell
 ;       oplot,mlrange,10^fits_expell[0]*mlrange^(fits_expell[1]),color = z_colors[iz],linestyle = 0,psym = -3,thick = thicks[0]
     ENDFOR
-    fits_expell = robust_linefit( alog10(xarrt), alog10(reexpellmassmetr/sfmassr), reexpellmass_fit, sigma_expell )
+    fits_expell = robust_linefit( alog10(xarrt), alog10(reexpellmassmetr/sfmassr/yield), reexpellmass_fit, sigma_expell )
     print,'Reexpell: ',fits_expell
     oplot,mlrange,10^fits_expell[0]*mlrange^(fits_expell[1]),linestyle = 0,psym = -3,thick = thicks[0]
     legend,'z = ' + string(z_bins_legend,format = '(A3)'),psym = ex_psym,color  = z_colors,/right,/top,box = 0
@@ -933,22 +996,23 @@ IF keyword_set(z_cut) THEN BEGIN
    IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_mass_time_multi.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize*1.6,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize*1.6
    multiplot,[1,2]
 
-   plot,xarrt[*,0],reejectmassmetr[*,0]/sfmassr[*,0],/xlog,yrange = [0.001,0.1],ytitle = textoidl('\eta_{Z,ejected}'),/nodata,/ylog,xrange = [10,200]
+   plot,xarrt[*,0],reejectmassmetr[*,0]/sfmassr[*,0]/yield_str,/xlog,yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,ejected}/') + yield_str,/nodata,/ylog,xrange = [10,200]
+   distinct_colors,n_colors = 12
    FOR iz = 0, nz - 1 DO BEGIN
-      oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
-      oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(sym_outline(ej_psym[iz])),symsize = symsize*0.6
+      oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
+      oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(sym_outline(ej_psym[iz]),thick = thicks[0]),symsize = symsize*0.6
    ENDFOR
-   fits_eject = robust_linefit( alog10(xarrt), alog10(reejectmassmetr/sfmassr), reejectmass_fit, sigma_eject )
+   fits_eject = robust_linefit( alog10(xarrt), alog10(reejectmassmetr/sfmassr/yield), reejectmass_fit, sigma_eject )
    oplot,mlrange,10^fits_eject[0]*mlrange^(fits_eject[1]),linestyle = 0,psym = -3,thick = thicks[0]
    legend,'z = ' + string(z_bins_legend,format = '(A3)'),psym = ej_psym,color  = z_colors,/right,/top,box = 0
 
    multiplot
-   plot,xarrt[*,0],reexpellmassmetr[*,0]/sfmassr[*,0],/xlog,yrange = [0.001,0.1],ytitle = textoidl('\eta_{Z,expelled}'),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,200]
+   plot,xarrt[*,0],reexpellmassmetr[*,0]/sfmassr[*,0]/yield,/xlog,yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,expelled}/') + yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,200]
    FOR iz = 0, nz - 1 DO BEGIN
-      oplot,xarrt[*,iz],reexpellmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(ex_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
-      oplot,xarrt[*,iz],reexpellmassmetr[*,iz]/sfmassr[*,iz],psym = symcat(sym_outline(ex_psym[iz])),symsize = symsize*0.6
+      oplot,xarrt[*,iz],reexpellmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(ex_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
+      oplot,xarrt[*,iz],reexpellmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(sym_outline(ex_psym[iz]),thick = thicks[0]),symsize = symsize*0.6
    ENDFOR
-   fits_expell = robust_linefit( alog10(xarrt), alog10(reexpellmassmetr/sfmassr), reexpellmass_fit, sigma_expell )
+   fits_expell = robust_linefit( alog10(xarrt), alog10(reexpellmassmetr/sfmassr/yield), reexpellmass_fit, sigma_expell )
    oplot,mlrange,10^fits_expell[0]*mlrange^(fits_expell[1]),linestyle = 0,psym = -3,thick = thicks[0]
    multiplot,/reset
    IF keyword_set(outplot) THEN device, /close ELSE stop
@@ -959,39 +1023,42 @@ IF 1 THEN BEGIN
 IF keyword_set(outplot) THEN  device,filename = outplot + '_multi_massz.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize*2.6,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize*2.6
 multiplot,[1,3]
 plot,xmass,reexpellmassmet[*,nz - 1],/ylog,/xlog,xrange = xrange,yrange = [1e4,2e9],ytitle = 'Metal Mass [M' + sunsymbol() + ']',/nodata
+distinct_colors,n_colors = 12
 oplot,xmass,reexpellmassmet[*,nz - 1],psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,reexpellmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,reexpellmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xmass, reejectmassmet[*,nz - 1],psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass, reejectmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass, reejectmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xmass, relostmassmet[*,nz - 1],psym = symcat(symbols[4]),color = colore[4],symsize = symsize; Metals lost
-oplot,xmass, relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4])),color = fgcolor,symsize = symsize
+oplot,xmass, relostmassmet[*,nz - 1],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),color = fgcolor,symsize = symsize
 oplot,xmass,(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(17),color = fgcolor,symsize = symsize
 ;oplot,xmass,(primehalo_stars_zmass + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4])),color = fgcolor,symsize = symsize
 oplot,xmass, primehalo_stars_zmass, psym = symcat(symbol_s),color = color_s,symsize = symsize ;Metals produced by the main progenitor (consider using currenthalo_stars_zmass if I want metals produced by stars in main halo at z = 0)
-oplot,xmass, primehalo_stars_zmass, psym = symcat(sym_outline(symbol_s)),color = fgcolor,symsize = symsize
+oplot,xmass, primehalo_stars_zmass, psym = symcat(sym_outline(symbol_s),thick = thicks[0]),color = fgcolor,symsize = symsize
 legend,['Metals expelled','Metals ejected','Metals removed','Metals produced','Metals produced + accreted'],psym = [symbols[0:1],symbols[4],symbol_s,17],color = [colore[0:1],color_s,colore[4],fgcolor],/bottom,/right,box = 0
 multiplot
 
-plot,xmass,reexpellmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[0]),/xlog,xrange = xrange,yrange = [0.001,0.05],ytitle = textoidl('Effective metal mass loading factor'),/nodata,/ylog
-oplot,xmass,reexpellmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,reexpellmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[0])),symsize = symsize
-oplot,xmass,reejectmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass,reejectmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[1])),symsize = symsize
-oplot,xmass,relostmassmet[*,nz - 1]/sfmass_total,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xmass,relostmassmet[*,nz - 1]/sfmass_total,psym = symcat(sym_outline(symbols[4])),symsize = symsize
+plot,xmass,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[0]),/xlog,xrange = xrange,yrange = [0.001/yield,0.05/yield],ytitle = textoidl('Effective metal mass loading factor/') + yield_str,/nodata,/ylog
+distinct_colors,n_colors = 12
+oplot,xmass,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
+oplot,xmass,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
+oplot,xmass,reejectmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[1]),color = colore[1],symsize = symsize
+oplot,xmass,reejectmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
+oplot,xmass,relostmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[4]),color = colore[4],symsize = symsize
+oplot,xmass,relostmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 legend,['Gas removed from disk'],psym = [symbols[4]],color = [colore[4]],symsize = symsize,/left,/bottom,box = 0
 ;legend,['Gas Mass Expelled/Stellar Mass Formed','Gas Mass Ejected/Stellar Mass Formed'],psym = symbols,color = colore,/bottom,/left,box=0
 multiplot
 
 ;XXX Need total metals in the disk
 plot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(symbols[0]),/xlog,xrange = xrange,yrange = [0,1],ytitle = textoidl('M_{outflow}/M_{accreted}'),xtitle = xtitle,/nodata,symsize = symsize
+distinct_colors,n_colors = 12
 oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(symbols[0]),color = colore[0],symsize = symsize
-oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,(reexpellmassmet[*,nz - 1] - diskgmass_expellmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 ;oplot,xmass,reexpellmass_cool[*,nz - 1]/relostmass[*,nz - 1],psym = symcat(sym_outline(symbols[0])),color = colore[0],symsize = symsize
 oplot,xmass, (reejectmassmet[*,nz - 1]- diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(symbols[1]),color = colore[1],symsize = symsize
-oplot,xmass, (reejectmassmet[*,nz - 1]- diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,xmass, (reejectmassmet[*,nz - 1]- diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
 oplot,xmass, (relostmassmet[*,nz - 1]- diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(symbols[4]),color = colore[4],symsize = symsize
-oplot,xmass, (relostmassmet[*,nz - 1]- diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4])),symsize = symsize
+oplot,xmass, (relostmassmet[*,nz - 1]- diskgmassmet[*,nz - 1])/(zavail_zmax_total + diskgmassmet_uniq_total),psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
 ;legend,['Gas Mass Expelled','Gas Mass Ejected'],psym = [symbols],color = [colore],box = 0,/bottom,/right;position = [2.2e11,0.4];/bottom,/right
 ;legend,['Total gas mass expelled','Gas mass expelled -- SN heated','Total gas mass ejected','Gas mass ejected -- SN heated'],psym=[symbols[0],sym_outline(symbols[0]),symbols[1],sym_outline(symbols[1])],color = [colore[0],colore[0],colore[1],colore[1]],/top,/right,box = 0
 legend,['Total gas mass ejected','Gas mass ejected -- SN heated'],psym=[symbols[1],sym_outline(symbols[1])],color = [colore[1],colore[1]],/left,/bottom,box = 0

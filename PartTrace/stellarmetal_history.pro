@@ -131,9 +131,9 @@ PRO stellarmetal_history,dir = dir,finalid = finalid,laststep = laststep,central
         Oxs[i] = z_snii.oxmassloss + z_snia.oxmassloss
         Fes[i] = z_snii.femassloss + z_snia.femassloss
 
-        Oxs_stellar[i] = total(Ox[inhalo]*s.mass)*units.massunit
-        Fes_stellar[i] = total(Fe[inhalo]*s.mass)*units.massunit
-        zmetals_stellar[i] = 2.09*Oxs_stellar[i] + 1.06*Fes_stellar[i]
+        Oxs_stellar[i] = total(Ox[inhalo]*s.mass)*units.massunit ;Oxygen mass in stars
+        Fes_stellar[i] = total(Fe[inhalo]*s.mass)*units.massunit ;Iron mass in stars
+        zmetals_stellar[i] = 2.09*Oxs_stellar[i] + 1.06*Fes_stellar[i] ;Metal mass in stars
 
         print,i,tmin,tmax,zmetals[i],Oxs[i],Fes[i],zmetals_stellar[i],Oxs_stellar[i],Fes_stellar[i]
         IF Oxs[i] LT 0 OR  Fes[i] LT 0 THEN stop

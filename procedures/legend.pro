@@ -420,7 +420,8 @@ for iclr = 0,clear do begin
   x = x + xspacing                              ; UPDATE X & Y POSITIONS
   y = y - yspacing
   if nlpv eq 0 then goto,TEXT_ONLY              ; FLAG FOR TEXT ONLY
-  if keyword_set(ctables) then loadct,ctables[i]
+  if keyword_set(ctables) then $
+    IF ctables[i] LT 40 THEN loadct,ctables[i] ELSE loadcv,ctables[i]
   if (psym[i] eq 0) and (vectorfont[i] eq '') then num = (number + 1) > 3 else num = number
   if psym[i] lt 0 then num = number > 2         ; TO SHOW CONNECTING LINE
   if psym[i] eq 0 then expand = linsize else expand = 2
@@ -465,6 +466,7 @@ for iclr = 0,clear do begin
          charsize=charsize,align=xalign,charthick = charthick,font=font
   x = x + width*xsign
   if width ne 0 then x = x + 0.5*xspacing
+;  loadct,0
   xyouts,x,y,items[i],width=width,/norm,color=textcolors[i],charsize=charsize, $
              align=xalign,charthick=charthick,font=font
   x = x + width*xsign

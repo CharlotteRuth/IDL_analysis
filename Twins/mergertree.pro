@@ -219,6 +219,7 @@ for i =nsteps-1,1,-1 do begin
     IF (prog_linked_all[0] NE  -1 ) THEN BEGIN
         ;; get only halos who end up merged in virialized halo
         match_multi,num_halo[prog_linked_all],old_linked,dup=keep
+        IF keep[0] EQ -1 THEN BREAK          
         prog_linked = prog_linked_all[keep]
         print,'Prog_linked: ',prog_linked
  ;       IF ( i eq 2 OR i eq 1) then stop
@@ -250,7 +251,8 @@ for i =nsteps-1,1,-1 do begin
         FOR k =0L,n_elements(prog_linked) -1 DO BEGIN
             statind  = where(halo_id EQ prog_linked[k])
             prog_distance[k] = sqrt((xc[statind]-xc[centerind])^2+(yc[statind]-yc[centerind])^2+(zc[statind]-zc[centerind])^2)*1000;dist_units
-            IF k GT 0 THEN oplot,[prog_distance[k],halo_distance[dist_link[k]]],[time[i-1],time[i]],line=2
+            IF dist_link[0] NE -1 THEN $
+              IF k GT 0 THEN oplot,[prog_distance[k],halo_distance[dist_link[k]]],[time[i-1],time[i]],line=2
             symsize = .45*(alog10(Mvir[statind]))-2.5
             plots,prog_distance[k],time[i-1],psym=sym(1),symsize=symsize
             IF nstar[statind] GT 1 THEN BEGIN
@@ -261,8 +263,8 @@ for i =nsteps-1,1,-1 do begin
         old_linked = prog_linked
         halo_distance = prog_distance 
     ENDIF
-
-        halo_all = progenitor_all
+    IF keep[0] EQ -1 THEN BREAK
+    halo_all = progenitor_all
 ENDFOR                          ;end loop over steps
 ;  endplot
 

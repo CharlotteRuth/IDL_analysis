@@ -29,6 +29,7 @@ pro mergertree, simname, gid, zs=zs, grps=grps, tipsys=tipsys, maxz=maxz, $
     zs[0] = z
     pmass = omegam / h.n
     readzs = 1
+    stop
   endif else begin
     z = zs[nfs-1]
     pmass = omegam / n_elements(grps[*,0])

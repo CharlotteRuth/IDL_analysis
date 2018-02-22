@@ -1,4 +1,4 @@
-function rstarlog,file,VERBOSE = verbose,MOLECULARH = MOLECULARH,endianswap =endianswap, BIG = BIG
+function rstarlog,file,VERBOSE = verbose,MOLECULARH = MOLECULARH,endianswap =endianswap, BIG = BIG,MOLECULARBH = MOLECULARBH
 ;;; RSTARLOG:  Tipsy starlog reader for IDL
 ;;; Author:  GS modified from original rtipsy by James Wadsley
 ;;; Modified by Charlotte Christensen to read in files with molecular hydrogen 
@@ -29,9 +29,11 @@ openr,lun,file,/xdr,/get_lun
 ; starlog record structure
 IF keyword_set(big) THEN $
    IF KEYWORD_SET(MOLECULARH) THEN record = {iOrderStar:0LL, iOrderGas:0LL, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d, H2form:0.0d} $
+  ELSE IF keyword_set(molecularBH) THEN record = {iOrderStar:0LL, iOrderGas:0LL, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d, H2form:0.0d, tcoolform:0.0d} $ 
    ELSE record = {iOrderStar:0LL, iOrderGas:0LL, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d} $
    ELSE $
       IF KEYWORD_SET(MOLECULARH) THEN record = {iOrderStar:0L, iOrderGas:0L, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d, H2form:0.0d} $ 
+      ELSE IF keyword_set(molecularBH) THEN record =  {iOrderStar:0L, iOrderGas:0L, timeform:0.d, x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d, H2form:0.0d, tcoolform:0.0d} $ 
       ELSE record = {iOrderStar:0L, iOrderGas:0L, timeform:0.d,x:0.d,y:0.d,z:0.d,vx:0.d, vy:0.d, vz:0.d, massForm:0.0d, rhoform:0.0d, Tempform:0.0d}
 ;record = {iOrderStar:0L, iOrderGas:0L, timeform:0.d, rform:dblarr(3), vform:dblarr(3), massForm:0.0d, rhoform:0.0d, Tempform:0.0d}
 

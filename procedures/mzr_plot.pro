@@ -9,16 +9,19 @@
 ;outfile = '~/plots/all'
 ;mzr_plot,filename,psym = psym, /readfile, outfile = outfile
 
-PRO mzr_plot,filenames, halos = halos, outfile = outfile, key = key, psym  = psym, color = color, symsizes = symsizes, ctables = ctables, thicks = thicks, simStellarMass = simStellarMass, noObsStellarMass = noObsStellarMass, xrange = xrange, yrange = yrange, readfile = readfile, obscolor = obscolor, onehalos = onehalos, obsct = obsct, formatthick = formatthick,redshift = redshift,stellar = stellar
-n = n_elements(filenames)
+PRO mzr_plot,filenames, halos = halos, outfile = outfile, key = key, psym  = psym, color = color, symsizes = symsizes, ctables = ctables, thicks = thicks, simStellarMass = simStellarMass, noObsStellarMass = noObsStellarMass, xrange = xrange, yrange = yrange, readfile = readfile, obscolor = obscolor, onehalos = onehalos, obsct = obsct, formatthick = formatthick,redshift = redshift,stellar = stellar,multiz = multiz
+IF NOT keyword_set(multiz) THEN multiz = 1
+n = fix(n_elements(filenames)/multiz)
 zsolar = 0.0130215
 
 IF keyword_set(color) THEN BEGIN
-    white = 13
-    black = 0
     IF NOT keyword_set(obsct) THEN obsct = 0;39
     loadct,obsct
-    distinct_colors,n_colors = 12
+    black = 0
+    white = 255
+;    white = 13
+;    black = 0
+;    distinct_colors,n_colors = 12
 ENDIF ELSE BEGIN
     black = 0
     white = 255
@@ -43,11 +46,12 @@ ENDIF ELSE BEGIN
 ENDELSE
 IF keyword_set(color) THEN BEGIN
 ;    IF NOT keyword_set(ctables) THEN ctables = 39 + fltarr(n)
-    IF color[0] EQ 1 THEN  colors = (fltarr(n) + 1)*fgcolor else colors = fltarr(n) + color
+;    IF color[0] EQ 1 THEN  colors = (fltarr(n) + 1)*fgcolor else colors = fltarr(n) + color
+    IF color[0] EQ 1 THEN  colors = (fltarr(n) + 127) else colors = fltarr(n) + color
     IF NOT keyword_set(thicks) THEN thicks = fltarr(n) + 2
     IF NOT keyword_set(psym) THEN psym = fltarr(n) + 4 ;REVERSE(findgen(n)*2)
     IF NOT keyword_set(symsizes) THEN symsizes = fltarr(n) + 2
-    IF NOT keyword_set(obscolor) THEN obscolor = [2,6,11];fgcolor
+    IF NOT keyword_set(obscolor) THEN obscolor = [fgcolor,200,150] ;obscolor = [2,6,11];fgcolor
     obssymsize = 1.25;2;.5
     obssym = 16
     obsthick = thicks[0];2
@@ -72,8 +76,8 @@ readcol,datafile_base + 'Lee06.txt',gal,source,aorkey,f,ferr,mag,magerr,disref,m
 readcol,datafile_base + 'Tremonti04.txt',LogMstarT,P_25,P_16,P_50,P_84,P_975
 
 IF (keyword_set(outfile)) THEN BEGIN
-   IF keyword_set(stellar) THEN device,filename=outfile+'_mz_stellar.eps',/color,bits_per_pixel= 8,/times,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2,/encapsul $
-     ELSE device,filename=outfile+'_' + strtrim(redshift,2)+'_mz.eps',/color,bits_per_pixel= 8,/times,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2,/encapsul
+   IF keyword_set(stellar) THEN device,filename=outfile+'_mz_stellar.eps',/color,bits_per_pixel= 8,/times,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2,/encapsulated $
+     ELSE device,filename=outfile+'_' + strtrim(redshift,2)+'_mz.eps',/color,bits_per_pixel= 8,/times,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2,/encapsulated
 ENDIF ELSE BEGIN
    window,0,xsize = xsize,ysize = ysize ;392
 ENDELSE
@@ -106,8 +110,8 @@ IF redshift EQ 0 THEN BEGIN
         LogMstarAM = findgen(32)/10+7.4
         mzrAM = 8.798 - alog10(1 + (10^8.901/10^LogMstarAM)^0.64) ;fit from Andrew & Martini 2013, see table 4
         oplot,LogMstarAM,mzrAM,color = obscolor[2], thick = obsthick, linestyle = 3
-        IF keyword_set(key) THEN legend,[key,"Lee et al., 2006","Tremonti et al., 2004",'Andrew & Martini, 2013'],color = [color,obscolor[0],obscolor[1],obscolor[2]],linestyle = intarr(n_elements(key) + 3),psym = [psym,obssym,0,0],thick = [thicks,obsthick,obsthick,obsthick] $
-        ELSE legend,['Lee et al., 2006','Tremonti et al., 2004','Andrew & Martini, 2013','Med-res Sims','High-res Sims'],color = [obscolor[0],obscolor[1],obscolor[2],colors[uniqind0],colors[uniqind1]],linestyle = [0,0,3,2,0],psym = [obssym,0,0,psym[uniqind0],psym[uniqind1]],thick = [obsthick,obsthick,obsthick,thicks[uniqind0],thicks[uniqind1]],box = 0,symsize = [obssymsize,obssymsize,obssymsize,symsizes[uniqind0],symsizes[uniqind1]],charsize = l_charsize,/bottom,/right,position = [0.934145,0.250005],/norm;,ctables = [obsct,obsct,obsct,ctables[uniqind0],ctables[uniqind1]] ;corners = corners;0.934145     0.503365     0.460109     0.271045
+        IF keyword_set(key) THEN legend,[key,"Lee et al., 2006","Tremonti et al., 2004",'Andrew & Martini, 2013'],color = [color,obscolor[0],obscolor[1],obscolor[2]],linestyle = intarr(n_elements(key) + 3),psym = [psym,obssym,0,0],thick = [thicks,obsthick,obsthick,obsthick]$
+        ELSE legend,['Lee et al., 2006','Tremonti et al., 2004','Andrew & Martini, 2013','Med-res Sims','High-res Sims'],color = [obscolor[0],obscolor[1],obscolor[2],(256-13)/2,(256-13)/2],linestyle = [0,0,3,2,0],psym = [obssym,0,0,psym[uniqind0],psym[uniqind1]],thick = [obsthick,obsthick,obsthick,thicks[uniqind0],thicks[uniqind1]],box = 0,symsize = [obssymsize,obssymsize,obssymsize,symsizes[uniqind0],symsizes[uniqind1]],charsize = l_charsize,/bottom,/right,position = [0.934145,0.250005],/norm,ctables = [obsct,obsct,obsct,ctables[uniqind0],ctables[uniqind1]] ;corners = corners;0.934145     0.503365     0.460109     0.271045
         legend,['z = 0'],box = 0,/left,/top
     ENDIF ELSE BEGIN
         ;Gallazzi et al, 2005
@@ -120,7 +124,7 @@ IF redshift EQ 0 THEN BEGIN
         oplot,LogM_star,LogFe,psym = symcat(obssym),color = obscolor[1], thick = obsthick
         oploterror,logM_star,LogFe,LogM_star_err,LogFe_err,psym = symcat(obssym), color = obscolor[1], symsize = obssymsize, thick = obsthick,errcolor=obscolor
         IF keyword_set(key) THEN legend,[key,"Kirby et al., 2013","Gallazzi et al., 2005"],color = [color,obscolor[1],obscolor[0]],linestyle = intarr(n_elements(key) + 2),psym = [psym,obssym,0],thick = [thicks,obsthick,obsthick] $
-        ELSE legend,["Kirby et al., 2013","Gallazzi et al., 2005",'Med-res Sims','High-res Sims'],color = [obscolor[1],obscolor[0],colors[uniqind0],colors[uniqind1]],linestyle = [0,0,0,0],psym = [obssym,0,psym[uniqind0],psym[uniqind1]],thick = [obsthick,obsthick,thicks[uniqind0],thicks[uniqind1]],box = 0,symsize = [obssymsize,obssymsize,symsizes[uniqind0],symsizes[uniqind1]],charsize = l_charsize,/bottom,/right,position = [0.934145,0.250005],/norm;,,ctables = [obsct,obsct,ctables[uniqind0],ctables[uniqind1]] ;corners = corners;0.934145     0.503365     0.460109     0.271045
+        ELSE legend,["Kirby et al., 2013","Gallazzi et al., 2005",'Med-res Sims','High-res Sims'],color = [obscolor[1],obscolor[0],colors[uniqind0],colors[uniqind1]],linestyle = [0,0,0,0],psym = [obssym,0,psym[uniqind0],psym[uniqind1]],thick = [obsthick,obsthick,thicks[uniqind0],thicks[uniqind1]],box = 0,symsize = [obssymsize,obssymsize,symsizes[uniqind0],symsizes[uniqind1]],charsize = l_charsize,/bottom,/right,position = [0.934145,0.250005],/norm,ctables = [obsct,obsct,80,80] ;corners = corners;0.934145     0.503365     0.460109     0.271045
 
     ENDELSE
 ENDIF
@@ -194,30 +198,77 @@ IF redshift EQ 3 AND NOT keyword_set(stellar) THEN BEGIN
     IF keyword_set(key) THEN legend,[key,"Mannucci et al., 2009"],color = [color,obscolor[0]],linestyle = intarr(n_elements(key) + 1),psym = [psym,0,0],thick = [thicks,obsthick] $
     ELSE legend,['Mannucci et al., 2009','Med-res Sims','High-res Sims'],color = [obscolor[0],colors[uniqind0],colors[uniqind1]],linestyle = [3,2,0],psym = [0,psym[uniqind0],psym[uniqind1]],thick = [obsthick,thicks[uniqind0],thicks[uniqind1]],box = 0,symsize = [obssymsize,symsizes[uniqind0],symsizes[uniqind1]],charsize = l_charsize,/bottom,/right,position = [0.934145,0.250005],/norm;,,ctables = [obsct,ctables[uniqind0],ctables[uniqind1]]
     legend,['z = 3'],box = 0,/left,/top
+;    cgColorbar,range=[-2,2],/vertical,position=[0.15, 0.22, 0.17, 0.85],title = 'Log deviation from Main Sequence',divisions = 4,tcharsize = 1.5,color = "black",ncolors = 256-13,bottom = 13 ;256 ;"Black"
 ENDIF
 
-FOR i = 0, n - 1 DO BEGIN
+FOR iz = 0, multiz - 1 DO BEGIN ;Counting through timesteps
+FOR i = 0, n - 1 DO BEGIN ;Counting through simulations
 ;    loadct,ctables[i]
-    IF keyword_set(onehalos) THEN metalfile = filenames[i] + '.halo.' + strtrim(onehalos[i],2) ELSE  metalfile = filenames[i]
+    loadcv,80,/reverse
+    IF keyword_set(onehalos) THEN metalfile = filenames[i + iz*n] + '.halo.' + strtrim(onehalos[i],2) ELSE  metalfile = filenames[i + iz*n]
     IF keyword_set(readfile) AND file_test(metalfile + '.metals.fits') THEN BEGIN 
         metals = mrdfits(metalfile + '.metals.fits',1,/silent) 
         zstellar = alog10((2.09*metals.ox_stellar + 1.06*metals.fe_stellar)/zsolar)
         zstellar_rband = alog10((2.09*metals.ox_stellar_rband + 1.06*metals.fe_stellar_rband)/zsolar)
     ENDIF ELSE BEGIN
-        IF keyword_set(onehalos) THEN IF keyword_set(noObsStellarMass) THEN metals = mzr(filenames[i], onehalo = onehalos[i]) ELSE metals = mzr(filenames[i],/obs, onehalo = onehalos[i]) ELSE $
-          IF keyword_set(noObsStellarMass) THEN metals = mzr(filenames[i]) ELSE metals = mzr(filenames[i],/obs) 
+        IF keyword_set(onehalos) THEN IF keyword_set(noObsStellarMass) THEN metals = mzr(filenames[i + iz*n], onehalo = onehalos[i]) ELSE metals = mzr(filenames[i + iz*n],/obs, onehalo = onehalos[i]) ELSE $
+          IF keyword_set(noObsStellarMass) THEN metals = mzr(filenames[i + iz*n]) ELSE metals = mzr(filenames[i + iz*n],/obs) 
         mwrfits,metals,metalfile + '.metals.fits',/create
         zstellar = alog10((2.09*metals.ox_stellar + 1.06*metals.fe_stellar)/zsolar)
         zstellar_rband = alog10((2.09*metals.ox_stellar_rband + 1.06*metals.fe_stellar_rband)/zsolar)
     ENDELSE
     IF keyword_set(halos) THEN BEGIN
-       FOR j = 0, n_elements(halos[*,i]) - 1 DO BEGIN
-           IF halos[j,i] NE 0 THEN BEGIN
-               ind = where(metals.grp EQ halos[j,i])
+       FOR j = 0, n_elements(halos[*,i,iz]) - 1 DO BEGIN
+           IF halos[j,i,iz] NE 0 THEN BEGIN
+               ind = where(metals.grp EQ halos[j,i,iz])
                IF ind[0] NE -1 THEN BEGIN
                    metallicity = metals[ind].ox_sfr
                    IF NOT finite(metals[ind].ox_sfr) THEN metallicity = metals[ind].ox_cold
                    IF (metals[ind].ncold LE 10) THEN metallicity = 0
+;Add in code to determine the color based on deviation from the star
+;forming main sequence.
+;                   IF redshift EQ 0 THEN BEGIN
+;                       IF metals[ind].smassO GT 1e8 THEN BEGIN
+;                           IF metals[ind].sfr EQ 0 THEN colors[i] = 0 $
+;                           ELSE BEGIN
+;                               deviation = alog10(metals[ind].sfr/metals[ind].smassO) - (-0.35*(alog10(metals[ind].smassO) - 10) - 9.83)
+;                               colors[i] = 127 + deviation/2*127
+;                               print,deviation
+;                           ENDELSE
+;                       ENDIF
+;                   ENDIF 
+                   IF redshift EQ 0 THEN BEGIN
+                       alpha = -0.35 + 1 ;Salim 2007, Eq 11 ******
+                       beta = -0.35*(-10) - 9.82
+                       gamma = 0
+                   ENDIF
+                   IF redshift GE 0.5 AND redshift LT 1 THEN BEGIN
+                       alpha = 5.02 ;Whitaker 2014, Table 1; 3D-HST, 218 citations ****
+                       beta = -27.40
+                       gamma = -0.22
+                   ENDIF 
+                   IF redshift GE 2 AND redshift LT 3 THEN BEGIN
+                       alpha = 3.44 ;Whitaker 2014, Table 1; 3D-HST, 218 citations ****
+                       beta = -19.99
+                       gamma = -0.13
+                   ENDIF
+                   IF redshift GE 3 AND redshift LT 4 THEN BEGIN
+                       alpha = 1.02 ;Santini 2017, Table 2 ****
+                       beta = 1.37 + alpha*(-9.7)
+                       gamma = 0
+                       cgColorbar,range=[-2.2,2.2],/vertical,position=[0.19, 0.22, 0.21, 0.85],title = 'Deviation from Main Seqence in dex',divisions = 4,tcharsize = 1.2,color = "black",ncolors = 256-13,bottom = 13,tlocation = "right";256 ;"Black"
+                   ENDIF
+                   IF keyword_set(stellar) THEN colors[i] = (256-13)/2 ELSE $
+                     IF metals[ind].sfr EQ 0 THEN colors[i] = 1 $
+                     ELSE BEGIN
+                       SFR = alpha*alog10(metals[ind].smassO) + beta + gamma*alog10(metals[ind].smassO)^2
+                       sSFR = (alpha - 1)*alog10(metals[ind].smassO) + beta + gamma*alog10(metals[ind].smassO)^2
+                       deviation = alog10(metals[ind].sfr/metals[ind].smass) - sSFR ;Alyson says don't use the photometric stellar mass for the specifc star formation rate since mass appears in both the numerator and denominator
+                       ;colors[i] = 127 + deviation/2*127
+                       colors[i] = (256-13)/2 + deviation/2.2*(256-13)/2 + 13
+                       print,'Deviation: ',deviation,colors[i]
+                   ENDELSE
+                   
                    IF NOT keyword_set(noObsStellarMass) THEN BEGIN
 ;                   IF metals[ind].sat EQ 0 THEN 
                        IF keyword_set(stellar) $
@@ -225,11 +276,11 @@ FOR i = 0, n - 1 DO BEGIN
                        ELSE oplot,[alog10(metals[ind].smassO),alog10(metals[ind].smassO)],[metallicity,metallicity],psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i], thick = thicks[i] ;ELSE oplot,[alog10(metals[ind].smassO),alog10(metals[ind].smassO)],[metals[ind].ox_sfr,metals[ind].ox_sfr],psym = symcat(psym[i]) + 1, color = colors[i], symsize = symsizes[i], thick = thicks[i]
                    ENDIF
 ;                   IF keyword_set(simStellarMass) THEN oplot,[alog10(metals[ind].smass),alog10(metals[ind].smass)],[metals[ind].ox_sfr,metals[ind].ox_sfr],psym = symcat(psym[i]), color = colors[i], symsize = 0.5*symsizes[i], thick = thicks[i]              
-                   IF keyword_set(simStellarMass) THEN $
+                   IF keyword_set(simStellarMass) THEN $ 
                      IF keyword_set(stellar) $ 
                      THEN oplot,[alog10(metals[ind].smass),alog10(metals[ind].smass)],[zstellar[ind],zstellar[ind]],psym = symcat(psym[i]), color = colors[i], symsize = 0.5*symsizes[i], thick = thicks[i] $
                      ELSE oplot,[alog10(metals[ind].smass),alog10(metals[ind].smass)],[metallicity,metallicity],psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i]*0.75, thick = thicks[i]
-                   print,filenames[i],' ',strtrim(halos[j,i],2),' ',strtrim(alog10(metals[ind].smassO),2),' ',strtrim(alog10(metals[ind].smass),2),' ',strtrim(metals[ind].ox_sfr,2),' ',strtrim(zstellar[ind],2),strtrim(zstellar_rband[ind],2)
+                   print,filenames[i + iz*n],' ',strtrim(halos[j,i,iz],2),' ',strtrim(alog10(metals[ind].smassO),2),' ',strtrim(alog10(metals[ind].smass),2),' ',strtrim(metals[ind].ox_sfr,2);,' ',strtrim(zstellar[ind],2),strtrim(zstellar_rband[ind],2)
                ENDIF
            ENDIF
        ENDFOR
@@ -256,7 +307,7 @@ FOR i = 0, n - 1 DO BEGIN
                    ENDELSE
                    ox_plot = metals[indnosat[ind_plotable]].ox_inner
                ENDIF ELSE ox_plot = metals[indnosat].ox_sfr
-               IF keyword_set(onehalos) THEN print,filenames[i],' ',strtrim(onehalos[i],2),alog10(metals[indnosat].smassO),ox_plot ELSE print,filenames[i],alog10(metals[indnosat[ind_plotable]].smassO),ox_plot
+               IF keyword_set(onehalos) THEN print,filenames[i + iz*n],' ',strtrim(onehalos[i],2),alog10(metals[indnosat].smassO),ox_plot ELSE print,filenames[i + iz*n],alog10(metals[indnosat[ind_plotable]].smassO),ox_plot
            ENDIF
 ;           IF (indsat[0] NE -1) THEN $
 ;             IF n_elements(indnosat) EQ 1 THEN oplot,[alog10(metals[indsat].smassO),alog10(metals[indsat].smassO)],[metals[indsat].ox_sfr,metals[indsat].ox_sfr],psym = symcat(psym[i] + 1), color = colors[i], symsize = symsizes[i], thick = thicks[i] ELSE oplot,alog10(metals[indsat].smassO),metals[indsat].ox_sfr,psym = symcat(psym[i] + 1), color = colors[i], symsize = symsizes[i], thick = thicks[i]
@@ -265,8 +316,9 @@ FOR i = 0, n - 1 DO BEGIN
 ;       oplot,alog10(metals.smassO),metals.ox_sfr,psym = symcat(psym[i]), color = colors[i], symsize = symsizes[i]*0.75, thick = thicks[i]       
 ;       print,alog10(metals[indnosat].smassO),alog10(metals.smass),metals[indnosat].ox_sfr
    ENDELSE
-   IF NOT keyword_set(readfile) OR NOT file_test(filenames[i] + '.metals.fits') THEN mwrfits,metals,filenames[i] + '.metals.fits',/create
+   IF NOT keyword_set(readfile) OR NOT file_test(filenames[i + iz*n] + '.metals.fits') THEN mwrfits,metals,filenames[i + iz*n] + '.metals.fits',/create
 ENDFOR
+ENDFOR 
 
 IF (keyword_set(outfile)) THEN device,/close ELSE stop
 END
