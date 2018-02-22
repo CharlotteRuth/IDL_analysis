@@ -21,7 +21,7 @@ ENDIF
 
 IF KEYWORD_SET(normalize) THEN BEGIN
    IF normalize EQ 1 THEN BEGIN
-      IF KEYWORD_SET(weight) THEN norm = TOTAL(weight) ELSE norm = N_ELEMENTS(array)
+      IF KEYWORD_SET(weight) THEN norm = max(y) ELSE norm = N_ELEMENTS(array)
       y = y/FLOAT(norm)
     ENDIF ELSE y = y/normalize
 ENDIF

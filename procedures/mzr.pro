@@ -18,6 +18,7 @@ gm_per_H = 1.673534d-24
 H_per_gm = 5.9753790e+23
 grav = 6.6725985e-8 ;am^3/g/s
 s_per_yr = 3.15569e7
+dtime = 1e6
 filebase = filename
 IF keyword_set(onehalo) THEN filename = filename + '.halo.' + strtrim(onehalo)
 rheader, filename, h
@@ -175,7 +176,7 @@ ENDIF ELSE BEGIN
     unique = [onehalo]
 ENDELSE
 
-metals = replicate({maxdist:dblarr(1), mvir:dblarr(1), grp:dblarr(1), ntot:dblarr(1), ngas:dblarr(1), nstar:dblarr(1), nhot:lonarr(1), ncold:lonarr(1), inner_gasmass:dblarr(1), cool_inner_gasmass:dblarr(1), coolgasmass:dblarr(1), hotgasmass:dblarr(1), massHI:dblarr(1), ninner:lonarr(1), ox_inner:dblarr(1), fe_inner:dblarr(1), ox_innerAtom:dblarr(1), fe_innerAtom:dblarr(1), ox_cold:dblarr(1), fe_cold:dblarr(1), ox_hot:dblarr(1), fe_hot:dblarr(1), ox_sfr:dblarr(1), fe_sfr:dblarr(1), ox_stellar:dblarr(1), fe_stellar:dblarr(1), ox_stellar_rband:dblarr(1), fe_stellar_rband:dblarr(1), smass:dblarr(1), gmass:dblarr(1), yeff:dblarr(1), yeff_inner:dblarr(1), smassO:dblarr(1), sat:lonarr(1)},n_elements(unique))
+metals = replicate({maxdist:dblarr(1), mvir:dblarr(1), grp:dblarr(1), ntot:dblarr(1), ngas:dblarr(1), nstar:dblarr(1), nhot:lonarr(1), ncold:lonarr(1), inner_gasmass:dblarr(1), cool_inner_gasmass:dblarr(1), coolgasmass:dblarr(1), hotgasmass:dblarr(1), massHI:dblarr(1), ninner:lonarr(1), ox_inner:dblarr(1), fe_inner:dblarr(1), ox_innerAtom:dblarr(1), fe_innerAtom:dblarr(1), ox_cold:dblarr(1), fe_cold:dblarr(1), ox_hot:dblarr(1), fe_hot:dblarr(1), ox_sfr:dblarr(1), fe_sfr:dblarr(1), ox_stellar:dblarr(1), fe_stellar:dblarr(1), ox_stellar_rband:dblarr(1), fe_stellar_rband:dblarr(1), smass:dblarr(1), gmass:dblarr(1), yeff:dblarr(1), yeff_inner:dblarr(1), smassO:dblarr(1), sat:lonarr(1), sfr:dblarr(1)},n_elements(unique))
 
 ;Calculate the gas masses, metallicities etc for each of the satellities
 FOR i=0L,n_elements(unique)-1 DO BEGIN
@@ -298,6 +299,11 @@ FOR i=0L,n_elements(unique)-1 DO BEGIN
   metals[i].ox_sfr = 12.+alog10(total(all_ox_abund[indall]*sfeff[indall])/total(sfeff[indall]))
   metals[i].fe_sfr = total(fe[indall]*sfeff[indall])/total(sfeff[indall])
   metals[i].massHI = total(HI(where(grp EQ grpind))*g(where(grp EQ grpind)).mass)*massunit
+
+  ind_sfr = where(s[ind_star].tform*timeunit GT max(s.tform)*timeunit - dtime)
+  IF ind_sfr[0] NE -1 THEN metals[i].sfr = total((s[ind_star].mass)[ind_sfr])*massunit/dtime ELSE metals[i].sfr = 0
+  print,'SFR: ',i,metals[i].sfr
+;  stop
 ENDFOR
 
 ;if h.time gt 0.9 then begin 

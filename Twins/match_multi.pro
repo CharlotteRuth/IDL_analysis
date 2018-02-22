@@ -125,7 +125,10 @@ pro match_multi, arr1, arr2, match2, match1=match1, dupmatch1=dupmatch1, numlist
         endelse
 
     endfor 
-
+    if nmatch eq 0 then begin
+        dupmatch1 = -1
+        return
+    endif
     match2 = lonarr(nmatch)
     if arg_present(dupmatch1) then begin
         dupmatch1 = lonarr(nmatch)
