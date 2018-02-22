@@ -1,4 +1,4 @@
-PRO plot_z_m,avez,dirs,files,red_avez = red_avez, halo = halo,colors = colors,outplot = outplot,normalize = normalize,symbols = symbols,formatthick = formatthick,absolute = absolute,legend = legend
+PRO plot_z_m,avez,dirs,files,red_avez = red_avez, halo = halo,colors = colors,outplot = outplot,normalize = normalize,symbols = symbols,formatthick = formatthick,absolute = absolute,legend = legend,stellarmass = stellarmass,unscaledz = unscaledz
 zsolar  =  0.0130215
 IF NOT keyword_set(finalstep) THEN finalstep = '00512'
 n = n_elements(dirs)
@@ -65,6 +65,7 @@ ENDIF ELSE BEGIN
 ;    outplotext = outplotext + '_zm_scale.eps'
     ytitle = textoidl('Log(Z_{eject}/Z_{ISM})')
     yrange = [-0.2,0.6]
+    yrange = [-0.2,3]
 ;    yrange = [0.1,0.45]
 ;    yrange = [-0.05,0.25] range for median
     showtext = 1
@@ -80,9 +81,24 @@ ENDIF ELSE BEGIN
    xaxis = vmass
    xrange = [1e9,1e12]
 ENDELSE
+
+;Read in information to calculate the mass loading at each redshift
+nz = 4
+reejectmassr  = fltarr(n,nz)
+reejectmassmetr  = fltarr(n,nz)
+sfmassr = fltarr(n,nz)
+FOR i = 0, n_elements(dirs) - 1 DO BEGIN
+    readcol,dirs[i] + '/grp' + halo[i] + '.ejectz_quant.txt',z_bins_temp,relostmass_temp,relostmassmet_temp,relostmassr_temp,relostmassmetr_temp,reejectmass_temp,reejectmassmet_temp,reejectmassr_temp,reejectmassmetr_temp,reexpellmass_temp,reexpellmassmet_temp,reexpellmassr_temp,reexpellmassmetr_temp,diskgmass_lost_temp,diskgmass_lostmet_temp,diskgmass_lostr_temp,diskgmass_lostmetr_temp,diskgmass_temp,diskgmassmet_temp,diskgmassr_temp,diskgmassmetr_temp,diskgmass_expell_temp,diskgmass_expellmet_temp,diskgmass_expellr_temp,diskgmass_expellmetr_temp,halogmass_temp,halogmassmet_temp,sfmassr_temp
+    reejectmassr[i,*] = reejectmassr_temp
+    reejectmassmetr[i,*] = reejectmassmetr_temp
+    sfmassr[i,*] = sfmassr_temp
+ENDFOR
+
 ;IF keyword_set(outplot) THEN  device,filename = outplot + outplotext,/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 0, xsize = xsize, ysize = ysize
 plot,xaxis,alog10(avez.meanz),/xlog,xrange = xrange,xtitle = xtitle,yrange = yrange,ytitle = ytitle,psym = symcat(symbols[0]),symsize = symsize,/nodata;,xshowtext = showtext
 ;IF keyword_set(absolute) THEN oplot,xaxis,alog10(zgas),psym = symcat(16),symsize = symsize,color = fgcolor
+
+
 
 IF keyword_set(red_avez) THEN BEGIN
    FOR iz = 0, (size(red_avez))[2] - 1 DO BEGIN
@@ -93,6 +109,10 @@ IF keyword_set(red_avez) THEN BEGIN
          ENDIF ELSE BEGIN
             oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zeject),psym = symcat(symbols[0]),color = z_colors[iz],symsize = 1.5
             oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zeject),psym = symcat(sym_outline(symbols[0])),color = fgcolor,symsize = 1.5
+            
+            massloading = reejectmassr[*,iz]/sfmassr[*,iz]
+            oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zISM + 0.01/massloading/zsolar),psym = symcat(sym_outline(symbols[0]),thick = 4),color = z_colors[iz],symsize = 1.5
+            stop
          ENDELSE
       ENDIF ELSE BEGIN
          IF keyword_set(stellarmass) THEN BEGIN
@@ -101,6 +121,10 @@ IF keyword_set(red_avez) THEN BEGIN
          ENDIF ELSE BEGIN
             oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zeject/red_avez[*,iz].zISM),psym = symcat(symbols[0]),color = z_colors[iz],symsize = 1.5
             oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zeject/red_avez[*,iz].zISM),psym = symcat(sym_outline(symbols[0])),color = fgcolor,symsize = 1.5
+
+            massloading = reejectmassr[*,iz]/sfmassr[*,iz]
+            oplot,red_avez[*,iz].mvir,alog10((red_avez[*,iz].zISM*zsolar + 0.01/massloading)/(red_avez[*,iz].zISM*zsolar)),psym = symcat(sym_outline(symbols[0]),thick = 4),color = z_colors[iz],symsize = 1.5
+            stop
          ENDELSE
       ENDELSE
    ENDFOR
