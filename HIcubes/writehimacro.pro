@@ -27,8 +27,14 @@
 
 ;absv = 249.6
 
+;For Lindsey's isolate disk sims,
+;radius = 24
+;writehimacro,infile,dist_unit = dist_unit,mass_unit = mass_unit,pfile =pfile,radius = radius,/molecularH,fileext = 'KS',/noncosmo
+;or
+;writehimacro,infile,dist_unit = dist_unit,mass_unit = mass_unit,pfile =pfile,radius = radius,/molecularH,/sd_obs,/noncosmo
+
 ;This function writes a macro to make an HI data cube through tipsy
-pro writehimacro, infile, dist_unit = dist_unit, mass_unit = mass_unit, pfile = pfile, radius = radius, molecularH = molecularH,SD_obs = SD_obs, dwarfv = dwarfv, npixels = npixels,fileext = fileext
+pro writehimacro, infile, dist_unit = dist_unit, mass_unit = mass_unit, pfile = pfile, radius = radius, molecularH = molecularH,SD_obs = SD_obs, dwarfv = dwarfv, npixels = npixels,fileext = fileext,noncosmo = noncosmo
 ;Use keyword 'dwarfv' if V_max is less than or equal to 83 km/s in
 ;physical units
 
@@ -46,6 +52,7 @@ absv = 249.6
 ;z = strmid(z_sec[N_ELEMENTS(z_sec) - 3],1) + '.'+ z_sec[N_ELEMENTS(z_sec) - 2]
 ;time = z+1
 rtipsy,infile,h,/justhead
+IF keyword_set(noncosmo) THEN h.time = 1
 z = 1/h.time - 1
 absv_comove = strtrim(absv/h.time,2)
 deltav_comove = strtrim(deltav/h.time,2)
@@ -57,8 +64,7 @@ ENDIF
 IF NOT keyword_set(radius) THEN radius = 18.62;kpc    used to be 12.0 before 7/26/11
 IF NOT keyword_set(npixels) THEN npixels = 1024
 IF NOT keyword_set(fileext) THEN fileext = ''
-
-;close,/all
+close,/all
 openw,1,infile+'.HI' + fileext + '.macro'
 printf,1,"makeHIcube"
 printf,1,""

@@ -167,7 +167,7 @@ if keyword_set(outfile) or keyword_set(doplot) then begin
     xrang = [-1. * max(abs([xmin,xmax])), max(abs([xmin,xmax]))]
 ;    xrang=[-1000,1000]
     plot, vaxis, spectrum, xtitle='Velocity (km/s)', $
-      ytitle='M' + textoidl('_{HI}') +' (M' + textoidl('_{sun}') + ')',$
+      ytitle='M_HI [M' + sunsymbol() + ']',$ ; + textoidl('_{HI}') +' (M' + textoidl('_{sun}') + ')',$
       title=titl, $
       xrange = xrang, xstyle=1
     if keyword_set(width) then begin

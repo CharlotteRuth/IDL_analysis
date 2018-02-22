@@ -28,7 +28,7 @@ stop
 analyzeHIcubes,dir,tfile+'.halo.'+haloid,angle = 90,/dwarf,/physical_coord
 analyzeHIcubes,dir,tfile+'.halo.'+haloid,angle = 45,/dwarf,/physical_coord
 schmidtlaw_res_obs,tfile,pfile,extno = 16,/verbose,/useH2,angle = 45
-schmidtlaw_res_obs_master_out,['/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWKS.00444/schmidtlaw_res_obs_all_Ha0.74626866.dat','/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWK.00444/schmidtlaw_res_obs_all0.750000.dat'],color = [60,200]
+schmidtlaw_res_obs_master_out,['/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWKS.00444/schmidtlaw_res_obs_all_Ha0.74626866.dat','/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWK.00444/schmidtlaw_res_obs_all0.750000.dat'],color = [254,60],/formatthick,key = ['S','H2'],outplot = '~/h516'
 
 ;----------------------------------------------
 step = '000092'

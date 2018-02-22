@@ -2,13 +2,18 @@
 pro schmidtlaw_res_obs_master 
 ;filename = 'h603.cosmo50cmb.2304g5bwK.00512'
 ;cd,'/astro/net/scratch2/fabio/REPOSITORY/e11Gals/h603.cosmo50cmb.2304g5bwK.BUG'
-
-IF keyword_set(vetinari) THEN BEGIN
+spawn,'hostname',hostname
+IF hostname EQ 'vetinari' THEN BEGIN
    prefix = '~/Data/MolecH/Cosmo/' 
    outfile = '~/Figures/h516.cosmo25cmb.paper_'
 ENDIF ELSE BEGIN
-   prefix = '/astro/store/student-scratch1/christensen/MolecH/Cosmo/'
-   outfile = '~/plots/h516.cosmo25cmb.paper_'   
+   IF hostname EQ 'quirm' THEN BEGIN
+      prefix = '/home/christenc/Storage/Cosmo/'
+      outfile = '/home/christenc/Code/IDL/IDL_analysis/Plots/h516.cosmo25cmb.3072g1HBWKS.000068'
+   ENDIF ELSE BEGIN
+      prefix = '/astro/store/student-scratch1/christensen/MolecH/Cosmo/'
+      outfile = '~/plots/'
+   ENDELSE
 ENDELSE
 
 res = 0.75
@@ -58,11 +63,11 @@ pfile = 'h516.cosmo25cmb.2304g14HBWK.param'
 outplot = prefix+'h516.cosmo25cmb.2304g/h516.cosmo25cmb.2304g14HBWK/steps/h516.cosmo25cmb.2304g14HBWK.00512.dir/h516.cosmo25cmb.2304g14HBWK.00512.halo.1_' + strtrim(res,2)
 ;schmidtlaw_res_obs,filename,pfile,res = res,/useH2,outplot = outplot
 
-cd,prefix + 'h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g1MBWK/steps/h516.cosmo25cmb.3072g1MBWK.00492.dir'
+;cd,prefix + 'h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g1MBWK/steps/h516.cosmo25cmb.3072g1MBWK.00492.dir'
 filename = 'h516.cosmo25cmb.3072g1MBWK.00492'
 pfile = 'h516.cosmo25cmb.3072g1MBWK.param'
 outplot = prefix+'h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g1MBWK/steps/h516.cosmo25cmb.3072g1MBWK.00492.dir/h516.cosmo25cmb.3072g1MBWK.00492.halo.1_' + strtrim(res,2)
-schmidtlaw_res_obs,filename,pfile,res = res,useH2 = 0,/halpha,angle = 45,extno = 15, rotateAngle = 7;,/verbose;outplot = outplot
+;schmidtlaw_res_obs,filename,pfile,res = res,useH2 = 0,/halpha,angle = 45,extno = 15, rotateAngle = 7;,/verbose;outplot = outplot
 
 ;cd,prefix+'/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/steps/h516.cosmo25cmb.3072g14HBWK.00492.dir'
 filename = 'h516.cosmo25cmb.3072g14HBWK.00492'
@@ -70,6 +75,10 @@ pfile = '../../h516.cosmo25cmb.3072g14HBWK.param'
 outplot = prefix+'h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g14HBWK/steps/h516.cosmo25cmb.3072g14HBWK.00492.dir/h516.cosmo25cmb.3072g14HBWK.00492.halo.1_' + strtrim(res,2)
 ;schmidtlaw_res_obs,filename,pfile,res = res,/useH2,/halpha,angle = 45,extno = 15, rotateAngle = 7;,outplot = outplot
 
+filename = 'h516.cosmo25cmb.3072g1HBWKS.000068'
+pfile = 'h516.cosmo25cmb.3072g1HBWKS.param'
+outplot = outfile + '/h516.cosmo25cmb.3072g1HBWKS.000068.halo.1_' + strtrim(res,2)
+schmidtlaw_res_obs,filename,pfile,res = res,useH2 = 1,/halpha,angle = 45,extno = 16, rotateAngle = 7,/verbose
 end
 
 pro schmidtlaw_res_obs,filename,pfile,res = res,outplot = outplot,overplot = overplot,useH2 = useH2,verbose = verbose, angle = angle, extno = extno,center = center,rotateAngle = rotateAngle,range = range,halo_str = halo_str, Halpha = Halpha,formatthick = formatthick
@@ -93,7 +102,7 @@ ENDIF ELSE BEGIN
 ENDELSE
 IF NOT keyword_set(extno) THEN extno = 14 ELSE extno = extno
 IF NOT keyword_set(center) THEN center = [0,0] ELSE center = center
-IF NOT keyword_set(rotateAngle) THEN rotateAngle = 3
+IF NOT keyword_set(rotateAngle) THEN rotateAngle = 0 ;3
 IF NOT keyword_set(range) THEN range = 12.0
 IF NOT keyword_set(halo_str) THEN halo_str = '1'
 !Y.STYLE = 1
@@ -155,38 +164,44 @@ if keyword_set(verbose) THEN BEGIN
     tclip = tcurrent - deltat
 
 ;*************** Rotation ****************
-    angle0 = ATAN(s.z/s.x)
-    angle0[where(s.x lt 0)] = angle0[where(s.x lt 0)]+!PI
+   angle0 = ATAN(s.z/s.x)
+   angle0[where(s.x lt 0)] = angle0[where(s.x lt 0)]+!PI
+;    angle0 = ATAN(s.z/s.y)
+;    angle0[where(s.y lt 0)] = angle0[where(s.y lt 0)]+!PI
     s1 = s
-    if angle ne !PI/2 THEN BEGIN 
-        Ryz = SQRT(s.x*s.x + s.z*s.z)
-        s1.x = Ryz*COS(angle0 + angle)*h.time
-        s1.z = Ryz*SIN(angle0 + angle)*h.time
-    ENDIF ELSE BEGIN
-        s1.x = s1.x*h.time
-        s1.z = s1.z*h.time
-    ENDELSE
+    s1.x = s1.x*h.time
     s1.y = s1.y*h.time
-;    temp = s1.x
-;    s1.x = s1.y
-;    s1.y = temp
-    
-    angle0 = ATAN(g.z/g.x)
-    angle0[where(g.x lt 0)] = angle0[where(g.x lt 0)]+!PI
-    g1 = g
+    s1.z = s1.z*h.time    
     if angle ne !PI/2 THEN BEGIN 
-        Ryz = SQRT(g.x*g.x + g.z*g.z)
-        g1.x = Ryz*COS(angle0 + angle)*h.time
-        g1.z = Ryz*SIN(angle0 + angle)*h.time
-    ENDIF ELSE BEGIN
-        g1.x = g1.x*h.time
-        g1.z = g1.z*h.time
-    ENDELSE
+       Ryz = SQRT(s.x*s.x + s.z*s.z)
+       s1.x = Ryz*COS(angle0 + angle)
+;        Ryz = SQRT(s.y*s.y + s.z*s.z)
+;        s1.y = Ryz*COS(angle0 + angle)
+        s1.z = Ryz*SIN(angle0 + angle)
+    ENDIF 
+    temp = s1.x
+    s1.x = s1.y
+    s1.y = temp
+    
+   angle0 = ATAN(g.z/g.x)
+   angle0[where(g.x lt 0)] = angle0[where(g.x lt 0)]+!PI
+;    angle0 = ATAN(g.z/g.y)
+;    angle0[where(g.y lt 0)] = angle0[where(g.y lt 0)]+!PI    
+    g1 = g
+    g1.x = g1.x*h.time
     g1.y = g1.y*h.time
+    g1.z = g1.z*h.time 
+    if angle ne !PI/2 THEN BEGIN 
+       Ryz = SQRT(g.x*g.x + g.z*g.z)
+       g1.x = Ryz*COS(angle0 + angle)
+;        Ryz = SQRT(g.y*g.y + g.z*g.z)
+;        g1.y = Ryz*COS(angle0 + angle)
+        g1.z = Ryz*SIN(angle0 + angle)
+    ENDIF 
 
-;    temp = g1.x
-;    g1.x = g1.y
-;    g1.y = temp
+    temp = g1.x
+    g1.x = g1.y
+    g1.y = temp
 
 ;        s1 = s
 ;        s1.y = s1.y*h.time 
@@ -377,7 +392,7 @@ IF (keyword_set(verbose)) THEN BEGIN
     IF (keyword_set(outplot)) THEN device,filename=outplot+'_part.eps',/color,bits_per_pixel= 8,/times,xsize = 18,ysize = 18,xoffset =  2,yoffset =  2  ELSE window,0,xsize = 800,ysize = 800
     loadct,39
     multiplot,[2,2],gap=0.06,/square,/doxaxis,/doyaxis
-    contour,alog10(SFRrebin),xaxes_lr,yaxes_lr,xrange = [-8,8],yrange = [-8,8],nlevels = 60,/fill,xstyle = 1,ystyle = 1,min_value = -8,max_value = 0,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',title = textoidl('Log \Sigma')
+    contour,alog10(SFRrebin),xaxes_lr,yaxes_lr,xrange = [-8,8],yrange = [-8,8],nlevels = 60,/fill,xstyle = 1,ystyle = 1,min_value = -8,max_value = 0,xtitle = 'X [kpc]',ytitle = 'Y [kpc]';,title = textoidl('Log \Sigma')
     contour,alog10(SFRrebin_par),xaxes_lr,yaxes_lr,nlevels = 10,/overplot,min_value = -3,max_value = 0
 
     multiplot,/doxaxis,/doyaxis    
@@ -392,7 +407,7 @@ IF (keyword_set(verbose)) THEN BEGIN
 ;contour,alog10(SFR_surface_den),xaxes_sr,yaxes_sr,nlevels = 5,/overplot
 
     multiplot,/doxaxis,/doyaxis    
-    contour,alog10(gas_sd),xaxes_lr,yaxes_lr,xrange = [-8,8],yrange = [-8,8],nlevels = 60,/fill,xstyle = 1,ystyle = 1,min_value = -2,max_value = 2, title=textoidl('Log \Sigma'),xtitle = 'X [kpc]',ytitle = 'Y [kpc]'
+    contour,alog10(gas_sd),xaxes_lr,yaxes_lr,xrange = [-8,8],yrange = [-8,8],nlevels = 60,/fill,xstyle = 1,ystyle = 1,min_value = -2,max_value = 2, xtitle = 'X [kpc]',ytitle = 'Y [kpc]';title=textoidl('Log \Sigma'),
 ;contour,alog10(HIrebin + H2rebin),xaxes_lr,yaxes_lr,xrange = [-8,8],yrange = [-8,8],nlevels = 60,/fill,xstyle = 1,ystyle = 1,min_value = 12
     IF keyword_set( useH2) THEN contour,alog10((HIrebin + H2rebin)/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18),xaxes_lr,yaxes_lr,nlevels = 10,/overplot,min_value = -2,max_value = 2 $
     ELSE contour,alog10((HIrebin)/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18),xaxes_lr,yaxes_lr,nlevels = 5,/overplot,min_value = -2,max_value = 2
@@ -461,7 +476,7 @@ contour,alog10(SFR_surface_den_plot),xaxes_sr,yaxes_sr,$
 colorbar,range = [alog10(minsf),alog10(maxsf)],/vertical,divisions = 8,position = position,color = white;,position = position
 IF keyword_set(outplot) THEN device,/close ELSE stop
 
-r25 = opticalRadii(filename = filename,verbose = verbose,halo_str = halo_str)
+r25 = 7 ;opticalRadii(filename = filename,verbose = verbose,halo_str = halo_str)
 
 mingas = 1e18
 maxgas = 1e23
@@ -512,13 +527,13 @@ ENDIF ELSE BEGIN
     !Y.MARGIN = [2,1]
     IF (keyword_set(outplot)) THEN device,filename=outplot+'_gas.eps',/color,bits_per_pixel= 8,/times,xsize = 18,ysize = 9,xoffset =  2,yoffset =  2  ELSE window,1,xsize = 800,ysize = 400
     multiplot,[2,1],gap=0.06,/square,/doxaxis,/doyaxis
-    contour,alog10(cubeHI_surface_den_cut),title = textoidl('Log \Sigma_{H} [amu cm^{-2}]'),xaxes,yaxes,$
-      /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxgas),min_value = alog10(mingas),xcharsize = 1.0,ycharsize = 1.0, levels = userlevels 
+    contour,alog10(cubeHI_surface_den_cut),xaxes,yaxes,$
+      /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxgas),min_value = alog10(mingas),xcharsize = 1.0,ycharsize = 1.0, levels = userlevels ;,title = textoidl('Log \Sigma_{H} [amu cm^{-2}]')
     contour,radius,xaxes,yaxes,/overplot,levels = [0,r25]    
     colorbar,range = [alog10(mingas),alog10(maxgas)],/vertical,divisions = 4,position = position,charsize=cb_charsize,color = white
     multiplot,/doxaxis,/doyaxis
-    contour,alog10(HIrebin_cut),xaxes_lr,yaxes_lr,title = textoidl('Log \Sigma_{H}[amu cm^{-2}]'),$
-      /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxgas),min_value = alog10(mingas),xcharsize = 1.0,ycharsize = 1.0, levels = userlevels
+    contour,alog10(HIrebin_cut),xaxes_lr,yaxes_lr,$
+      /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxgas),min_value = alog10(mingas),xcharsize = 1.0,ycharsize = 1.0, levels = userlevels;title = textoidl('Log \Sigma_{H}[amu cm^{-2}]')
     contour,radius_rebin,xaxes_lr,yaxes_lr,/overplot,levels = [0,r25] 
     IF keyword_set(outplot) THEN device,/close
     multiplot,/reset
@@ -545,19 +560,19 @@ position = [0.415, 0.59, 0.44, 0.90]
 !Y.MARGIN = [2,1]
 IF (keyword_set(outplot)) THEN device,filename=outplot+'_star.eps',/color,bits_per_pixel= 8,/times,xsize = 18,ysize = 18,xoffset =  2,yoffset =  2  ELSE window,3,xsize = 800,ysize = 800
 multiplot,[2,2],gap=0.06,/square,/doxaxis,/doyaxis
-contour,alog10(SFR_surface_den_plot),xaxes_sr,yaxes_sr,title=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",$
-  /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxsf),min_value = alog10(minsf),xcharsize = 1.0,ycharsize = 1.0,levels = userlevels
+contour,alog10(SFR_surface_den_plot),xaxes_sr,yaxes_sr,$
+  /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxsf),min_value = alog10(minsf),xcharsize = 1.0,ycharsize = 1.0,levels = userlevels;,title=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",
 contour,radius_sr,xaxes_sr,yaxes_sr,/overplot,levels = [0,r25]
 colorbar,range = [alog10(minsf),alog10(maxsf)],/vertical,divisions = 8,position = position,charsize=cb_charsize,color = white
 multiplot,/doxaxis,/doyaxis
-contour,alog10(SFRrebin_plot),xaxes_lr,yaxes_lr,title=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",$
-  /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxsf),min_value = alog10(minsf),xcharsize = 1.0,ycharsize = 1.0,levels = userlevels
+contour,alog10(SFRrebin_plot),xaxes_lr,yaxes_lr,$
+  /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxsf),min_value = alog10(minsf),xcharsize = 1.0,ycharsize = 1.0,levels = userlevels;,title=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",
 contour,radius_rebin,xaxes_lr,yaxes_lr,/overplot,levels = [0,r25]
 multiplot,/doxaxis,/doyaxis
-contour,alog10(fuv_surface_den_plot*8.1e-2),xaxes_sr,yaxes_sr,title = textoidl('FUV'),$
+contour,alog10(fuv_surface_den_plot*8.1e-2),xaxes_sr,yaxes_sr,title = 'FUV',$
   /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxsf),min_value = alog10(minsf),xcharsize = 1.0,ycharsize = 1.0,levels = userlevels
 multiplot,/doxaxis,/doyaxis
-contour,alog10(mic24_surface_den_plot*3.2e-3),xaxes_sr,yaxes_sr,title = textoidl('24 microns'),$
+contour,alog10(mic24_surface_den_plot*3.2e-3),xaxes_sr,yaxes_sr,title = '24 microns',$
   /fill,nlevels = nlevels,yrange = [-1.0*range,range],xrange = [-1.0*range,range],xstyle = 1,ystyle = 1,xtitle = 'X [kpc]',ytitle = 'Y [kpc]',max_value = alog10(maxsf),min_value = alog10(minsf),xcharsize = 1.0,ycharsize = 1.0,levels = userlevels
 IF keyword_set(outplot) THEN device,/close
 multiplot,/reset
@@ -579,8 +594,8 @@ HIrebin = HIrebin/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18
 IF keyword_set( useH2) THEN  H2rebin = H2rebin/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18
 inside = where(radius_rebin lt 100) ;r25)
 IF (inside[0]) ne -1 THEN BEGIN
-IF keyword_set( useH2) THEN plot,alog10(sin(angle)*(HIrebin[inside] + H2rebin[inside])*1.4),alog10(sin(angle)*SFRrebin[inside]),psym = 2,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3], xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]" ELSE $
-                            plot,alog10(sin(angle)*(HIrebin[inside])),                  alog10(sin(angle)*SFRrebin[inside]),psym = 2,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3], xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]" 
+   IF keyword_set( useH2) THEN plot,alog10(sin(angle)*(HIrebin[inside] + H2rebin[inside])*1.4),alog10(sin(angle)*SFRrebin[inside]),psym = 2, xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3] $ ;,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]"
+   ELSE plot,alog10(sin(angle)*(HIrebin[inside])),                  alog10(sin(angle)*SFRrebin[inside]),psym = 2, xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3];, xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]" ,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]"
 
 ;IF keyword_set( useH2) THEN plot,alog10(sin(angle)*(gas_sd[inside])),alog10(sin(angle)*SFRrebin_par[inside]),psym = 2,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3], xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]" ELSE $
 ;                            plot,alog10(sin(angle)*(gas_sd[inside])),alog10(sin(angle)*SFRrebin_par[inside]),psym = 2,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3], xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]" 
@@ -646,7 +661,7 @@ FOR ir = 0, nbins - 1 DO BEGIN
     IF keyword_set(useH2) THEN prof_H2[ir] = MEAN(cubeH2_surface_den[ind]/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18) ;TOTAL(cubeH2_surface_den[ind]/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18)/area
     prof_HI[ir] = MEAN(cubeHI_surface_den_prof[ind]/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18) ;TOTAL(cubeHI_surface_den[ind]/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18)/area
 ENDFOR
-plot,r_bin[0:nbins - 1] + dr/2.0,alog10(prof_HI/2.0*sin(angle)),yrange = [-4,2],xrange = [0,5],xtitle = 'Radius [kpc]',ytitle = textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]"
+plot,r_bin[0:nbins - 1] + dr/2.0,alog10(prof_HI/2.0*sin(angle)),yrange = [-4,2],xrange = [0,5],xtitle = 'Radius [kpc]';,ytitle = textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]"
 oplot,[r25,r25],[-5,6],linestyle = 1
 IF keyword_set( useH2) THEN BEGIN
     oplot,r_bin[0:nbins - 1] + dr/2.0,alog10(prof_H2*sin(angle)),linestyle = 2
@@ -714,7 +729,7 @@ ENDELSE
 ;   prefix = '/astro/store/student-scratch1/christensen/MolecH/Cosmo/'
 ;ENDELSE
 spawn,'hostname',hostname
-IF hostname EQ 'ozma' THEN BEGIN 
+IF hostname EQ 'ozma' OR hostname Eq 'quirm' THEN BEGIN 
    prefix = '/home/christensen/Storage1/UW/MolecH/Cosmo/' 
    obsprefix = '~/Code/'
 ENDIF ELSE BEGIN
@@ -733,7 +748,7 @@ IF keyword_set(color) THEN BEGIN
 ENDIF ELSE BEGIN
     loadct,0
     colors = fltarr(n) + fgcolor
-    IF NOT keywored_set(ctables) THEN ctables = fltarr(n)
+    IF NOT keyword_set(ctables) THEN ctables = fltarr(n)
     IF NOT keyword_set(thick) THEN $
       IF keyword_set(formatthick) THEN thick = fltarr(n) + 6 ELSE  thick = (fltarr(n) + 1)
     IF NOT keyword_set(symbols) THEN symbols = fltarr(n) + 4 ;[4,15];symbols = (findgen(n)+2)*2
@@ -742,14 +757,14 @@ ENDELSE
 
 IF NOT keyword_set(symsize) THEN symsize = fltarr(n) + 2
 nlevels = 154 
-color_hist = findgen(nlevels) + (254 - nlevels)
+IF keyword_set(outplot) THEN color_hist = reverse(findgen(nlevels)) ELSE color_hist = findgen(nlevels) + (254 - nlevels)
 obssym = 16
 obssym2 = 15
 obssymsize = 0.8;1.5
 obssymsize2 = 1
 c_line = [2,5,0]
 c_line = [0,0,0]
-thresh_points = 100
+thresh_points = 5000
 
 ;------------------------- Read in the obesrvational data ------------------------
 fileobs = obsprefix + 'Datafiles/HIcubes/bigiel10.dat'
@@ -855,7 +870,7 @@ ENDIF ELSE BEGIN
         plot, logx_points,logSFR_points,xrange = [min1,max1],yrange = [min2,max2], xstyle = 1,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xtitle=xtitle1,/nodata, title = label
         oplot,logx_points,logSFR_points,color = obscolor, psym = symcat(obssym), symsize = obssymsize
 ;       oplot,alog10(loggas_bolatto),alog10(logSFR_bolatto),color = obscolor, psym = symcat(obssym2), symsize = obssymsize2
-    ENDIF ELSE contour,hist,xbins,ybins,xrange = [min1,max1],yrange = [min2,max2], xstyle = 1, ystyle = 1, ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",  nlevels = nlevels, c_colors = color_hist, /fill, title = label, xtitle=xtitle1
+     ENDIF ELSE contour,hist,xbins,ybins,xrange = [min1,max1],yrange = [min2,max2], xstyle = 1, ystyle = 1, ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",  nlevels = nlevels, c_colors = color_hist, /fill, title = label, xtitle=xtitle1
 ENDELSE
 
 FOR i = 0, n -1 DO BEGIN

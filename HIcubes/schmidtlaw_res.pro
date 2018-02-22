@@ -1,6 +1,7 @@
 ;filename = 'h603.cosmo50cmb.2304g5bwK.00512'
 ;cd,'/astro/net/scratch2/fabio/REPOSITORY/e11Gals/h603.cosmo50cmb.2304g5bwK.BUG'
-pro schmidtlaw_res,filename,kpcunit,massunit,massform,res = res,range = range,obsH = obsH,i = i,color = color,psym = psym,overplot = overplot,starlogfile = starlogfile
+pro schmidtlaw_res,filename,kpcunit,massunit,massform,res = res,range = range,obsH = obsH,i = i,color = color,psym = psym,overplot = overplot,starlogfile = starlogfile,big = big
+;Use the keyword "big" for the larger starlogs produced by Changa
 cm_per_kpc = 3.08568021d21
 gm_per_msol = 1.98892d33
 amu_per_gm = 6.022142d23
@@ -63,7 +64,7 @@ ENDIF ELSE BEGIN
     rtipsy,filename + '.std',h,g,d,s
     base = strmid(filename,0,strlen(filename) - 13)
     IF NOT keyword_set(starlogfile) THEN starlogfile = '../../'+base + '.starlog'
-    starlog = rstarlog(starlogfile,/molecularH)
+    starlog = rstarlog(starlogfile,/molecularH,big = big)
     rhounit = rhounit/(h.time^3)
     s.x = s.x*kpcunit*h.time
     s.y = s.y*kpcunit*h.time
@@ -84,8 +85,9 @@ ENDIF ELSE BEGIN
     readarr,filename + '.iord',h,iords,/ascii,part = 'star',type = 'long'
     coolonclean = coolon
     coolonclean = coolonclean - tcurrent/timeunit
-    plot,alog10(g.dens*rhounit),alog10(H2*2/(HI + 2.0*H2)),xrange = [0,3],psym = 3
+    plot,alog10(g.dens*rhounit),alog10(H2*2/(HI + 2.0*H2)),xrange = [-3,3],psym = 3,xtitle = 'Log Density',ytitle = 'H2 fraction'
     plot_colorscale,alog10(g.dens*rhounit),alog10(H2*2/(HI + 2.0*H2)),coolonclean,xrange = [0,3],/overplot
+    stop
 
     IF NOT keyword_set(range) THEN range = 5
     minrange = range/(-2.0) 
@@ -149,19 +151,22 @@ ysigmalow = xsigmalow*2.4 - 5.0
 IF ind[0] NE -1 THEN BEGIN
    IF keyword_set(overplot) THEN $
       oplot,alog10(sin(i)*HIrebin[ind] + H2rebin[ind]),alog10(sin(i)*tformrebin[ind]), psym = psym, color = color ELSE $
-         plot, alog10(sin(i)*HIrebin[ind] + H2rebin[ind]),alog10(sin(i)*tformrebin[ind]), psym = psym, color = color, xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]",ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xstyle=1, ystyle=1, _EXTRA=_extra, pos=[.15,.15,.95,.95], xrange = [-1,5], yrange = [-5,3]
+         plot, alog10(sin(i)*HIrebin[ind] + H2rebin[ind]),alog10(sin(i)*tformrebin[ind]), psym = psym, color = color, xstyle=1, ystyle=1, _EXTRA=_extra, pos=[.15,.15,.95,.95],xrange = [-2,2],yrange = [-2,0.5],xtitle = 'Log Simga_gas [M'+sunsymbol() + 'pc^-2',ytitle = 'Log Sigma_SFR [M'+sunsymbol() + 'kpc^-2 yr^-1';xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]",ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", 
+   ;xrange = [-1,5], yrange = [-5,3]
 ENDIF
 ;oplot,alog10(xsigma),alog10(ysigma)
 ;oplot,xsigmalow,ysigmalow 
-
+stop
 IF ind[0] NE -1 THEN BEGIN
    IF keyword_set(overplot) THEN $
       oplot,alog10(sin(i)*H2rebin[ind]),alog10(sin(i)*tformrebin[ind]), psym = psym, color = color ELSE $
-         plot, alog10(sin(i)*H2rebin[ind]),alog10(sin(i)*tformrebin[ind]), psym = psym, color = color, xtitle=textoidl('Log \Sigma')+"!H2!n [M"+sunsymbol()+" pc!u-2!n]",ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xstyle=1, ystyle=1, _EXTRA=_extra, pos=[.15,.15,.95,.95], xrange = [-5,3], yrange = [-5,-0.5]
+         plot, alog10(sin(i)*H2rebin[ind]),alog10(sin(i)*tformrebin[ind]), psym = psym, color = color,  xstyle=1, ystyle=1, _EXTRA=_extra, pos=[.15,.15,.95,.95],xrange = [-2,2],yrange = [-2,0.5],xtitle = 'Log Simga_H2 [M'+sunsymbol() + 'pc^-2',ytitle = 'Log Sigma_SFR [M'+sunsymbol() + 'kpc^-2 yr^-1'; xtitle=textoidl('Log \Sigma')+"!H2!n [M"+sunsymbol()+" pc!u-2!n]",ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xrange = [-5,3], yrange = [-5,-0.5]
    oplot,alog10(sin(i)*H2rebincool[ind]),alog10(sin(i)*tformrebin[ind]), psym = psym, color = 50
    fit = linfit(alog10(sin(i)*H2rebincool[ind]*1e6),alog10(sin(i)*tformrebin[ind]))
    oplot,alog10(sin(i)*H2rebincool[ind]),fit[0] + fit[1]*alog10(sin(i)*H2rebincool[ind]*1e6)
 ENDIF
+stop
+
 histogramp,alog10(H2rebincool[ind]*1e6/tformrebin[ind]),nbins = 20
 
 stop
@@ -290,7 +295,7 @@ IF keyword_set(outplot) THEN device, filename=outplot+'guo.ps',/COLOR,bits_per_p
 
 x = findgen(700)/100 + 9
 y = alog10(0.1257*((10^x/10^(11.36))^(-0.9147) + (10^x/10^(11.36))^(0.2485))^(-2.574)*10^x);guo 09, (3)
-plot,x,y,xstyle = 1, ystyle = 1,xrange = [9.5,16],yrange = [6,12],xtitle = textoidl('log(M_{halo}[M')+sunsymbol()+'])',ytitle = textoidl('log(M_{*}[M')+sunsymbol()+'])'
+plot,x,y,xstyle = 1, ystyle = 1,xrange = [9.5,16],yrange = [6,12],xtitle = 'log(M_halo/M'+sunsymbol() + ')',ytitle = 'log(M_*/M'+sunsymbol() + ')';textoidl('log(M_{halo}[M')+sunsymbol()+'])',ytitle = textoidl('log(M_{*}[M')+sunsymbol()+'])'
 FOR i = 0, N_ELEMENTS(dir) - 1 DO BEGIN
    loadct,ctables[i]
     oplot,[alog10(guo_mass[0,i]),alog10(guo_mass[0,i])],[alog10(guo_mass[1,i]),alog10(guo_mass[1,i])],psym = psym[i]+3,color = color[i]

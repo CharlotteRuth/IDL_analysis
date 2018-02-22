@@ -64,6 +64,7 @@ END
 
 ;resSchmidtLaw,'/astro/net/scratch2/christensen/MolecH/Cosmo/h603.cosmo50cmb.3072g/h603.cosmo50cmb.3072gs1MbwK.00512.dir/','h603.cosmo50cmb.3072gs1MbwK.00512.halo.1',50000,1.84793e16,outplot= '/astro/net/scratch2/christensen/MolecH/Cosmo/h603.cosmo50cmb.3072g/h603.cosmo50cmb.3072gs1MbwK.00512.dir/SK.eps'
 PRO resSchmidtLaw,dir,file,dKpcUnit,dMsolUnit,key,outplot = outplot,colors = colors
+set_plot,'ps'
 cm_per_kpc = 3.08568021d21
 gm_per_msol = 1.98892d33
 amu_per_gm = 6.022142d23
@@ -96,7 +97,7 @@ ysigma=2.5e-4*xsigma^1.4
 ysigma1=2.5e-4*xsigma^(1.4 + 0.15)
 ysigma2=2.5e-4*xsigma^(1.4 - 0.15)
 ysigmalow = xsigmalow*2.4 - 5.0
-range = 3.0*(fltarr(N_ELEMENTS(file))+1)
+range = 11.25*(fltarr(N_ELEMENTS(file))+1)
 distance2 = 4*(fltarr(N_ELEMENTS(file))+1)
 delta = 0.750;/dKpcUnit
 
@@ -180,7 +181,8 @@ FOR i = 0, N_ELEMENTS(file) - 1 DO BEGIN
     xarray = findgen(nx + 1)*delta + xmin
     yarray = findgen(ny + 1)*delta + ymin
     deltat = 100.e6 ;Appearently, in Bigiel, this is based on the FUV flux, so OB stars with have a lifetime of 10^8 years
-
+    deltat = 50.e6
+    
     timeunit = 3.872d3*SQRT((dKpcUnit[i]*3.0856805d21)^3/(dMsolUnit[i]*1.98892d33))/31556926.0
     tform=s.tform*(timeunit)[0]
     tcurrent = max(tform) ;1e10
@@ -192,7 +194,7 @@ FOR i = 0, N_ELEMENTS(file) - 1 DO BEGIN
 
 ;    window,1
     if (i eq 0) then begin
-            plot,[-5,-5],[-5,-5],xrange = [-1,5],yrange = [-5,3],xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]",ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",xstyle = 1,ystyle = 1
+            plot,[-5,-5],[-5,-5],xrange = [-7,5],yrange = [-5,3],xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]",ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",xstyle = 1,ystyle = 1
             oplot,[1,1],[-5,3],linestyle = 1
             oplot,xsigmalow,ysigmalow
             oplot,alog10(xsigma),alog10(ysigma)
@@ -228,5 +230,5 @@ FOR i = 0, N_ELEMENTS(file) - 1 DO BEGIN
 ENDFOR
 legend,key,psym = 2,color = colors
 if (KEYWORD_SET(outplot)) then device,/close
-;stop
+stop
 END
