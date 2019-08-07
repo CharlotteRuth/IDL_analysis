@@ -5,7 +5,7 @@ PRO find_star_history_master, dir, filebase, finalid = finalid, a_dir_struc = a_
 IF NOT keyword_set(finalid) THEN finalid = ['1']
 
 ;command = 'ls ' + dir + "/steps/" + filebase + "*.dir/" + filebase + ".00???.amiga.grp | grep amiga.grp | sed 's/.amiga.grp//g'"
-command = 'ls ' + dir + "/" + filebase + "*/" + filebase + ".00*.amiga.grp | grep amiga.grp | sed 's/.amiga.grp//g'"
+command = 'ls ' + dir + "/" + filebase + "*/" + filebase + ".00???.amiga.grp | grep amiga.grp | sed 's/.amiga.grp//g'"
 spawn,command,files
 file_temp = files[0]
 cut_pos = strsplit(file_temp,'.')

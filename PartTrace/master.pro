@@ -22,6 +22,7 @@ filebase='h986.cosmo50cmb.3072g14HBWK'
 finalids = ['1','2','3','8']
 finalids = ['15','16']
 finalids = ['1','2','3','8','15','16']
+finalids = ['11','27'] ;Done for Anna
 
 ;dir='/nobackupp8/crchrist/MolecH/h986.cosmo50cmb.3072g/h986.cosmo50cmb.3072g14HBWK_short/'
 ;filebase='h986.cosmo50cmb.3072g14HBWK'
@@ -92,7 +93,7 @@ print,'disk_alignment'
 FOR i=0, n_elements(finalids)-1 DO disk_alignment,filebase, finalid = finalids[i]
 print,'disk_alignment2'
 FOR i=0, n_elements(finalids)-1 DO disk_alignment2,finalid = finalids[i];,/debug
-print,'metal_history'
+print,'metal_history'x
 FOR i=0, n_elements(finalids)-1 DO metal_history,finalid = finalids[i]
 print,'track_mass_2'
 FOR i=0, n_elements(finalids)-1 DO track_mass_2,finalid = finalids[i]

@@ -545,7 +545,7 @@ oplot,xmass,diskgmass_lost[*,nz - 1]/relostmass[*,nz - 1],psym = symcat(sym_outl
 oplot,xmass,diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1],psym = symcat(sym_outline(symbols[0]),thick = 8),symsize = symsize,color = colore[0]
 ;oplot,xmass,diskgmass[*,nz - 1]/reejectmass[*,nz - 1],psym = symcat(symbols[1]),color = colore[1],symsize = symsize
 oplot,xmass,diskgmass[*,nz - 1]/reejectmass[*,nz - 1],psym = symcat(sym_outline(symbols[1]),thick = 8),symsize = symsize,color = colore[1]
-legend,['Reaccretion after removal from disk','Reaccretion after ejection',textoidl('Reaccretion after expullsion beyond R_{vir}')],psym = [sym_outline(symbols[4]),sym_outline(symbols[1]),sym_outline(symbols[0])],color = [colore[4],colore[1],colore[0]],box = 0,/top,/left
+legend,['Metal reaccretion after removal from disk','Mass reaccretion after removal from disk','Mass reaccretion after ejection',textoidl('Mass reaccretion after expulsion beyond R_{vir}')],psym = [symcat(symbols[4]),sym_outline(symbols[4]),sym_outline(symbols[1]),sym_outline(symbols[0])],color = [colore[4],colore[4],colore[1],colore[0]],box = 0,/top,/left
 
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
@@ -560,7 +560,9 @@ oplot,xmass,diskgmass_expell[*,0]/reexpellmass[*,0],psym = symcat(sym_outline(sy
 oplot,xmass,diskgmass[*,0]/reejectmass[*,0],psym = symcat(sym_outline(symbols[1]),thick = 8),symsize = symsize,color = colore[1]
 oplot,xmass,diskgmass_lostmet[*,0]/relostmassmet[*,0],psym = symcat(symbols[4]),color = colore[4],symsize = symsize
 oplot,xmass,diskgmass_lostmet[*,0]/relostmassmet[*,0],psym = symcat(sym_outline(symbols[4]),thick = thicks[0]),symsize = symsize
-legend,['Reaccretion after removal from disk','Reaccretion after ejection',textoidl('Reaccretion after expullsion beyond R_{vir}')],psym = [sym_outline(symbols[4]),sym_outline(symbols[1]),sym_outline(symbols[0])],color = [colore[4],colore[1],colore[0]],box = 0,/top,/right
+;legend,['Reaccretion after removal from disk','Reaccretion after ejection',textoidl('Reaccretion after expulsion beyond R_{vir}')],psym = [sym_outline(symbols[4]),sym_outline(symbols[1]),sym_outline(symbols[0])],color = [colore[4],colore[1],colore[0]],box = 0,/top,/right
+legend,['Metal reaccretion after removal from disk','Mass reaccretion after removal from disk','Mass reaccretion after ejection',textoidl('Mass reaccretion after expulsion beyond R_{vir}')],psym = [symcat(symbols[4]),sym_outline(symbols[4]),sym_outline(symbols[1]),sym_outline(symbols[0])],color = [colore[4],colore[4],colore[1],colore[0]],box = 0,/top,/right
+
 legend,['z = 2'],box = 0,/top,/left
 multiplot
 
@@ -598,7 +600,7 @@ oplot,xmass,(diskgmass_expellmet[*,nz - 1]/reexpellmassmet[*,nz - 1])/(diskgmass
 oplot,xmass,(diskgmass_expellmet[*,nz - 1]/reexpellmassmet[*,nz - 1])/(diskgmass_expell[*,nz - 1]/reexpellmass[*,nz - 1]),psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
 oplot,xmass,(diskgmassmet[*,nz - 1]/reejectmassmet[*,nz - 1])/(diskgmass[*,nz - 1]/reejectmass[*,nz - 1]),psym = symcat(symbols[1]),color = colore[1],symsize = symsize
 oplot,xmass,(diskgmassmet[*,nz - 1]/reejectmassmet[*,nz - 1])/(diskgmass[*,nz - 1]/reejectmass[*,nz - 1]),psym = symcat(sym_outline(symbols[1]),thick = thicks[0]),symsize = symsize
-legend,['Reaccretion after removal from disk','Reaccretion after ejection',textoidl('Reaccretion after expullsion beyond R_{vir}')],psym = [symbols[4],symbols[1],symbols[0]],color = [colore[4],colore[1],colore[0]],box = 0,/bottom,/left
+legend,['Reaccretion after removal from disk','Reaccretion after ejection',textoidl('Reaccretion after expulsion beyond R_{vir}')],psym = [symbols[4],symbols[1],symbols[0]],color = [colore[4],colore[1],colore[0]],box = 0,/bottom,/left
 
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
@@ -695,7 +697,7 @@ xarrt = vcirct
 yield = 0.01 ;0.015
 yield_str = '0.01' ;'0.015'
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total/yield,yrange = [0.001/yield,0.05/yield],ytitle = textoidl('Effective metal mass loading factor/' + yield_str),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [16,140],/xlog,xstyle = 1
+plot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total/yield,yrange = [0.001/yield,0.05/yield],ytitle = textoidl('Effective metal mass loading factor/' + yield_str),xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [16,140],/xlog,xstyle = 1,xtickv = [20,30,40,50,60,70,80,90,100],xticks = 8
 distinct_colors,n_colors = 12
 oplot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(symbols[0]),color = colore[0],symsize = symsize
 oplot,xarr,reexpellmassmet[*,nz - 1]/sfmass_total/yield,psym = symcat(sym_outline(symbols[0]),thick = thicks[0]),symsize = symsize
@@ -909,20 +911,25 @@ IF keyword_set(outplot) THEN device, /close ELSE stop
 ;------------ Metal Mass Loading Over Time
 xarr = vcirc ;xmass
 xarrt = vcirct
+readcol,'~/etaflux.txt',mvir,vvir,eta_inner,etaz_inner,eta_outer,etaz_outer
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_mass_time.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-    plot,xarr,reejectmassmetr[*,0]/sfmassr[*,0]/yield,psym = symcat(symbols[0]),/xlog,xrange = [10,200],yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,ejected}/')+yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog
+    plot,xarr,reejectmassmetr[*,0]/sfmassr[*,0]/yield,psym = symcat(symbols[0]),/xlog,xrange = [10,200],yrange = [0.0006/yield,0.4/yield],ytitle = textoidl('\eta_{Z,ejected}/')+yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog
+;    plot,xarr,reejectmassmetr[*,0]/sfmassr[*,0]/yield,psym = symcat(symbols[0]),/xlog,xrange = [10,200],yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,ejected}/')+yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog
     distinct_colors,n_colors = 12
     FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(ej_psym[iz]),color  = z_colors[iz]
     FOR iz = 0, nz - 1 DO oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(sym_outline(ej_psym[iz]),thick = thicks[0])
+    oplot,vvir,etaz_inner/yield,psym = 2,thick = thicks[0],color = fgcolor
+    oplot,vvir,etaz_outer/yield,psym = 7,thick = thicks[0],color = fgcolor
     legend,'z = ' + string(z_bins_legend,format = '(A3)'),psym = ej_psym,color  = z_colors,/right,/top,box = 0
+    legend,['Particle tracing','Flux'],psym = [ej_psym[0],2],color = [fgcolor,fgcolor],/left,/bottom,box = 0
     IF keyword_set(outplot) THEN device, /close ELSE stop    
  ENDIF
 
 ;------------ Mass Loading Over Time with current xaxis
 IF keyword_set(z_cut) THEN BEGIN
     IF keyword_set(outplot) THEN  device,filename = outplot + '_zmassloading_mass_time_eject.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-    plot,xarrt[*,0],reejectmassmetr[*,0]/sfmassr[*,0]/yield,/xlog,yrange = [0.001/yield,0.1/yield],ytitle = textoidl('\eta_{Z,ejected}/') + yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,150]
+    plot,xarrt[*,0],reejectmassmetr[*,0]/sfmassr[*,0]/yield,/xlog,ytitle = textoidl('\eta_{Z,ejected}/') + yield_str,xtitle = textoidl('V_{circ} [km s^{-1}]'),/nodata,/ylog,xrange = [10,150],yrange = [0.0006/yield,0.4/yield];,yrange = [0.001/yield,0.1/yield]
     distinct_colors,n_colors = 12
     vc_arr = findgen(200)
     eta_m15 = vc_arr
@@ -934,6 +941,7 @@ IF keyword_set(z_cut) THEN BEGIN
 ;    oplot,vc_arr,75*vc_arr^(-1.0),thick = 2,color = 100,linestyle = 3 ;Momentum driven
 ;    legend,['Energy-driven','Momentum-driven','Muratov et al. 2015','Fit to data'],linestyle = [2,3,5,0],thick = [2,2,2,2],color = [100,100,100,fgcolor],box = 0,/bottom,/left
 ;    loadct,39
+    oplot,[10,200],[1,1],linestyle = 1
     FOR iz = 0, nz - 1 DO BEGIN
        oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
        oplot,xarrt[*,iz],reejectmassmetr[*,iz]/sfmassr[*,iz]/yield,psym = symcat(sym_outline(ej_psym[iz]),thick = thicks[0]),symsize = symsize*0.6
@@ -952,6 +960,8 @@ IF keyword_set(z_cut) THEN BEGIN
     print,'Eject: (z = 1)',fits_eject_z1
     print,'Eject: (z = 2)',fits_eject_z2
     oplot,mlrange,10^fits_eject[0]*mlrange^(fits_eject[1]),linestyle = 0,psym = -3,thick = thicks[0]
+    oplot,vvir,etaz_inner/yield,psym = 2,thick = thicks[0],color = fgcolor
+    legend,['Particle tracing','Flux'],psym = [ej_psym[0],2],color = [fgcolor,fgcolor],/left,/bottom,box = 0
     legend,'z = ' + string(z_bins_legend,format = '(A3)'),psym = ej_psym,color  = z_colors,/right,/top,box = 0
     IF keyword_set(outplot) THEN device, /close ELSE stop    
  ENDIF

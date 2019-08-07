@@ -783,9 +783,11 @@ IF plot_reeject_z THEN BEGIN
         ysize = 500
      ENDELSE
     loadct,0
+    readcol,'~/etaflux.txt',mvir,vvir,eta_inner,etaz_inner,eta_outer,etaz_outer
     IF keyword_set(outplot) THEN device,filename = outplot + '_vm_zm.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize*1.8,xoffset =  2,yoffset =  2 ELSE window, 0, xsize = xsize, ysize = ysize*1.8
     multiplot,[1,2]
     plot_z_m,avezabs,reverse(dirs[masssort]),reverse(files[masssort]),halo = reverse(haloid[masssort]),outplot = outplot,/normalize,formatthick = formatthick,colors = [colors[1]],symbols = [psym[0] + 1],red_avez = red_avezabs,/absolute,/legend;,/stellarmass
+    stop
     multiplot
     plot_z_m,avez,   reverse(dirs[masssort]),reverse(files[masssort]),halo = reverse(haloid[masssort]),outplot = outplot,/normalize,formatthick = formatthick,colors = [colors[1]],symbols = [psym[0] + 1],red_ave = red_avez;,/stellarmass
     multiplot,/reset

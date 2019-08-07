@@ -156,8 +156,8 @@ IF (redshift EQ 2.2 OR redshift EQ 2.3) AND NOT keyword_set(stellar) THEN BEGIN
     Z_O3N2_Sand_low = [0.06,0.03,0.03,0.02] 
     Z_O3N2_Sand_high = [0.04,0.02,0.02,0.02]
     oplot,LogMstarSand,Z_N2_Sand,psym = symcat(17), color = obscolor[0], symsize = obssymsize, thick = obsthick
-    oploterror,LogMstarSand,Z_N2_Sand,LogMstarSand_low,Z_N2_Sand_low,psym = symcat(obssym), color = obscolor[0], symsize = obssymsize, thick = obsthick,errcolor=obscolor[0],/lobar,errthick = 1;,errstyle = 2
-    oploterror,LogMstarSand,Z_N2_Sand,LogMstarSand_high,Z_N2_Sand_high,psym = symcat(obssym), color = obscolor[0], symsize = obssymsize, thick = obsthick,errcolor=obscolor[0],/hibar,errthick = 1;,errstyle = 2
+    oploterror,LogMstarSand,Z_N2_Sand,LogMstarSand_low,Z_N2_Sand_low,psym = symcat(17), color = obscolor[0], symsize = obssymsize, thick = obsthick,errcolor=obscolor[0],/lobar,errthick = 1;,errstyle = 2
+    oploterror,LogMstarSand,Z_N2_Sand,LogMstarSand_high,Z_N2_Sand_high,psym = symcat(17), color = obscolor[0], symsize = obssymsize, thick = obsthick,errcolor=obscolor[0],/hibar,errthick = 1;,errstyle = 2
 ;    oploterror,LogMstarSand,Z_O3N2_Sand,LogMstarSand_low,Z_N2_Sand_low,psym = symcat(obssym), color = obscolor, symsize = obssymsize, thick = obsthick,errcolor=obscolor,/lobar,errstyle = 1
 ;    oploterror,LogMstarSand,Z_O3N2_Sand,LogMstarSand_high,Z_N2_Sand_high,psym = symcat(obssym), color = obscolor, symsize = obssymsize, thick = obsthick,errcolor=obscolor,/hibar,errstyle = 1
 

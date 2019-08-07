@@ -1,7 +1,8 @@
 
 ; star_accretion,'h799.cosmo25cmb.3072g14HBWK','1',/molecularH
 ; star_accretion,'h986.cosmo50cmb.3072g14HBWK','1',/molecularH
-PRO star_accretion, filename, haloid, molecularH = molecularH
+PRO star_accretion, filename, haloid, molecularH = molecularH,laststep = laststep,big = big,molecularBH = molecularBH
+IF NOT keyword_set(laststep) THEN laststep = '512'
 units = tipsyunits(filename + '.param')
 stars_struct = {haloid:0L,iord:0L,mass:0.0}
 IF file_test(filename + '_2merge.starlog.fits') THEN BEGIN
@@ -10,25 +11,26 @@ IF file_test(filename + '_2merge.starlog.fits') THEN BEGIN
 ENDIF ELSE BEGIN
    IF file_test(filename + '.starlog.fits') THEN BEGIN
       print,filename + '.starlog.fits'
-      sl = mrdfits(filename + '.starlog.fits',1)        
+      sl = mrdfits(filename + '.starlog.fits',1)     
+      print,'starlog.fits'
    ENDIF ELSE BEGIN
       print,'Starlog: ',filename + '.starlog'
-      sl = rstarlog(filename + '.starlog',molecularH = molecularH)
+      sl = rstarlog(filename + '.starlog',molecularH = molecularH,big = big,molecularBH = molecularBH)
    ENDELSE
 ENDELSE
 sl = sl[uniq(sl.iorderstar,sort(sl.iorderstar))]
 
 readcol,filename + '.grp' + haloid + '.haloid.dat',files,halo,format='a,l'
-spawn,'ls ' + filename + '*512/*cosmo**512',file
+spawn,'ls ' + filename + '*' + laststep + '/*cosmo*'+laststep,file
 rtipsy,file,h,g,d,s,/justhead
-spawn,'ls ' + filename + '*512/*512.iord',file_iord
+spawn,'ls ' + filename + '*' + laststep + '/*' + laststep + '.iord',file_iord
 read_tipsy_arr,file_iord,h,iord,type = 'long'
 iord_star = iord[h.ngas + h.ndark:h.n - 1]
-spawn,'ls ' + filename + '*512/*512.amiga.grp',file_grp
+spawn,'ls ' + filename + '*' + laststep+ '/*' + laststep + '.amiga.grp',file_grp
 read_tipsy_arr,file_grp,h,grp,type = 'long'
 grp_star = grp[h.ngas + h.ndark:h.n - 1]
-spawn,'ls ' + filename + '*512/*512.amiga.stat',file_stat
-stat = read_stat_struc_amiga(file_stat)
+spawn,'ls ' + filename + '*' + laststep+ '/*' + laststep + '.amiga.stat',file_stat
+stat = read_stat_struc_amiga(file_stat[0])
 main = where(stat.group EQ haloid)
 satellites = where(sqrt((stat.xc - stat[main].xc)^2 + (stat.yc - stat[main].yc)^2 + (stat.zc - stat[main].zc)^2)*1000 LE stat[main].rvir AND stat.ngas gt 0)
 inhalo = fltarr(n_elements(grp_star))
@@ -102,9 +104,9 @@ FOR i = 0, nsteps - 1 DO BEGIN
    accr_iords = accr_iords[accr_ind[notaccr_inhalo]]
    iordstart = max(iord_star)
 ENDFOR
-histogramp,accrz,weight = accrm,max = 5,nbins = 20
+plot = 0
+IF keyword_set(accrz) AND N_ELEMENTS(accrz) GT 1 AND plot EQ 1 THEN histogramp,accrz,weight = accrm,max = 5,nbins = 20
 mwrfits,accrz,'grp' + haloid + '.accrstars_z.fits',/create ;Time when accreted onto the disk
 mwrfits,accrm,'grp' + haloid + '.accrstars_m.fits',/create ;Time when accreted onto the disk
 mwrfits,sl.iorderstar,'grp' + haloid + '.accrstars_i.fits',/create ;Time when accreted onto the disk
-stop
 END

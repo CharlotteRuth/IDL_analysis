@@ -29,6 +29,11 @@ ENDIF
 center = fltarr(n_elements(files),11)
 close,11
 openw,11,'grp' + finalid + '.alignment.txt'
+
+;Added from disk_alignment2.pro
+halodat = {file: ' ', haloid: 0, time: 0D, z: 0D, xc: 0D, yc: 0D, zc: 0D, vxc: 0D, vyc: 0D, vzc: 0D, xa: 0D, ya: 0D, za: 0D, rvir: 0D, mvir: 0D}
+halodat = replicate(halodat,n_elements(files))
+
 FOR i = 0, n_elements(files) - 1 DO BEGIN
     print,files[i]
 ;    endpos = strpos(files[i],'/')
@@ -42,7 +47,6 @@ FOR i = 0, n_elements(files) - 1 DO BEGIN
     time = (ageUniverse - wmap3_lookback(z))/1e9 ;in Gyrs
     satsdata = read_stat_struc_AMIGA(files[i] + '.amiga.stat')
     IF keyword_set(halos) THEN j = where(satsdata.group EQ halos[i]) ELSE j = 0
-    
     tipsysatshi, files[i], fix(halos[i]), dist_unit, mass_unit,cutout_rad = 1,notipsy = 1,spinaxes = spinaxes,cx = cx, cy = cy, cz = cz,valign=valign
 ;    cx = cx*dist_unit/1000.0
 ;    cy = cy*dist_unit/1000.0
@@ -50,7 +54,26 @@ FOR i = 0, n_elements(files) - 1 DO BEGIN
     center[i,*] = [time,z,cx,cy,cz,valign,spinaxes]
 ;    print,base,fix(halos[i]),time,z,cx,cy,cz,valign,spinaxes,format = '(A,I,F,F,F,F,F,F,F,F)'
     printf,11,base,fix(halos[i]),time,z,cx,cy,cz,valign,spinaxes,format = '(A,I,F,F,F,F,F,F,F,F,F,F,F)'
+
+    halodat[i].rvir = satsdata[j].rvir
+    print,files[i],halos[i],halodat[i].rvir,satsdata[j].m_tot
+    halodat[i].mvir = satsdata[j].m_tot
+    halodat[i].file = files[i]
+    halodat[i].haloid = halos[i]
+    halodat[i].time = time
+    halodat[i].z = z
+    halodat[i].xc = cx  
+    halodat[i].yc = cy
+    halodat[i].zc = cz
+    halodat[i].vxc = valign[0]
+    halodat[i].vyc = valign[1]
+    halodat[i].vzc = valign[2]
+    halodat[i].xa = spinaxes[0]  
+    halodat[i].ya = spinaxes[1]
+    halodat[i].za = spinaxes[2] 
+
 ENDFOR
 close,11
+mwrfits,halodat,'./grp' + finalid + '.alignment.fits',/create
 ;RETURN,center
 END

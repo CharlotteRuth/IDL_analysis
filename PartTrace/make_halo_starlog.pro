@@ -30,7 +30,7 @@ y_arr = [0]
 z_arr = [0]
 n = n_elements(files)
 
-rtipsy,files[n-1],h,g,d,s,/justhead
+rtipsy,files[n-1],h,g,d,s;,/justhead
 ;readarr,files[n-1] + '.iord',h,iord_orig,part = 'star',/ascii, type = 'long'
 ;readarr,files[n-1] + '.massform',h,massform_orig,part = 'star',/ascii, type = 'float'
 ;readarr,files[n-1] + '.timeform',h,timeform_orig,part = 'star',/ascii, type = 'float'
@@ -42,7 +42,8 @@ read_tipsy_arr,files[n-1] + '.iord',h,iord_orig,part = 'star',type = 'long'
 ;   stop
 ;ENDIF ELSE BEGIN
    read_tipsy_arr,files[n-1] + '.massform',h,massform_orig,part = 'star',type = 'float'
-   read_tipsy_arr,files[n-1] + '.timeform',h,timeform_orig,part = 'star',type = 'float'
+;   read_tipsy_arr,files[n-1] + '.timeform',h,timeform_orig,part =   'star',type = 'float'
+   timeform_orig = s.tform
 ;ENDELSE 
 
 FOR i = 0, n - 1 DO BEGIN
@@ -115,5 +116,4 @@ starlogcut.y = y_arr
 starlogcut.z = z_arr
 
 mwrfits,starlogcut ,'starlog.' + finalid + '.fits',/create
-stop
 END

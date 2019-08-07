@@ -22,9 +22,9 @@ steps = ['00512']
 ;fileroot = 'h516.cosmo25cmb.3072g14HBWK'
 ;fileroot_short = 'h603.cosmo50cmb.3072g'
 ;fileroot = 'h603.cosmo50cmb.3072g14HBWK'
-fileroot_short = 'h799.cosmo25cmb.3072g/'
+fileroot_short = 'h799.cosmo25cmb.3072g'
 fileroot = 'h799.cosmo25cmb.3072g14HBWK'
-;fileroot_short = 'cptmarvel.cosmo25cmb/'
+;fileroot_short = 'cptmarvel.cosmo25cmb'
 ;fileroot = 'cptmarvel.cosmo25cmb.4096g5HbwK1BH'
 
 dir = dirbase + fileroot_short + '/' + fileroot

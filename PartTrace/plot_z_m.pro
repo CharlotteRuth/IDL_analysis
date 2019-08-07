@@ -65,7 +65,7 @@ ENDIF ELSE BEGIN
 ;    outplotext = outplotext + '_zm_scale.eps'
     ytitle = textoidl('Log(Z_{eject}/Z_{ISM})')
     yrange = [-0.2,0.6]
-    yrange = [-0.2,3]
+;    yrange = [-0.2,3]
 ;    yrange = [0.1,0.45]
 ;    yrange = [-0.05,0.25] range for median
     showtext = 1
@@ -111,7 +111,7 @@ IF keyword_set(red_avez) THEN BEGIN
             oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zeject),psym = symcat(sym_outline(symbols[0])),color = fgcolor,symsize = 1.5
             
             massloading = reejectmassr[*,iz]/sfmassr[*,iz]
-            oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zISM + 0.01/massloading/zsolar),psym = symcat(sym_outline(symbols[0]),thick = 4),color = z_colors[iz],symsize = 1.5
+;            oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zISM + 0.01/massloading/zsolar),psym = symcat(sym_outline(symbols[0]),thick = 4),color = z_colors[iz],symsize = 1.5
             stop
          ENDELSE
       ENDIF ELSE BEGIN
@@ -123,7 +123,7 @@ IF keyword_set(red_avez) THEN BEGIN
             oplot,red_avez[*,iz].mvir,alog10(red_avez[*,iz].zeject/red_avez[*,iz].zISM),psym = symcat(sym_outline(symbols[0])),color = fgcolor,symsize = 1.5
 
             massloading = reejectmassr[*,iz]/sfmassr[*,iz]
-            oplot,red_avez[*,iz].mvir,alog10((red_avez[*,iz].zISM*zsolar + 0.01/massloading)/(red_avez[*,iz].zISM*zsolar)),psym = symcat(sym_outline(symbols[0]),thick = 4),color = z_colors[iz],symsize = 1.5
+;            oplot,red_avez[*,iz].mvir,alog10((red_avez[*,iz].zISM*zsolar + 0.01/massloading)/(red_avez[*,iz].zISM*zsolar)),psym = symcat(sym_outline(symbols[0]),thick = 4),color = z_colors[iz],symsize = 1.5
             stop
          ENDELSE
       ENDELSE

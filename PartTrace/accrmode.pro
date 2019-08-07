@@ -62,9 +62,10 @@ FOR j=1L,nsteps-1 DO BEGIN
    rtipsy, gtp_file[j], h,g,d,s
    readcol, statfile[j], grp, mvir, rvir0, format='l,x,x,x,x,f,f', /silent
    grpind = where(grp EQ halo[j])
-   iord = read_lon_array(iord_files[j])
-   inds = binfind(iord, allstruct.iord)
-   exist = where(inds NE -1, comp=del)
+   ;iord = read_lon_array(iord_files[j])
+   ;inds = binfind(iord, allstruct.iord)
+   ;exist = where(inds NE -1, comp=del)
+   exist = where(history.mass NE 0, comp=del)
    ninds = n_elements(exist)
    allstruct[exist].temp[j] = history[exist].temp
    allstruct[exist].mass[j] = history[exist].mass
@@ -107,7 +108,7 @@ jump1: allstruct = mrdfits('grp' + finalid + '.allgas.entropy.fits',1)
 ;early = where(allstruct.grp[0] eq halo[0], comp=free)
 ;allstruct = allstruct[free]
 ;Get info on accretion time, mass at accretion 
-accretion, filebase, finalid, allstruct
+;;accretion, filebase, finalid, allstruct
 
 
 IF 0 THEN BEGIN
