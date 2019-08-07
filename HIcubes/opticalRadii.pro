@@ -30,10 +30,14 @@ IF keyword_SET(filename) THEN sfilename = filename+'.' + halo_str + '/broadband.
 ;mfilename = 'mcrx.fits'
 
 temp = mrdfits(sfilename,2,header)
-fovstr = strsplit(header[13],' ',/extract)
-fov = float(fovstr[3]) ;FOV in kpc
-diststr = strsplit(header[12],' ',/extract)
-distance = float(diststr[3]) ;Camera distance in kpc
+;fovstr = strsplit(header[13],' ',/extract) ;FOV in kpc
+fovstr = strsplit(header[14],' ',/extract) ;FOV in rad
+;fov = float(fovstr[3]) 
+fov = float(fovstr[2])          
+;diststr = strsplit(header[12],' ',/extract)
+diststr = strsplit(header[17],' ',/extract)
+distance = float(diststr[3])    ;Camera distance in kpc
+fov = fov*distance
 
 IF NOT keyword_set(extno) THEN extno = 14 ;Faceon
 IF NOT keyword_set(B_num) THEN B_num = 21
@@ -43,7 +47,7 @@ dxy = double((strsplit(dxy,' ',/extract))[2])
 sr_naxis = (size(sr_surface_den))[1] ;500 ;480.0
 IF NOT keyword_set(sr_range) THEN sr_range = dxy*sr_naxis ;headerHI.naxis1*headerHI.CDELT1
 
-filter = 13
+filter = 14 ;13
 filters= mrdfits(sfilename,filter)
 binsize = 0.05 ;kpc
 angular_width = tan(binsize/distance) ;angular width of bins in radians
@@ -126,7 +130,7 @@ IF keyword_set(verbose) THEN BEGIN
     contour,m_B_surface_den,xaxes_sr,yaxes_sr,min = min,max = max,xrange = [-7,7],yrange = [-7,7],/fill,nlevels = 245
     contour,radius,xaxes_sr,yaxes_sr,/overplot,levels = [1,2,3,4,5,6,7,8,9,10,11,12],color = 100
     contour,radius,xaxes_sr,yaxes_sr,/overplot,levels = [0,r25]    
-    stop
+;    stop
 ENDIF
 
 ;aux_data = mrdfits(mfilename,27,header)

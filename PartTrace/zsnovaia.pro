@@ -1,4 +1,4 @@
-FUNCTION zsnovaia,tmin,tmax,s, sfmass
+FUNCTION zsnovaia,tmin,tmax,s, sfmass,changa = changa
 ;This calculates the metals produced by supernovae Ia that have gone off
 ;within a given time frame for star particles of a range of ages
 
@@ -59,7 +59,8 @@ indlow = where(masses_lower LT 3./2., complement = indhigh)
 ;gasoline/Changa you ran the code in. Compare against supernovaia.c
 
 ;normalization constant, set by the total number of binaries
-dFracBinSNIa = 0.16; 0.05 #Changes depending on the version. Do a grep
+dFracBinSNIa = 0.16             ; 0.05 #Changes depending on the version. Do a grep
+if keyword_set(changa) THEN dFracBinSNIa = 0.05
 imf1to8PreFactor = 0.3029
 
 ;Aprime = 0.04847 ;from Raiteri 1996

@@ -75,9 +75,10 @@ directories = ['h516.cosmo25cmb.1536g1MBWK/steps/h516.cosmo25cmb.1536g1MBWK.0051
 base = '/astro/store/student-scratch1/christensen/MolecH/Cosmo/'
 directories = ['h516.cosmo25cmb.2304g/h516.cosmo25cmb.2304g14HBWK/steps/h516.cosmo25cmb.2304g14HBWK.00512.dir',$
                'h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g1MBWK/steps/h516.cosmo25cmb.3072g1MBWK.00492.dir']
-
 base = '/home/byrnelin/MAP/'
 directories = ['Disk_Collapse_1e6_H2_JC','Disk_Collapse_1e6_TC_JC','Disk_Collapse_1e6_JC','Disk_Collapse_1e6_LW2']
+base = '/home/christenc/Storage/Cosmo/h516.cosmo25cmb/'
+directories = ['h516.cosmo25cmb.3072g1HBWK','h516.cosmo25cmb.3072g1HBWKS']
 
 directories = base + directories
 ;files = ['h516.cosmo25cmb.1536g1MBWK.00512', $
@@ -89,9 +90,10 @@ files = ['h516.cosmo25cmb.1536g1MBWK.00512', $
          'h516.cosmo25cmb.1536g14HBWK.00512']
 files = ['h516.cosmo25cmb.2304g14HBWK.00512',$
          'h516.cosmo25cmb.3072g1MBWK.00492']
-files = files + '.halo.1.cube'
+files = ['h516.cosmo25cmb.3072g1HBWK.000512','h516.cosmo25cmb.3072g1HBWKS.000512']
+files = files + '.halo.1'
 
-files = ['Disk_Collapse_1e6_H2.00100.scalez1test.000100','Disk_Collapse_1e6.00100.scalez1test.000100','Disk_Collapse_1e6_H2_Shielding.00100.scalez1test.000100','Disk_Collapse_1e6.00100.scalez1test.000100']
+;files = ['Disk_Collapse_1e6_H2.00100.scalez1test.000100','Disk_Collapse_1e6.00100.scalez1test.000100','Disk_Collapse_1e6_H2_Shielding.00100.scalez1test.000100','Disk_Collapse_1e6.00100.scalez1test.000100']
 
 FOR i = 0, N_ELEMENTS(files) - 1 DO BEGIN
    analyzeHIcubes,directories[i],files[i],angle = 45

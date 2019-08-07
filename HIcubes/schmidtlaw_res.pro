@@ -64,7 +64,7 @@ ENDIF ELSE BEGIN
     rtipsy,filename + '.std',h,g,d,s
     base = strmid(filename,0,strlen(filename) - 13)
     IF NOT keyword_set(starlogfile) THEN starlogfile = '../../'+base + '.starlog'
-    starlog = rstarlog(starlogfile,/molecularH,big = big)
+    starlog = rstarlog(starlogfile,/molecularH) ;,big = big)
     rhounit = rhounit/(h.time^3)
     s.x = s.x*kpcunit*h.time
     s.y = s.y*kpcunit*h.time
@@ -80,13 +80,13 @@ ENDIF ELSE BEGIN
     IF file_test(filename + '.H2') THEN $
       readarr,filename + '.H2',h,H2,/ascii,part = 'gas' ELSE $
       H2 = HI*0
-    readarr,filename + '.coolontime',h,coolon,/ascii,part = 'gas'
-    readarr,filename + '.iord',h,iordg,/ascii,part = 'gas',type = 'long'
-    readarr,filename + '.iord',h,iords,/ascii,part = 'star',type = 'long'
-    coolonclean = coolon
-    coolonclean = coolonclean - tcurrent/timeunit
+;    readarr,filename + '.coolontime',h,coolon,/ascii,part = 'gas'
+;    readarr,filename + '.iord',h,iordg,/ascii,part = 'gas',type = 'long'
+;    readarr,filename + '.iord',h,iords,/ascii,part = 'star',type = 'long'
+;    coolonclean = coolon
+;    coolonclean = coolonclean - tcurrent/timeunit
     plot,alog10(g.dens*rhounit),alog10(H2*2/(HI + 2.0*H2)),xrange = [-3,3],psym = 3,xtitle = 'Log Density',ytitle = 'H2 fraction'
-    plot_colorscale,alog10(g.dens*rhounit),alog10(H2*2/(HI + 2.0*H2)),coolonclean,xrange = [0,3],/overplot
+;    plot_colorscale,alog10(g.dens*rhounit),alog10(H2*2/(HI + 2.0*H2)),coolonclean,xrange = [0,3],/overplot
     stop
 
     IF NOT keyword_set(range) THEN range = 5
@@ -119,10 +119,11 @@ ENDIF ELSE BEGIN
 ;Set the gas particles that just had their cooling turned off to the
 ;H2 fraction of the particles that just formed stars when they were
 ;forming the stars
+IF 0 THEN BEGIN
                 match,iords[inds],starlog.iorderstar,temp,inds_sl
                 meanH2frac = mean(starlog[inds_sl].H2form)
                 
-                indcoolon = where(coolonclean[indg] GE 0) 
+                indcoolon = [-1] ;where(coolonclean[indg] GE 0) 
                 H2cool = H2
                 HIcool = HI
                 IF (indcoolon)[0] NE -1 THEN BEGIN
@@ -135,6 +136,7 @@ ENDIF ELSE BEGIN
                 ENDFOR
                 H2rebincool[ix,iy]  = TOTAL(g[indg].mass*2.0*H2cool[indg]) /res/res/1000.0/1000.0
 ;                stop
+ENDIF                
             ENDIF
         ENDFOR
     ENDFOR
@@ -217,7 +219,7 @@ END
 PRO schmidtlaw_res_master,outplot = outplot,datafile = datafile,colors = colors,res = res
 loadct,39
 spawn,'hostname',hostname
-IF hostname EQ 'ozma' THEN base = '/home/christensen/Code/' ELSE base = '/astro/users/christensen/code/'
+IF hostname EQ 'ozma' THEN base = '/home/christensen/Code/' ELSE base = '/home/christenc/Code/'
 readcol,base + 'Datafiles/HIcubes/'+datafile,dir,file,massunit,kpcunit,massform,inclin,color,psym,key,format = '(A,A,F,F,F,F,F,D,A)'
 ;IF keyword_set(outplot) THEN BEGIN
 ;    squareplot,filename=outbase+'schmidt.ps'
@@ -262,10 +264,11 @@ ENDELSE
 
 guo_mass = fltarr(2,N_ELEMENTS(dir))
 FOR i = 0, n - 1 DO BEGIN
-    cd,dir[i]
+   cd,dir[i]
+   spawn,'ls *starlog',starlogfile
     IF (i EQ 0) THEN $
-       schmidtlaw_res,file[i],kpcunit[i],massunit[i],massform[i], psym = psym[i],i = inclin[i],res = res
-    schmidtlaw_res,   file[i],kpcunit[i],massunit[i],massform[i],color = color[i],psym = psym[i],i = inclin[i],/overplot,res = res
+       schmidtlaw_res,file[i],kpcunit[i],massunit[i],massform[i], psym = psym[i],i = inclin[i],res = res,starlog = starlogfile[0]
+    schmidtlaw_res,   file[i],kpcunit[i],massunit[i],massform[i],color = color[i],psym = psym[i],i = inclin[i],/overplot,res = res,starlog = starlogfile[0]
 ;    schmidtlaw_ave,  file[i],kpcunit[i],massunit[i],massform[i],color[i],psym[i] + 3, /overplot;,guo = guo
 ;    FMT = 'X,X,X,X,X,F,X,F,F,F,X,X,X,X,X,X,X,X,X,X,A'
 ;    readcol,file[i] + '.amiga.stat',F=FMT,vir,gas,star,dark,contam,/silent                                                          

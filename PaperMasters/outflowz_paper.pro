@@ -36,7 +36,7 @@ plot_baryonicfrac = 0
 plot_tully_fisher_obs = 0
 plot_baryonic_tully_fisher_obs = 0
 plot_galMS = 0
-plot_mzr = 1
+plot_mzr = 0
 plot_mzr_stellar = 0
 
 find_reaccr = 0
@@ -44,7 +44,7 @@ plot_track_mass =0
 plot_fbcum = 0
 
 plot_ejectz_v_mass = 0 ;1 Metal Mass loading and fraction of metals ejected & expelled
-plot_metals_v_mass = 0 ;1 Fraction of metals produced that are retained
+plot_metals_v_mass = 1 ;1 Fraction of metals produced that are retained
 plot_times_ejected = 0 ;
 plot_times_expelled = 0
 plot_times_cycling = 0 ;

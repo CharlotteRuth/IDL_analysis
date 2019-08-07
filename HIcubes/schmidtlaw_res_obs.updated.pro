@@ -9,7 +9,7 @@ IF hostname EQ 'vetinari' THEN BEGIN
 ENDIF ELSE BEGIN
    IF hostname EQ 'quirm.math.grinnell.edu' THEN BEGIN
       prefix = '/home/christenc/Storage/Cosmo/'
-      outfile = '/home/christenc/Code/IDL/IDL_analysis/Plots/h516.cosmo25cmb.3072g1HBWKS.000068'
+      outfile = '/home/christenc/Figures/h516.cosmo25cmb.3072g1HBWKS.000068'
    ENDIF ELSE BEGIN
       prefix = '/astro/store/student-scratch1/christensen/MolecH/Cosmo/'
       outfile = '~/plots/'
@@ -77,14 +77,34 @@ outplot = prefix+'h516.cosmo25cmb.3072g/h516.cosmo25cmb.3072g/h516.cosmo25cmb.30
 
 filename = 'h516.cosmo25cmb.3072g1HBWKS.000068'
 pfile = 'h516.cosmo25cmb.3072g1HBWKS.param'
+
 outplot = outfile + '/h516.cosmo25cmb.3072g1HBWKS.000068.halo.1_' + strtrim(res,2)
 ;schmidtlaw_res_obs,filename,pfile,res = res,useH2 = 1,/halpha,angle = 45,extno = 16, rotateAngle = 7,/verbose
+
+cd,prefix + '/h516.cosmo25cmb/h516.cosmo25cmb.2304g1HBWKS'
+filename = 'h516.cosmo25cmb.2304g1HBWKS.000512'
+pfile = 'h516.cosmo25cmb.2304g1HBWKS.param'
+outplot = outfile + '/h516.cosmo25cmb.2304g1HBWKS.000512.halo.1_' + strtrim(res,2)
+
+cd,prefix + '/h516.cosmo25cmb/h516.cosmo25cmb.2304g1HBWK'
+filename = 'h516.cosmo25cmb.2304g1HBWK.000512'
+pfile = 'h516.cosmo25cmb.2304g1HBWK.param'
+outplot = outfile + '/h516.cosmo25cmb.2304g1HBWK.000512.halo.1_' + strtrim(res,2)
 
 cd,prefix + '/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWKS'
 filename = 'h516.cosmo25cmb.3072g1HBWKS.000512'
 pfile = 'h516.cosmo25cmb.3072g1HBWKS.param'
-outplot = outfile + '/h516.cosmo25cmb.3072g1HBWKS.000512.halo.1_new' + strtrim(res,2)
-schmidtlaw_res_obs,filename,pfile,res = res,useH2 = 1,/halpha,angle = 45,extno = 16, rotateAngle = 0,/verbose
+outplot = outfile + '/h516.cosmo25cmb.3072g1HBWKS.000512.halo.1_' + strtrim(res,2)
+schmidtlaw_res_obs,filename,pfile,res = res,useH2 = 1,angle = 45,extno = 16, rotateAngle = 0,/verbose;,outplot = outplot
+stop
+
+cd,prefix + '/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWK'
+filename = 'h516.cosmo25cmb.3072g1HBWK.000512'
+pfile = 'h516.cosmo25cmb.3072g1HBWK.param'
+outplot = outfile + '/h516.cosmo25cmb.3072g1HBWK.000512.halo.1_' + strtrim(res,2)
+
+schmidtlaw_res_obs,filename,pfile,res = res,useH2 = 1,angle = 45,extno = 16, rotateAngle = 0,/verbose ;,outplot = outplot              ;,/Halpha
+
 end
 
 pro schmidtlaw_res_obs,filename,pfile,res = res,outplot = outplot,overplot = overplot,useH2 = useH2,verbose = verbose, angle = angle, extno = extno,center = center,rotateAngle = rotateAngle,range = range,halo_str = halo_str, Halpha = Halpha,formatthick = formatthick
@@ -98,6 +118,7 @@ molec_weight = (0.76*1 + 0.24*4.0)
 units = tipsyunits(pfile)
 massunit = units.massunit
 lengthunit = units.lengthunit
+IF keyword_set(Halpha) THEN use24mm = 1 ELSE use24mm = 1 ;If not based on H-alpha, choice as to whether to use Bigiel (FUV + 24mm) or Madau and Dickinson 2014 (FUV)
 
 IF NOT keyword_set(angle) THEN BEGIN 
     angle_str = '90'
@@ -147,7 +168,7 @@ ENDIF ELSE BEGIN
     black = 0
 ENDELSE
 !p.multi = 0
-
+verbose = 1
 ;*************** Tipsy Data ***********************
 if keyword_set(verbose) THEN BEGIN
     rtipsy,filename + '.halo.' + halo_str + '.std',h,g,d,s
@@ -258,16 +279,33 @@ sr_NAXIS = (size(sr_surface_Den))[1] ;500 ;480.0
 IF NOT keyword_set(sr_range) THEN sr_range = dxy*sr_NAXIS ;headerHI.NAXIS1*headerHI.CDELT1
 ;sr_fov = 24
 ;Sunrise units are in W/m/m^2/sr
+
 ;Bigiel Units are in MJy*str^(-1) (Jansky = 1e-26 W/Hz/m^2,MegaJansky = 1e6 Jy, MJy = 1e-20 W/Hz/m^2)
-fuv_surface_den_unrotated   = sr_surface_den[*,*,fuv_num]*fuv_lambda*fuv_lambda/speed_o_light/1e-20 
 mic24_surface_den_unrotated = sr_surface_den[*,*,mic24_num]*mic24_lambda*mic24_lambda/speed_o_light/1e-20
+fuv_surface_den_unrotated   = sr_surface_den[*,*,fuv_num]*fuv_lambda*fuv_lambda/speed_o_light/1e-20
+
+;Madau and Dickinson 2014 units are ergs s^-1 Hz^-1
+fuv_surface_den_unrotatedW  = sr_surface_den[*,*,fuv_num]*9.5214226d38*1d7*fuv_lambda*fuv_lambda/speed_o_light ;in ergs/s/kpc^2/Hz for
+
 IF keyword_set(Halpha) THEN BEGIN
-    ;Bolatto units are in ergs s^-1 kpc^-2
-    Halpha_surface_den_unrotatedW = mrdfits(filename + '.' + halo_str + '/Halpha.fits')*9.5214226d39*1d7;*Halpha_lambda
-    mic24_surface_den_unrotatedW  = sr_surface_den[*,*,mic24_num]*9.5214226d39*1d7*mic24_lambda
-    SFR_surface_den_unrotated = 5.3d-42*(Halpha_surface_den_unrotatedW + 0.031*mic24_surface_den_unrotatedW)
-    SFR_surface_den_unrotated2 = 3.2e-3*mic24_surface_den_unrotated + 8.1e-2*fuv_surface_den_unrotated
-ENDIF ELSE SFR_surface_den_unrotated = 3.2e-3*mic24_surface_den_unrotated + 8.1e-2*fuv_surface_den_unrotated ;EQ 1, Bigiel et al, 2008
+                                ;Bolatto units are in ergs s^-1 kpc^-2
+   IF NOT file_test(filename + '.' + halo_str + '/Halpha.fits') THEN makeLineImage,filename + '.' + halo_str + '/mcrx.fits',extno,6.54e-7,6.583e-7,filename + '.' + halo_str + '/Halpha.fits'
+   Halpha_surface_den_unrotatedW = mrdfits(filename + '.' + halo_str + '/Halpha.fits')*9.5214226d38*1d7 ;*Halpha_lambda
+;   stop
+    mic24_surface_den_unrotatedW  = sr_surface_den[*,*,mic24_num]*9.5214226d38*1d7*mic24_lambda
+
+    SFR_surface_den_unrotated = 5.3d-42*(Halpha_surface_den_unrotatedW + 0.031*mic24_surface_den_unrotatedW) ;Bolatto
+    SFR_surface_den_unrotated2 = 3.2e-3*mic24_surface_den_unrotated + 8.1e-2*fuv_surface_den_unrotated ;Bigiel
+ ENDIF ELSE BEGIN
+    IF (use24mm EQ 1) THEN BEGIN
+       SFR_surface_den_unrotated = 3.2e-3*mic24_surface_den_unrotated + 8.1e-2*fuv_surface_den_unrotated ;EQ 1, Bigiel et al, 2008
+       SFR_surface_den_unrotated2 = 1.3d-28*FUV_surface_den_unrotatedW ;From Madau and Dickinson 2014 where FUVrebin is the luminosity in units of ergs s^-1 Hz^-1. Eq 10 for solar metallicity
+    ENDIF ELSE BEGIN
+       SFR_surface_den_unrotated2 = 3.2e-3*mic24_surface_den_unrotated + 8.1e-2*fuv_surface_den_unrotated ;EQ 1, Bigiel et al, 2008
+       SFR_surface_den_unrotated = 1.3d-28*FUV_surface_den_unrotatedW ;From Madau and Dickinson 2014 where FUVrebin is the luminosity in units of ergs s^-1 Hz^-1. Eq 10 for solar metallicity       
+    ENDELSE
+ENDELSE
+    
 ;histogramp,alog10(SFR_surface_den_unrotated),nbins = 100,min = -6,max = -0.5
 ;histogramp,alog10(SFR_surface_den_unrotated2),nbins = 100, min = -6,max = -0.5, color = 100, /overplot
 ;histogramp,alog10(5.3d-42*0.031*mic24_surface_den_unrotatedW),nbins = 100,min = -6,max = -0.5
@@ -286,9 +324,12 @@ ENDIF ELSE SFR_surface_den_unrotated = 3.2e-3*mic24_surface_den_unrotated + 8.1e
 ;fuv_surface_den2 = ROTATE(fuv_surface_den_unrotated,1)
 ;mic24_surface_den2 = ROTATE(mic24_surface_den_unrotated,1)
 ;SFR_surface_den2 = ROTATE(SFR_surface_den_unrotated,1)
-fuv_surface_den = ROTATE(fuv_surface_den_unrotated,rotateAngle)
+    IF (use24mm EQ 1) THEN $
+       FUV_surface_den = ROTATE(FUV_surface_den_unrotated,rotateAngle) ELSE $ ;For Bigiel
+          FUV_surface_den = ROTATE(FUV_surface_den_unrotatedW,rotateAngle) ;For Madau and Dickinson 2014
 mic24_surface_den = ROTATE(mic24_surface_den_unrotated,rotateAngle)
 SFR_surface_den = ROTATE(SFR_surface_den_unrotated,rotateAngle)
+SFR_surface_den2 = ROTATE(SFR_surface_den_unrotated2,rotateAngle)
 ;center = [center[1],-1.0*center[0]] 
 
 ;**************** Rebinning and Spatial Axes
@@ -333,6 +374,7 @@ IF keyword_set( useH2) THEN H2rebin = fltarr(ncell,ncell)
 FUVrebin = fltarr(ncell,ncell)
 mic24rebin = fltarr(ncell,ncell)
 SFRrebin = fltarr(ncell,ncell)
+SFRrebin2 = fltarr(ncell,ncell)
 SFRrebin_par = fltarr(ncell,ncell)
 HI_par = fltarr(ncell,ncell)
 H2_par = fltarr(ncell,ncell)
@@ -357,10 +399,12 @@ FOR ix = 0, ncell - 1 DO BEGIN
             FUVrebin[ix,iy] =   MEAN((  fuv_surface_den[ind_srx,*])[*,ind_sry])
             mic24rebin[ix,iy] = MEAN((mic24_surface_den[ind_srx,*])[*,ind_sry])
             SFRrebin[ix,iy] =   MEAN((  SFR_surface_den[ind_srx,*])[*,ind_sry])
+            SFRrebin2[ix,iy] =   MEAN((  SFR_surface_den2[ind_srx,*])[*,ind_sry])
         ENDIF ELSE BEGIN
             FUVrebin[ix,iy] =   0
             mic24rebin[ix,iy] = 0
             SFRrebin[ix,iy] =   0
+            SFRrebin2[ix,iy] =   0
         ENDELSE
 ;        FUVrebin[ix,iy] =   MEAN(  fuv_surface_den[ix*dcell_sr : ix*dcell_sr + dcell_sr - 1, iy*dcell_sr :iy*dcell_sr + dcell_sr - 1])
 ;        mic24rebin[ix,iy] = MEAN(mic24_surface_den[ix*dcell_sr : ix*dcell_sr + dcell_sr - 1, iy*dcell_sr :iy*dcell_sr + dcell_sr - 1])
@@ -387,7 +431,9 @@ FOR ix = 0, ncell - 1 DO BEGIN
         ENDELSE
      ENDFOR
  ENDFOR
-SFRrebin_ave = 3.2e-3*mic24rebin + 8.1e-2*FUVrebin
+IF (use24mm EQ 1) THEN $
+   SFRrebin_ave = 3.2e-3*mic24rebin + 8.1e-2*FUVrebin ELSE $;Bigiel
+      SFRrebin_ave = 1.3d-28*FUVrebin                       ;Madau and Dickinson 2014
 
 ;*************** Plotting **************
 ;IF keyword_set( useH2) THEN cubeH2_surface_den[where(cubeH2_surface_den lt 3e12)] = 3e12
@@ -482,7 +528,9 @@ contour,alog10(SFR_surface_den_plot),xaxes_sr,yaxes_sr,$
 colorbar,range = [alog10(minsf),alog10(maxsf)],/vertical,divisions = 8,position = position,color = white;,position = position
 IF keyword_set(outplot) THEN device,/close ELSE stop
 
-r25 = 7 ;opticalRadii(filename = filename,verbose = verbose,halo_str = halo_str)
+r25 = opticalRadii(filename = filename,verbose = verbose,halo_str = halo_str,extno = 15)
+;stop
+r25 = r25*2 ;7 ;opticalRadii(filename = filename,verbose = verbose,halo_str = halo_str,extno = 15)
 
 mingas = 1e18
 maxgas = 1e23
@@ -598,9 +646,9 @@ ysigmalow = xsigmalow*2.4 - 5.0
 
 HIrebin = HIrebin/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18
 IF keyword_set( useH2) THEN  H2rebin = H2rebin/gm_per_msol/amu_per_gm*3.08568021d18*3.08568021d18
-inside = where(radius_rebin lt 100) ;r25)
+inside = where(radius_rebin lt r25)
 IF (inside[0]) ne -1 THEN BEGIN
-   IF keyword_set( useH2) THEN plot,alog10(sin(angle)*(HIrebin[inside] + H2rebin[inside])*1.4),alog10(sin(angle)*SFRrebin[inside]),psym = 2, xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3] $ ;,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]"
+   IF keyword_set( useH2) THEN plot,alog10(sin(angle)*(HIrebin[inside] + H2rebin[inside])*1.4),alog10(sin(angle)*SFRrebin_par[inside]),psym = 2, xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3] $ ;,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]"
    ELSE plot,alog10(sin(angle)*(HIrebin[inside])),                  alog10(sin(angle)*SFRrebin[inside]),psym = 2, xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3];, xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]" ,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]"
 
 ;IF keyword_set( useH2) THEN plot,alog10(sin(angle)*(gas_sd[inside])),alog10(sin(angle)*SFRrebin_par[inside]),psym = 2,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xstyle=1, ystyle=1,xrange = [-1,5], yrange = [-5,3], xtitle=textoidl('Log \Sigma')+"!lgas!n [M"+sunsymbol()+" pc!u-2!n]" ELSE $
@@ -637,15 +685,20 @@ if ((nfinite[0]) ne -1) then gas_sd[nfinite] = 0
 ;reform(FUVrebin,N_ELEMENTS(FUVrebin))*sin(angle), reform(mic24rebin,N_ELEMENTS(FUVrebin))*sin(angle), reform(SFRrebin_par,N_ELEMENTS(FUVrebin))*sin(angle), reform(SFRrebin,N_ELEMENTS(FUVrebin))*sin(angle), $
 ;reform(HIrebin,N_ELEMENTS(FUVrebin))*sin(angle), fltarr(N_ELEMENTS(HIrebin)), reform(gas_sd,N_ELEMENTS(FUVrebin))*sin(angle), reform(HIrebin,N_ELEMENTS(FUVrebin))*sin(angle),FORMAT = '(8F)'
 
-;FUV        24micron        SFR (particle)        SFR (obs)        HI (paricle)        HI (obs)        H2 (particle)        H2 (obs)        Gas (particle)        Gas (obs)
-IF keyword_set(Halpha) THEN outname = 'schmidtlaw_res_obs_all_Ha'+res_st+'.dat' ELSE outname = 'schmidtlaw_res_obs_all'+res_st+'.dat'
+;FUV        24micron        SFR (particle)        SFR (obs)        HI
+;(particle)        HI (obs)        H2 (particle)        H2 (obs)        Gas
+;(particle)        Gas (obs)
+;stop
+IF keyword_set(Halpha) THEN outname = 'schmidtlaw_res_obs_all_Ha'+res_st+'_2.dat' ELSE outname = 'schmidtlaw_res_obs_all'+res_st+'_2.dat'
 IF keyword_set( useH2) THEN writecol,outname, $
+reform(radius_rebin[inside],N_ELEMENTS(inside)), $
 reform(FUVrebin[inside],N_ELEMENTS(inside))*sin(angle),reform(mic24rebin[inside],N_ELEMENTS(inside))*sin(angle), reform(SFRrebin_par[inside],N_ELEMENTS(inside))*sin(angle),reform(SFRrebin[inside],N_ELEMENTS(inside))*sin(angle), $
 reform(  HI_par[inside],N_ELEMENTS(inside))*sin(angle),reform(   HIrebin[inside],N_ELEMENTS(inside))*sin(angle), reform(      H2_par[inside],N_ELEMENTS(inside))*sin(angle),reform( H2rebin[inside],N_ELEMENTS(inside))*sin(angle), $
-reform(  gas_sd[inside],N_ELEMENTS(inside))*sin(angle),reform(   HIrebin[inside],N_ELEMENTS(inside))*sin(angle)+reform(H2rebin[inside],N_ELEMENTS(inside))*sin(angle),FORMAT = '(10F)' ELSE writecol,outname, $
+                                     reform(  gas_sd[inside],N_ELEMENTS(inside))*sin(angle),reform(   HIrebin[inside],N_ELEMENTS(inside))*sin(angle)+reform(H2rebin[inside],N_ELEMENTS(inside))*sin(angle),FORMAT = '(11E)' ELSE writecol,outname, $
+reform(radius_rebin[inside],N_ELEMENTS(inside)), $   
 reform(FUVrebin[inside],N_ELEMENTS(inside))*sin(angle),reform(mic24rebin[inside],N_ELEMENTS(inside))*sin(angle), reform(SFRrebin_par[inside],N_ELEMENTS(inside))*sin(angle),reform(SFRrebin[inside],N_ELEMENTS(inside))*sin(angle), $
 reform(  HI_par[inside],N_ELEMENTS(inside))*sin(angle),reform(   HIrebin[inside],N_ELEMENTS(inside))*sin(angle), reform(      H2_par[inside],N_ELEMENTS(inside))*sin(angle),                 fltarr(N_ELEMENTS(inside))           , $
-reform(  gas_sd[inside],N_ELEMENTS(inside))*sin(angle),reform(   HIrebin[inside],N_ELEMENTS(inside))*sin(angle),FORMAT = '(10F)'
+reform(  gas_sd[inside],N_ELEMENTS(inside))*sin(angle),reform(   HIrebin[inside],N_ELEMENTS(inside))*sin(angle),FORMAT = '(11F)'
 ENDIF
 
 IF keyword_set(outplot) THEN  device,filename = outplot + 'gasProf.eps' ELSE window,4,xsize = 400,ysize = 400
@@ -687,7 +740,17 @@ END
 ;outplot = '/astro/net/scratch2/christensen/MolecH/Cosmo/h516.cosmo25cmb.1536g/h516.4.2.00512'
 ;outplot = '/astro/net/scratch2/christensen/MolecH/Cosmo/h516.cosmo25cmb.1536g/h516.4.4.00512'
 
-PRO schmidtlaw_res_obs_master_out,file,outplot = outplot,vetinari = vetinari,color= color, thick = thick,symbols = symbols,key = key,symsize = symsize,contour = contour,multiframe = multiframe,true = true,scaleHe = scaleHe, lowz = lowz,formatthick = formatthick,ctables = ctables,label = label
+
+;file=['/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.2304g1HBWK/schmidtlaw_res_obs_all_Ha0.750000.dat','/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.2304g1HBWKS/schmidtlaw_res_obs_all_Ha0.750000.dat']
+;file =['/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWK/schmidtlaw_res_obs_all0.750000.dat','/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWKS/schmidtlaw_res_obs_all0.750000.dat'] 
+;file =['/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWK/schmidtlaw_res_obs_all0.750000.dat','/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWKS/schmidtlaw_res_obs_all_Ha0.750000.dat'] 
+;file = ['/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWK/schmidtlaw_res_obs_all0.750000_2.dat','/home/christenc/Storage/Cosmo/h516.cosmo25cmb/h516.cosmo25cmb.3072g1HBWKS/schmidtlaw_res_obs_all0.750000_2.dat']
+;outplot = '~/KS_shield_h516_3072'
+;key = ['H2','S']
+;color = [60,254]
+;schmidtlaw_res_obs_master_out,file,color= color,key = key,/dwarf;,outplot= outplot
+
+PRO schmidtlaw_res_obs_master_out,file,outplot = outplot,vetinari = vetinari,color= color, thick = thick,symbols = symbols,key = key,symsize = symsize,contour = contour,multiframe = multiframe,true = true,scaleHe = scaleHe, lowz = lowz,formatthick = formatthick,ctables = ctables,label = label,dwarf = dwarf
 n = N_ELEMENTS(file)
 
 ;res = '4.00773'
@@ -775,12 +838,32 @@ thresh_points = 5000
 ;------------------------- Read in the obesrvational data ------------------------
 fileobs = obsprefix + 'Datafiles/HIcubes/bigiel10.dat'
 readcol,fileobs,type,name1,name2,logHI,e_logHI,logH2,e_logH2,logSFR,e_logSFR,format = '(A,A,A,F,F,F,F,F,F)'
+name = name1 + name2
+uniqname = name[uniq(name)]
+weights = fltarr(n_elements(name)) + 1
+;FOR i = 0, n_elements(uniqname) - 1 DO weights[where(name EQ uniqname[i])] = 1/float(n_elements(where(name EQ uniqname[i])))
+;stop
+fileobs_outr25 = obsprefix + 'Datafiles/HIcubes/bigiel10_outr25.dat'
+readcol,fileobs_outr25,type_outr25,name1_outr25,name2_outr25,logHI_outr25,e_logHI_outr25,SFR_outr25,e_SFR_outr25,format = '(A,A,A,F,F,F,F)',/silent
+readcol,fileobs_outr25,type_outr25_b,name1_outr25_b,name2_outr25_b,logHI_outr25_b,e_logHI_outr25_b,SFR_outr25_b,format = '(A,A,A,F,F,F)',/silent
+name_outr25 = name1_outr25 + name2_outr25
+name_outr25_b = name1_outr25_b + name2_outr25_b
+uniqname_outr25_b = name_outr25_b[uniq(name_outr25_b)]
+weights_outr25 = fltarr(n_elements(name_outr25)) + 1
+;FOR i = 0, n_elements(uniqname_outr25) - 1 DO weights_outr25[where(name_outr25 EQ uniqname_outr25[i])] = 1/float(n_elements(where(name_outr25_b EQ uniqname_outr25_b[i])))
+
+logHI_outr25 = logHI_outr25/1.36
+e_logHI_outr25 = e_logHI_outr25/1.36
+logSFR_outr25 = alog10(SFR_outr25*1e-5)
+e_logSFR_outr25 = alog10(e_SFR_outr25*1e-5)
 temp = where(type EQ 'Spirals',complement = inddwarf)
-;logHI = logHI[inddwarf]
-;logH2 = logH2[inddwarf]
-;logSFR = logSFR[inddwarf]
-;name1 = name1[inddwarf]
-;name2 = name2[inddwarf]
+IF keyword_set(dwarf) THEN BEGIN
+   logHI = logHI[inddwarf]
+   logH2 = logH2[inddwarf]
+   logSFR = logSFR[inddwarf]
+   name1 = name1[inddwarf]
+   name2 = name2[inddwarf]
+ENDIF
 logH2[where(logH2 eq 0)] = -6
 logHI[where(logHI eq 0)] = -6
 ind = where(logSFR NE 0); Select for gas with some star formation
@@ -803,6 +886,7 @@ loggas_lowz = loggas[ind]
 min1 = -0.5
 max1 =  2.5
 min2 = -4.0
+min2 = -4.7 ;Include outer disk
 max2 = -0.5;0
 nbins = 100
 ;bin1 = (max1 - min1)/nbins                      
@@ -817,6 +901,12 @@ nxbins=FLOOR((max1-min1) / bin1) + 1
 nybins=FLOOR((max2-min2) / bin2) + 1
 xbins=(FINDGEN(nxbins)*bin1) + min1
 ybins=(FINDGEN(nybins)*bin2) + min2
+bin1_outr25 = 0.2                 
+bin2_outr25 = 0.2              
+nxbins_outr25=FLOOR((max1-min1) / bin1_outr25) + 1
+nybins_outr25=FLOOR((max2-min2) / bin2_outr25) + 1
+xbins_outr25=(FINDGEN(nxbins_outr25)*bin1_outr25) + min1
+ybins_outr25=(FINDGEN(nybins_outr25)*bin2_outr25) + min2
 
 IF keyword_set(lowz) THEN BEGIN
     logH_points = logH_lowz
@@ -831,12 +921,15 @@ ENDIF ELSE BEGIN
     loggas_points = loggas
     logSFR_points = logSFR
 ENDELSE
-histH  = HIST_2D(logH_points,  logSFR_points,min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1, bin2 = bin2)
-histHI = HIST_2D(logHI_points, logSFR_points,min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1, bin2 = bin2)
-histH2 = HIST_2D(logH2_points, logSFR_points,min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1, bin2 = bin2)
-histgas= HIST_2D(loggas_points,logSFR_points,min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1, bin2 = bin2)
+histH  = HIST_2D_W(logH_points, logSFR_points, weights, min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1, bin2 = bin2)
+histHI = HIST_2D_W(logHI_points, logSFR_points, weights, min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1, bin2 = bin2)
+histHI_outr25 = HIST_2D_W(logHI_outr25, logSFR_outr25, weights_outr25, min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1_outr25, bin2 = bin2_outr25)
+;histHI_outr25 = HIST_2D_W(logHI_outr25[where(type_outr25 eq "Dwarfs")], logSFR_outr25[where(type_outr25 eq "Dwarfs")], weights_outr25[where(type_outr25 eq "Dwarfs")], min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1_outr25, bin2 = bin2_outr25)
+histH2 = HIST_2D_W(logH2_points, logSFR_points, weights, min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1, bin2 = bin2)
+histgas= HIST_2D_W(loggas_points,logSFR_points, weights, min1=min1,max1=max1,min2=min2,max2=max2,bin1 = bin1, bin2 = bin2)
 IF NOT keyword_set(scaleHe) THEN BEGIN
-    hist = histH 
+   hist = histH
+   hist_outr25 = histHI_outr25
     logx_points = logH_points
 ENDIF ELSE BEGIN 
     hist = histgas 
@@ -876,19 +969,28 @@ ENDIF ELSE BEGIN
         plot, logx_points,logSFR_points,xrange = [min1,max1],yrange = [min2,max2], xstyle = 1,ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", xtitle=xtitle1,/nodata, title = label
         oplot,logx_points,logSFR_points,color = obscolor, psym = symcat(obssym), symsize = obssymsize
 ;       oplot,alog10(loggas_bolatto),alog10(logSFR_bolatto),color = obscolor, psym = symcat(obssym2), symsize = obssymsize2
-     ENDIF ELSE contour,hist,xbins,ybins,xrange = [min1,max1],yrange = [min2,max2], xstyle = 1, ystyle = 1, ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",  nlevels = nlevels, c_colors = color_hist, /fill, title = label, xtitle=xtitle1
+     ENDIF ELSE BEGIN
+        contour,hist,xbins,ybins,xrange = [min1,max1],yrange = [min2,max2], xstyle = 1, ystyle = 1, ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]",  nlevels = nlevels, c_colors = color_hist, /fill, title = label, xtitle=xtitle1,min_value = min(hist[where(hist NE 0)]) - 1,max_value = max(hist)
+;        contour_levels = contourlevels(hist,[0.25,0.50,0.75,0.90])
+;        contour,hist,xbins,ybins,xrange = [min1,max1],yrange = [min2,max2], xstyle = 1, ystyle = 1, ytitle=textoidl('Log \Sigma')+"!lSFR!n [M"+sunsymbol()+" kpc!u-2!n yr!u-1!n]", /fill, title = label, xtitle=xtitle1, levels = max(hist)*[0.25,0.50,0.75,0.90]
+        contour_levels = contourlevels(hist_outr25,[0.25,0.50,0.75,0.90])
+        contour,hist_outr25,xbins_outr25,ybins_outr25,levels = max(hist_outr25)*[0.1,0.25,0.50,0.75],/overplot, thick = 4
+     ENDELSE
 ENDELSE
 
 FOR i = 0, n -1 DO BEGIN
     loadct,ctables[i]
-    readcol,file[i],fuv,mic24,SFR_par,SFR_obs,HI_par,HI,H2_par,H2,gas_sd,total_gas
+    readcol,file[i],radius,fuv,mic24,SFR_par,SFR_obs,HI_par,HI,H2_par,H2,gas_sd,total_gas
     IF keyword_set(true)    THEN total_gas = gas_sd
     IF keyword_set(scaleHe) THEN total_gas = total_gas*1.36
     ind = where(alog10(SFR_obs) ge -3.8)
+    ind_inr25 = where(radius lt max(radius/2) + float(res)/2,complement = ind_outr25)
     IF n_elements(total_gas) GE thresh_points THEN BEGIN
         hist_sim   = HIST_2D(alog10(total_gas), alog10(SFR_obs),min1=min1 + bin1_sim/2,max1=max1 - bin1_sim/2.0,min2=min2,max2=max2 - bin2_sim,bin1 = bin1_sim, bin2 = bin2_sim)
         contour,hist_sim,xbins_sim[0:(size(hist_sim))[1] - 1],ybins_sim[0:(size(hist_sim))[2] - 1],xrange = [min1,max1],yrange = [min2,max2],color = colors[i],/overplot,levels = [1,2,3,4],thick = thick[i],c_linestyle = c_line;levels = [1,3,6]
-    ENDIF ELSE  oplot,alog10(total_gas[ind]),alog10(SFR_obs[ind]),psym = symcat(symbols[i]),color = colors[i],thick = thick[i],symsize = symsize[i] ;160
+     ENDIF ELSE  oplot,alog10(total_gas[ind_inr25]),alog10(SFR_obs[ind_inr25]),psym = symcat(symbols[i]),color = colors[i],thick = 3,symsize = symsize[i] ;160,thick = thick[i]
+    oplot,alog10(total_gas[ind_outr25]),alog10(SFR_obs[ind_outr25]),psym = symcat(16),color = colors[i],symsize = 0.75 ;symsize[i],thick = thick[i]
+    stop
     IF keyword_set(multiframe) THEN multiplot
 ENDFOR
 IF keyword_set(multiframe) THEN multiplot,/reset

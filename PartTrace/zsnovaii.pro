@@ -2,7 +2,7 @@ FUNCTION zsnovaii,tmin,tmax,s,sfmass,which_imf
 ;This calculates the metals produced by supernovas that have gone off
 ;within a given time frame for star particles of a range of ages
 
-;1e4 Msol should produce 48.6 SNII, ejecting 611 Msol of material, 2.2
+;(For a Kroupa 93 IMF) 1e4 Msol should produce 48.6 SNII, ejecting 611 Msol of material, 2.2
 ;solar masses of iron and 47.5 solar masses of oxygen
 z_outflow = {massloss: 0.0, femassloss: 0.0, oxmassloss: 0.0, zmassloss: 0.0}
 
@@ -50,12 +50,14 @@ IF (where(masses_upper GT 40))[0] NE -1 THEN masses_upper[where(masses_upper GT 
 IF (where(masses_lower GT 40))[0] NE -1 THEN masses_lower[where(masses_lower GT 40)] = 40 
 
 ; I haven't tested the integration of the IMF with anything
-; other than Kroupa 93
+; other than Kroupa 93 and Kroupa 01
 
 mass_sn = fltarr(n_elements(mmax))
 num_sn = fltarr(n_elements(mmax))
 IF (which_imf EQ 0) THEN mass_sn[ind_massive] = int_kroupa(masses_upper,masses_lower) ;ELSE mass_sn[ind_massive] = int_ms(masses_upper,masses_lower)
 IF (which_imf EQ 0) THEN num_sn[ind_massive] = int_kroupa(masses_upper,masses_lower,/nstar) ;ELSE num_sn[ind_massive] = int_ms(masses_upper,masses_lower,/nstar)
+IF (which_imf EQ 1) THEN mass_sn[ind_massive] = int_kroupa01(masses_upper,masses_lower) ;ELSE mass_sn[ind_massive] = int_ms(masses_upper,masses_lower)
+IF (which_imf EQ 1) THEN num_sn[ind_massive] = int_kroupa01(masses_upper,masses_lower,/nstar) ;ELSE num_sn[ind_massive] = int_ms(masses_upper,masses_lower,/nstar)
 mass_sn = mass_sn*sfmass
 num_sn = num_sn*sfmass
 
@@ -63,10 +65,15 @@ num_sn = num_sn*sfmass
 ;Raiteri, Villata and Navarro, 1996 (eqn 6-8)
 ox_frac = fltarr(n_elements(mmax))
 fe_frac = fltarr(n_elements(mmax))
-dMassLoss = (0.7682*int_kroupa(masses_upper,masses_lower,/nstar,mod_exp = 1.056)) ;As calculated by Raiteri
+IF (which_imf EQ 0) THEN dMassLoss = (0.7682*int_kroupa(masses_upper,masses_lower,/nstar,mod_exp = 1.056)) ;As calculated by Raiteri
+IF (which_imf EQ 1) THEN dMassLoss = (0.7682*int_kroupa01(masses_upper,masses_lower,/nstar,mod_exp = 1.056)) ;As calculated by Raiteri
 ind_massloss = where(dMassLoss NE 0)
-IF dMassLoss[0] NE -1 THEN ox_frac[ind_massive[ind_massloss]] = 4.586e-4*int_kroupa(masses_upper[ind_massloss],masses_lower[ind_massloss],/nstar,mod_exp = 2.721)/dMassLoss[ind_massloss] ;this should be updated to allow for other IMFs
-IF dMassLoss[0] NE -1 THEN fe_frac[ind_massive[ind_massloss]] = 2.802e-4*int_kroupa(masses_upper[ind_massloss],masses_lower[ind_massloss],/nstar,mod_exp = 1.864)/dMassLoss[ind_massloss]
+IF dMassLoss[0] NE -1 THEN $
+   IF (which_imf EQ 0) THEN ox_frac[ind_massive[ind_massloss]] = 4.586e-4*int_kroupa(masses_upper[ind_massloss],masses_lower[ind_massloss],/nstar,mod_exp = 2.721)/dMassLoss[ind_massloss] $ ;this should be updated to allow for other IMFs
+   ELSE IF (which_imf EQ 1) THEN ox_frac[ind_massive[ind_massloss]] = 4.586e-4*int_kroupa01(masses_upper[ind_massloss],masses_lower[ind_massloss],/nstar,mod_exp = 2.721)/dMassLoss[ind_massloss]
+IF dMassLoss[0] NE -1 THEN $
+   IF (which_imf EQ 0) THEN fe_frac[ind_massive[ind_massloss]] = 2.802e-4*int_kroupa(masses_upper[ind_massloss],masses_lower[ind_massloss],/nstar,mod_exp = 1.864)/dMassLoss[ind_massloss] $
+   ELSE IF (which_imf EQ 1) THEN fe_frac[ind_massive[ind_massloss]] = 2.802e-4*int_kroupa01(masses_upper[ind_massloss],masses_lower[ind_massloss],/nstar,mod_exp = 1.864)/dMassLoss[ind_massloss]
 z_frac =  1.06*fe_frac + 2.09*ox_frac
 
 IF keyword_set(debug)  THEN dMassLoss = dMassLoss*1e4 ELSE dMassLoss = mass_sn - num_sn*dMSNrem
