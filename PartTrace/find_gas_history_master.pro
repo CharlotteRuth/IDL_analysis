@@ -6,8 +6,8 @@ IF NOT keyword_set(finalid) THEN finalid = ['1']
 
 ;Note that haloid files can vary in length based on how long the halo
 ;was detected for. You want the longest.
-readcol,  filebase + '.grp' + finalid[7] + '.haloid.dat', stepfile, halo, format='a,l'
-print,filebase + '.grp' + finalid[7] + '.haloid.dat'
+readcol,  filebase + '.grp' + finalid[0] + '.haloid.dat', stepfile, halo, format='a,l'
+print,filebase + '.grp' + finalid[0] + '.haloid.dat'
 endpos = strpos(stepfile[0],'/')
 FOR i = 0, n_elements(stepfile) - 1 DO stepfile[i] = strmid(stepfile[i],0,endpos)
 

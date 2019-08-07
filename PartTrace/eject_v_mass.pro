@@ -784,6 +784,7 @@ IF keyword_set(z_cut) THEN BEGIN
     FOR iz = 0, nz - 1 DO BEGIN
        oplot,xarrt[*,iz],reejectmassr[*,iz]/sfmassr[*,iz],psym = symcat(ej_psym[iz]),color  = z_colors[iz],symsize = symsize*0.6
        oplot,xarrt[*,iz],reejectmassr[*,iz]/sfmassr[*,iz],psym = symcat(sym_outline(ej_psym[iz])),symsize = symsize*0.6
+       FOR igal = 0, n_elements(xarrt[*,iz]) - 1 DO print,igal,iz,xarrt[igal,iz],reejectmassr[igal,iz]/sfmassr[igal,iz]
 ;       fits_eject = robust_linefit( alog10(xarrt[*,iz]), alog10(reejectmassr[*,iz]/sfmassr[*,iz]), reejectmass_fit, sigma_eject )
 ;       print,fits_eject
 ;       oplot,mlrange,10^fits_eject[0]*mlrange^(fits_eject[1]),color = z_colors[iz],linestyle = 0,psym = -3,thick = thicks[0]

@@ -1,0 +1,28 @@
+*ahf_grp_stat.pro
+;This function takes the output from AHF and transforms it into a more readable format
+;i.e. 
+;ls elektra.cosmo25cmb.4096g5HbwK1BH.00????/elektra.cosmo25cmb.4096g5HbwK1BH.00???? > ahf_grp_stat_input.txt
+;ahf_grp_stat,tipsyfile,boxsize =25000*.73,munit = 2.31e15,vunit=630.527,h0=0.73,multiplefile='ahf_grp_stat_input.txt'
+
+* find_history.pro
+;This function analyzes the history of gas and star particles by
+;taking a list of input particles and outputing a .fits file containing
+;their properties at a given timestep. 
+;It takes iords of star, gas, and igasorder
+;It produces a file called history.fits for each of the outputs
+;Call it through halo1_gasacc1.sh, if possible
+;Run first with stars
+
+*haloid.pro
+Uses the output of find_history for stars to trace the merger history of halos
+
+*find_all_gas.pro
+Finds all the gas that is ever in the galaxy
+
+*Then, rerun with find_history with the gas option to find the history of all of those gas particles
+
+*accrmode.pro
+Determines the state of gas at each step
+
+*gas_gal_disk_history
+Determines when gas is lost from or accreted onto the galaxy

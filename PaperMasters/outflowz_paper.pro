@@ -36,14 +36,14 @@ plot_baryonicfrac = 0
 plot_tully_fisher_obs = 0
 plot_baryonic_tully_fisher_obs = 0
 plot_galMS = 0
-plot_mzr = 1
+plot_mzr = 0
 plot_mzr_stellar = 0
 
 find_reaccr = 0
 plot_track_mass =0
 plot_fbcum = 0
 
-plot_ejectz_v_mass = 0 ;1 Metal Mass loading and fraction of metals ejected & expelled
+plot_ejectz_v_mass = 1 ;1 Metal Mass loading and fraction of metals ejected & expelled
 plot_metals_v_mass = 0 ;1 Fraction of metals produced that are retained
 plot_times_ejected = 0 ;
 plot_times_expelled = 0
@@ -783,9 +783,11 @@ IF plot_reeject_z THEN BEGIN
         ysize = 500
      ENDELSE
     loadct,0
+    readcol,'~/etaflux.txt',mvir,vvir,eta_inner,etaz_inner,eta_outer,etaz_outer
     IF keyword_set(outplot) THEN device,filename = outplot + '_vm_zm.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize*1.8,xoffset =  2,yoffset =  2 ELSE window, 0, xsize = xsize, ysize = ysize*1.8
     multiplot,[1,2]
     plot_z_m,avezabs,reverse(dirs[masssort]),reverse(files[masssort]),halo = reverse(haloid[masssort]),outplot = outplot,/normalize,formatthick = formatthick,colors = [colors[1]],symbols = [psym[0] + 1],red_avez = red_avezabs,/absolute,/legend;,/stellarmass
+    stop
     multiplot
     plot_z_m,avez,   reverse(dirs[masssort]),reverse(files[masssort]),halo = reverse(haloid[masssort]),outplot = outplot,/normalize,formatthick = formatthick,colors = [colors[1]],symbols = [psym[0] + 1],red_ave = red_avez;,/stellarmass
     multiplot,/reset

@@ -30,7 +30,7 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
   spawn,'ls ' + dir + '/*' + laststep + '/*' + laststep + '.coolontime',file_coolon
   spawn,'ls ' + dir + '/*' + laststep + '/*' + laststep + '.iord',file_iord
   spawn,'ls ' + dir + '/*' + laststep + '/*' + laststep,file
-  spawn,'ls ' + dir + '/h*.param',pfile
+  spawn,'ls ' + dir + '/*.param',pfile
   units = tipsyunits(pfile[0])
 
 ;-------------------- Read in the information on the halos
@@ -103,7 +103,6 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
 ;-------------------- Step through outputs to find the location of the
 ;                     particles
   FOR i = 0, nsteps - 1 DO BEGIN
-      stop
      stat = read_stat_struc_amiga(halodat[i].file + '.amiga.stat')
      main = where(halodat[i].haloid EQ stat.group)
      satellites = where(sqrt((stat.xc - stat[main].xc)^2 + (stat.yc - stat[main].yc)^2 + (stat.zc - stat[main].zc)^2)*1000 LE stat[main].rvir AND stat.ngas gt 0)
@@ -120,7 +119,6 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
      read_tipsy_arr,halodat[i].file + '.FeMassFrac',h,Fe,part = 'gas',type = 'float'
      read_tipsy_arr,halodat[i].file + '.OxMassFrac',h,Ox,part = 'gas',type ='float'  
      match,gpart_save.iord,iord,indg,inda ;Only look at the gas particles that will ever be in this halo
-
      ;Make sure that there any gas particle that is not at this time step has a mass of zero at that timestep in gpart_save 
      IF n_elements(indg) NE n_elements(gpart_save.iord) THEN BEGIN 
         match2,gpart_save.iord,iord,indg2,inda2 ;Select for only those gas particles that are not still around at this timestep
@@ -163,15 +161,16 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
 ;     inhalo = where(distance LE halodat[i].rvir)
 ;     inhalo = where(gpart.grp[i] EQ halodat[i].haloid)
      inhalo = [0]
-     IF keyword_set(centralhalo) THEN BEGIN
-        test = where(gpart.grp[i] EQ stat[main].group, ntest)
-         IF ntest NE 0 THEN inhalo = [inhalo,test]
-     ENDIF ELSE BEGIN
-        FOR j = 0, n_elements(satellites) - 1 DO BEGIN ; & $
-           test = where(gpart.grp[i] EQ stat[satellites[j]].group, ntest) ; & $
-           IF ntest NE 0 THEN inhalo = [inhalo,test] ; & $
-        ENDFOR ; & $
-     ENDELSE
+     test = where(gpart.grp[i] EQ stat[main].group, ntest)
+     IF ntest NE 0 THEN inhalo = [inhalo,test]
+     IF NOT keyword_set(centralhalo) THEN BEGIN
+         IF satellites[0] NE -1 THEN BEGIN
+             FOR j = 0, n_elements(satellites) - 1 DO BEGIN               ;& $
+                 test = where(gpart.grp[i] EQ stat[satellites[j]].group, ntest) ;& $
+                 IF ntest NE 0 THEN inhalo = [inhalo,test]                      ;& $
+             ENDFOR                                                             ;& $
+        ENDIF
+     ENDIF
      IF n_elements(inhalo) NE 1 THEN BEGIN
         inhalo = inhalo[1:n_elements(inhalo) - 1]
         gloc[inhalo] = 1
@@ -223,7 +222,7 @@ PRO metal_history,dir = dir,finalid = finalid,laststep = laststep,centralhalo = 
      ENDIF
      gpart = 0
   ENDFOR
-;  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.metals.txt',zmetals,Oxs,Fes,coldgas,zmetals_H,Oxs_H,Fes_H,HIs,H2s,Hgas,format='(10E)'
+  IF NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.metals.txt',zmetals,Oxs,Fes,coldgas,zmetals_H,Oxs_H,Fes_H,HIs,H2s,Hgas,format='(10E)'
   IF keyword_set(inhalo) AND NOT keyword_set(nowrite) THEN writecol,'grp' + finalid + '.halometals.txt',zmetals_ha,Oxs_ha,Fes_ha,format='(3E)'
 END
 

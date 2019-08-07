@@ -73,6 +73,10 @@ ism_mass = fltarr(n)
 ism_oxmass = fltarr(n)
 ism_femass = fltarr(n)
 
+HIH2_mass = fltarr(n)
+HIH2_oxmass = fltarr(n)
+HIH2_femass = fltarr(n)
+
 accr_mass = fltarr(n)
 accr_oxmass = fltarr(n)
 accr_femass = fltarr(n)
@@ -92,6 +96,10 @@ accrh_halo_femass = fltarr(n)
 grvir_mass = fltarr(n)
 grvir_oxmass = fltarr(n)
 grvir_femass = fltarr(n)
+
+gr150_mass = fltarr(n)
+gr150_oxmass = fltarr(n)
+gr150_femass = fltarr(n)
 
 primehalo_stars_oxmass = fltarr(n)
 primehalo_stars_femass = fltarr(n)
@@ -138,7 +146,7 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
    IF ind_step EQ -1 THEN stop
    halo_step = halo_steps[ind_step]
    stat = read_stat_struc_amiga(tfile + '.amiga.stat')
-   ind = (where(stat.group eq halo_step))[0]
+   ind = (where(stat.group eq halo_step[0]))[0]
    vmass[i] = stat[ind].m_tot
    rvir = stat[ind].rvir
  
@@ -189,8 +197,8 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
 ;;    diskearlym = mrdfits(dirs[i] + '/grp' + halo[i] + '.earlydisk_mass.fits',0)
    diskearlyi = mrdfits(dirs[i] + '/grp' + halo[i] + '.earlydisk_iord.fits',0)
 ;;    diskaccrm1 = [diskearlym,diskaccrm[uniq(diskaccri,sort(diskaccri))]]
-   diskaccri1 = [diskearlyi,diskaccri]
-   diskaccri1 = diskaccri[uniq(diskaccri1,sort(diskaccri1))]
+   diskaccri1 = [long(diskearlyi),long(diskaccri)]
+   diskaccri1 = diskaccri1[uniq(diskaccri1,sort(diskaccri1))]
 
 ;   haloaccrm = mrdfits(dirs[i] + '/grp' + halo[i] + '.mass_at_reaccr.fits',0)
    haloaccrz = mrdfits(dirs[i] + '/grp' + halo[i] + '.reaccr_z.fits',0)
@@ -200,7 +208,7 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
 ;   haloearlym = mrdfits(dirs[i] + '/grp' + halo[i] + '.earlyhalo_mass.fits',0)
    haloearlyi = mrdfits(dirs[i] + '/grp' + halo[i] + '.earlyhalo_iord.fits',0) 
 ;   halogmass1[i] = total(haloaccrm[uniq(haloaccri,sort(haloaccri))]) + total(haloearlym) 
-   haloaccri1 = [haloearlyi,haloaccri]
+   haloaccri1 = [long(haloearlyi),long(haloaccri)]
    haloaccri1 = haloaccri1[uniq(haloaccri1,sort(haloaccri1))]
 
 ;------------------------------------------------------------
@@ -243,6 +251,9 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
    grvir_ind = where(sqrt(g.x*g.x + g.y*g.y + g.z*g.z) LE rvir) ;Gas within a virial radius
    grvir = g[grvir_ind]
 
+   gr150_ind = where(sqrt(g.x*g.x + g.y*g.y + g.z*g.z) LE 150) ;Gas within 150 kpc from the center
+   gr150 = g[gr150_ind]
+
    match,iordgas[grvir_ind],diskaccri1,ind5,ind6 ;Gas ever accreted onto the disk within rvir
    grvir_acc_ind = grvir_ind[ind5]
    grvir_acc = g[grvir_ind[ind5]]
@@ -260,6 +271,9 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
                                 ;if it is in the main halo or a
                                 ;satellite of the main halo (just
                                 ;within rvir doesn't count)
+                                ;The rest are likely missed because
+                                ;they are hot enough to be unbound
+                                ;from the halo
        read_tipsy_arr,tfile + '.amiga.grp',h,grp,type = 'int',part = 'gas'
        grp_missing = (grp[grvir_ind])[where(ind7_2 EQ -1)] 
        print,grp_missing[uniq(grp_missing,sort(grp_missing))]
@@ -279,21 +293,26 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
 ;       stop
    ENDIF
 
-   gism_ind = where(g.dens*units.rhounit/(h.time)^3 GE 0.1 AND g.tempg LE 1.2e4 AND abs(g.z) LE 10.0)
-   match,iordgas[gism_ind],iordgas[grvir_acc_ind],ind9,ind10 ;Gas ever accreted onto disk, now within rvir as ISM
-   gism = g[gism_ind[ind9]]
-   gism_ind = gism_ind[ind9]
+   gdisk_ind = where(abs(g.z) LE 3.0 AND sqrt(g.x*g.x + g.y*g.y + g.z*g.z) LE rvir) ;A physical cut of the disk to be used when scaling by HI and H2 (e.g. HIH2mass)
+   gdisk = g[gdisk_ind]
+   gism_ind = where(g.dens*units.rhounit/(h.time)^3 GE 0.1 AND g.tempg LE 1.2e4 AND abs(g.z) LE 3.0 AND sqrt(g.x*g.x + g.y*g.y + g.z*g.z) LE rvir)
+;Matching the gas that meets the definition of ISM is unnecessary and
+;potentially problematic. Better to just do away with the requirment
+;that we have it being accreted onto the ISM. -- CRC 7/20/17
+   ;match,iordgas[gism_ind],iordgas[grvir_acc_ind],ind9,ind10 ;Gas ever accreted onto disk, now within rvir as ISM
+   gism = g[gism_ind] ;[ind9]]-- CRC 7/20/17
+   ;gism_ind = gism_ind[ind9]-- CRC 7/20/17
 
    readarr,tfile+'.H2',h,H2,/ascii,type = 'float',part = 'gas'
    readarr,tfile+'.HI',h,HI,/ascii,type = 'float',part = 'gas'
-   readarr,tfile+'.HeI',h,HeI,/ascii,type = 'float',part = 'gas'
+   ;readarr,tfile+'.HeI',h,HeI,/ascii,type = 'float',part = 'gas'
    print,'Stellar mass: ',alog10(total(srvir.mass)*units.massunit)
    print,'Disk gass mass: ',total(gism.mass*units.massunit)
-   print,'HI + H2 + HeI: ',total((H2[gism_ind]*2 + HI[gism_ind] + HeI[gism_ind])*gism.mass*units.massunit)
+   ;print,'HI + H2 + HeI: ',total((H2[gism_ind]*2 + HI[gism_ind] + HeI[gism_ind])*gism.mass*units.massunit)
    print,'Metal mass in ISM: ',total(gism.mass*(2.09*ox_g[gism_ind] + 1.06*fe_g[gism_ind]))*units.massunit
    metalmassinrvir = total(grvir_acc.mass*(2.09*ox_g[grvir_acc_ind] + 1.06*fe_g[grvir_acc_ind]))*units.massunit 
    print,'Metal mass within gas in Rvir: ',metalmassinrvir
-   print,'Fraction of metals Rvir metals in ISM: ',(total(gism.mass*(2.09*ox_g[gism_ind] + 1.06*fe_g[gism_ind]))*units.massunit)/metalmassinrvir
+   print,'Fraction of metals in Rvir to metals in ISM: ',(total(gism.mass*(2.09*ox_g[gism_ind] + 1.06*fe_g[gism_ind]))*units.massunit)/metalmassinrvir
 ;   stop
 ;--------------------------------
 ;Stars formed from material ever accreted onto disk within a virial radius  
@@ -319,10 +338,16 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
    srvir_oxmass[i] = total(srvir.mass*weight_rvir*ox_s[srvir_ind])*units.massunit
    srvir_femass[i] = total(srvir.mass*weight_rvir*fe_s[srvir_ind])*units.massunit
 
-;Gas ever accreted onto disk, now within rvir as ISM
+;Gas now within rvir as ISM
    ism_mass[i] = total(gism.mass)*units.massunit
    ism_oxmass[i] = total(gism.mass*ox_g[gism_ind])*units.massunit
    ism_femass[i] = total(gism.mass*fe_g[gism_ind])*units.massunit
+
+;Gas scaled by HI + H2 fraction with abs(z) < 3
+   maxHfrac = max(HI + H2)
+   HIH2_mass[i] = total(gdisk.mass*(HI[gdisk_ind] + H2[gdisk_ind])/maxHfrac)*units.massunit
+   HIH2_oxmass[i] = total(gdisk.mass*(HI[gdisk_ind] + H2[gdisk_ind])/maxHfrac*ox_g[gdisk_ind])*units.massunit
+   HIH2_femass[i] = total(gdisk.mass*(HI[gdisk_ind] + H2[gdisk_ind])/maxHfrac*fe_g[gdisk_ind])*units.massunit
 
 ;Material that was ever accreted onto the disk as gas    
    accr_mass[i] = total(g_gal.mass)*units.massunit;total(s_gal.mass)*units.massunit + 
@@ -349,6 +374,11 @@ FOR i = 0, n_elements(dirs) - 1 DO BEGIN
    grvir_oxmass[i] = total(grvir.mass*ox_g[grvir_ind])*units.massunit ;total(srvir.mass*ox_s[srvir_ind])*units.massunit
    grvir_femass[i] = total(grvir.mass*fe_g[grvir_ind])*units.massunit ;total(srvir.mass*fe_s[srvir_ind])*units.massunit
 
+;Gas that is now within 150 kpc
+   gr150_mass[i] = total(gr150.mass)*units.massunit ;total(sr150.mass)*units.massunit
+   gr150_oxmass[i] = total(gr150.mass*ox_g[gr150_ind])*units.massunit ;total(sr150.mass*ox_s[sr150_ind])*units.massunit
+   gr150_femass[i] = total(gr150.mass*fe_g[gr150_ind])*units.massunit ;total(sr150.mass*fe_s[sr150_ind])*units.massunit
+
 
    IF 0 THEN BEGIN
        plot,s_halo.x,s_halo.y,psym = 3
@@ -369,12 +399,16 @@ accr_zmass = 2.09*accr_oxmass + 1.06*accr_femass
 accrh_zmass = 2.09*accrh_oxmass + 1.06*accrh_femass
 ;Gas that was ever accreted onto the disk and now is within rvir
 accr_halo_zmass = 2.09*accr_halo_oxmass + 1.06*accr_halo_femass
-;Gas that was ever accreted onto the disk and now is within rvir
+;Gas that was ever accreted onto the halo and now is within rvir
 accrh_halo_zmass = 2.09*accrh_halo_oxmass + 1.06*accrh_halo_femass
 ;Gas that is now within rvir
 grvir_zmass = 2.09*grvir_oxmass + 1.06*grvir_femass
-;Gas ever accreted onto disk, now within rvir as ISM
+;Gas that is now within 150 kpc of the center
+gr150_zmass = 2.09*gr150_oxmass + 1.06*gr150_femass
+;Gas now within rvir as ISM
 ism_zmass = 2.09*ism_oxmass + 1.06*ism_femass
+;Gas now within rvir and 3 kpc of disk plane, scaled by HI+H2 abundance
+HIH2_zmass = 2.09*HIH2_oxmass + 1.06*HIH2_femass
 ;Stars formed from material ever accreted onto disk within a virial radius  
 s_zmass = 2.09*s_oxmass + 1.06*s_femass
 ;Stars formed from material ever accreted onto halo within a virial radius
@@ -386,7 +420,8 @@ currenthalo_stars_zmass = 2.09*currenthalo_stars_oxmass + 1.06*currenthalo_stars
 ;Metals produced by stars in the main halo
 primehalo_stars_zmass = 2.09*primehalo_stars_oxmass + 1.06*primehalo_stars_femass
 
-writecol,'~/Zproduced_z0.txt',files,halo,currenthalo_stars_zmass,primehalo_stars_zmass,(accrh_zmass + shalo_zmass),s_zmass,ism_zmass,(accr_halo_zmass + s_zmass),format = '(A,I,E,E,E,E,E,E)'
+writecol,'~/Zproduced_z0.txt',files,halo,currenthalo_stars_zmass,primehalo_stars_zmass,(accrh_zmass + srvir_zmass - srvir_remz),(srvir_zmass - srvir_remz),ism_zmass,(accr_halo_zmass + s_zmass),format = '(A,I,E,E,E,E,E,E)'
+;readcol,'~/Zproduced_z0.txt',files,halo,currenthalo_stars_zmass,primehalo_stars_zmass,accrh_shalo_zmass,s_zmass,ism_zmass,accr_halo_s_zmass,format = '(A,I,F,F,F,F,F,F)'
 
 ;;;;;;;;;;;;; Stars Plots ;;;;;;;;;;;;;;;;
 IF keyword_set(stellarmass) THEN xmass = srvir_mass ELSE xmass = vmass
@@ -399,12 +434,16 @@ oplot,xmass,logstellarmetallicity_obs,psym = symcat(sym_outline(symbols[0])),col
 legend,['Stellar Metallicity','Stellar Metallicity from Peeples+ 14, Eq 7'],psym = [symbols[0],sym_outline(symbols[0])],color = [fgcolor,100]
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
-zmetals_predict = 10^(1.0146*alog10(srvir_mass) + alog10(0.030) + 0.1091)
+zmetals_predict_SNII = 10^(1.0146*alog10(srvir_mass - srvir_remmass) + alog10(0.030) + 0.1091)
+zmetals_predict_SNIa = 10^(1.043*alog10(srvir_mass - srvir_remmass) - 2.683)
+;zmetals_predict_SNII = (srvir_massform)*0.030
+zmetals_predict = (srvir_mass - srvir_remmass)^1.004166*0.059
+
 IF keyword_set(outplot) THEN  device,filename = outplot + '_totalmetals_comp.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xmass,currenthalo_stars_zmass,psym = symcat(sym_outline(symbols[0])),/xlog,xtitle = xtitle,ytitle = 'Metal Mass',/ylog,yrange = [1e2,1e11],xrange = xrange
-oplot,xmass,zmetals_predict,psym = 5
-oplot,xmass,(srvir_zmass - srvir_remz),psym = symcat(sym_outline(symbols[0])),color = 254
-oplot,xmass,ism_zmass,psym = symcat(sym_outline(symbols[0])),color = 60
+plot,(srvir_mass - srvir_remmass),currenthalo_stars_zmass,psym = symcat(sym_outline(symbols[0])),/xlog,xtitle = 'Current Stellar Mass [M' + sunsymbol() + ']',ytitle = 'Metal Mass',/ylog,yrange = [1e2,1e11],xrange = xrange
+oplot,(srvir_mass - srvir_remmass),zmetals_predict,psym = 5
+oplot,(srvir_mass - srvir_remmass),(srvir_zmass - srvir_remz),psym = symcat(sym_outline(symbols[0])),color = 254
+oplot,(srvir_mass - srvir_remmass),ism_zmass,psym = symcat(sym_outline(symbols[0])),color = 60
 legend,['Metals produced by stars','Metals predicted','Metals in stars','Metals in ISM'],psym = [sym_outline(symbols[0]),5,sym_outline(symbols[0]),sym_outline(symbols[0])],color = [fgcolor,fgcolor,254,60]
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
@@ -468,8 +507,8 @@ print,'All Material/Ever: ',(accrh_zmass + s_zmass)/primehalo_stars_zmass
 ;Add in metals accreted
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zfrac_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
 plot,xmass,(accr_zmass + s_zmass)/(accr_zmass + s_zmass),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
-oplot,xmass,(accr_halo_zmass + s_zmass)/(accrh_zmass + s_zmass),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
-oplot,xmass,(accr_halo_zmass + s_zmass)/(accrh_zmass + s_zmass),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,xmass,(accrh_halo_zmass + s_zmass)/(accrh_zmass + s_zmass),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
+oplot,xmass,(accrh_halo_zmass + s_zmass)/(accrh_zmass + s_zmass),psym = symcat(sym_outline(symbols[0])),symsize = symsize
 oplot,xmass,ism_zmass/(accrh_zmass + s_zmass),psym = symcat(symbols[1]),color = colors[1],symsize = symsize
 oplot,xmass,ism_zmass/(accrh_zmass + s_zmass),psym = symcat(sym_outline(symbols[1])),symsize = symsize
 oplot,xmass,s_zmass/(accrh_zmass + s_zmass),psym = symcat(symbols[2]),color = colors[2],symsize = symsize
@@ -485,7 +524,7 @@ IF keyword_set(outplot) THEN  device,filename = outplot + '_zfrac_mass_hist.eps'
 plot,alog10(xmass),(accr_zmass + s_zmass)/(accr_zmass + s_zmass),xrange = alog10(xrange),yrange = [0,1],/nodata,xtitle = textoidl('Log(M_*/M')+sunsymbol()+')',ytitle = textoidl('M_z/M_z avaliable')
 binsize = 0.1
 xcoords = [[alog10(xmass) - binsize/2],[alog10(xmass) - binsize/2],[alog10(xmass) + binsize/2],[alog10(xmass) + binsize/2]]
-frac_inhalo = (accr_halo_zmass + s_zmass)/(accrh_zmass + s_zmass)
+frac_inhalo = (accrh_halo_zmass + s_zmass)/(accrh_zmass + s_zmass)
 frac_ism = ism_zmass/(accrh_zmass + s_zmass)
 frac_star = s_zmass/(accrh_zmass + s_zmass)
 ;FOR i = 0, n_elements(xmass) - 1 DO polyfill,xcoords[i,*],[0,frac_star[i],frac_star[i],0],color = colors[2],/line_fill,orientation = 45,spacing = 0.1
@@ -505,39 +544,109 @@ oplot,xcoords[i,*],[frac_star[i]+frac_ism[i],frac_inhalo[i],frac_inhalo[i],frac_
 ENDFOR
 
 
-legend,["Within Rvir","Stars","ISM"],color = [colors[0],colors[2],colors[1]],linestyl = [0,0,0],box = 0
+legend,["Within Rvir","Stars","Disk Gas"],color = [colors[0],colors[2],colors[1]],linestyl = [0,0,0],box = 0
 IF keyword_set(redshift) THEN legend,['z = ' + strtrim(redshift,2)],box = 0,/right,/top
 IF keyword_set(outplot) THEN device, /close ELSE stop
 
 ;Fraction of metals produced by stars in current main halo in that are still within rvir
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zcurrfrac_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xmass,(accr_zmass + s_zmass)/(currenthalo_stars_zmass),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
-oplot,xmass,(accr_halo_zmass + s_zmass)/(currenthalo_stars_zmass),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
-oplot,xmass,(accr_halo_zmass + s_zmass)/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+plot,xmass,(accrh_zmass + s_zmass)/(currenthalo_stars_zmass),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
+oplot,xmass,(accrh_halo_zmass + s_zmass)/(currenthalo_stars_zmass),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
+oplot,xmass,(accrh_halo_zmass + s_zmass)/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[0])),symsize = symsize
 oplot,xmass,ism_zmass/(currenthalo_stars_zmass),psym = symcat(symbols[1]),color = colors[1],symsize = symsize
 oplot,xmass,ism_zmass/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[1])),symsize = symsize
 oplot,xmass,(srvir_zmass - srvir_remz)/(currenthalo_stars_zmass),psym = symcat(symbols[2]),color = colors[2],symsize = symsize
 oplot,xmass,(srvir_zmass - srvir_remz)/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[2])),symsize = symsize
 oplot,xmass,(srvir_zmass - srvir_remz + ism_zmass)/(currenthalo_stars_zmass),psym = symcat(symbols[3]),color = colors[3],symsize = symsize
 oplot,xmass,(srvir_zmass - srvir_remz + ism_zmass)/(currenthalo_stars_zmass),psym = symcat(sym_outline(symbols[3])),symsize = symsize
-legend,["Within Rvir","Stars + ISM","Stars","ISM"],color = [colors[0],colors[3],colors[2],colors[1]],psym = [symbols[0],symbols[3],symbols[2],symbols[1]],box = 0
+legend,["Within Rvir","Stars + Disk Gas","Stars","Disk Gas"],color = [colors[0],colors[3],colors[2],colors[1]],psym = [symbols[0],symbols[3],symbols[2],symbols[1]],box = 0
 IF keyword_set(outplot) THEN device, /close ELSE stop
+
+;Fraction of metals produced by all stars in the virial radius at z = 0 are still within rvir
+;Add in metals accreted
+IF keyword_set(outplot) THEN  device,filename = outplot + '_zcurrfrac_mass_hist.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
+plot,alog10(xmass),(accr_zmass + s_zmass)/(currenthalo_stars_zmass),xrange = alog10(xrange),yrange = [0,1],/nodata,xtitle = textoidl('Log(M_*/M')+sunsymbol()+')',ytitle = textoidl('M_z/M_z avaliable')
+binsize = 0.1
+xcoords = [[alog10(xmass) - binsize/2],[alog10(xmass) - binsize/2],[alog10(xmass) + binsize/2],[alog10(xmass) + binsize/2]]
+frac_inhalo = (accrh_halo_zmass + srvir_zmass - srvir_remz)/currenthalo_stars_zmass
+frac_ism = ism_zmass/currenthalo_stars_zmass
+frac_star = (srvir_zmass - srvir_remz)/currenthalo_stars_zmass
+FOR i = 0, n_elements(xmass) - 1 DO BEGIN &  $
+polyfill,xcoords[i,*],[0,frac_star[i],frac_star[i],0],color = colors[2],/line_fill,orientation = 45,spacing = 0.1 &  $
+oplot,xcoords[i,*],[0,frac_star[i],frac_star[i],0],color = colors[2],thick = 5 &  $
+polyfill,xcoords[i,*],[frac_star[i],frac_star[i]+frac_ism[i],frac_star[i]+frac_ism[i],frac_star[i]],color = colors[1],/line_fill,orientation = 60,spacing = 0.1 &  $
+oplot,xcoords[i,*],[frac_star[i],frac_star[i]+frac_ism[i],frac_star[i]+frac_ism[i],frac_star[i]],color = colors[1],thick = 5 &  $
+polyfill,xcoords[i,*],[frac_star[i]+frac_ism[i],frac_inhalo[i],frac_inhalo[i],frac_star[i]+frac_ism[i]],color = colors[0],/line_fill,orientation = 30,spacing = 0.1 &  $
+oplot,xcoords[i,*],[frac_star[i]+frac_ism[i],frac_inhalo[i],frac_inhalo[i],frac_star[i]+frac_ism[i]],color = colors[0],thick = 5 &  $
+ENDFOR
+legend,["Within Rvir","Stars","Disk Gas"],color = [colors[0],colors[2],colors[1]],linestyl = [0,0,0],box = 0
+IF keyword_set(redshift) THEN legend,['z = ' + strtrim(redshift,2)],box = 0,/right,/top
+IF keyword_set(outplot) THEN device, /close ELSE stop
+print,'Quantitative comparison to Dwarfs: '
+ind = where((srvir_mass - srvir_remmass) LE 1.9e7)
+print,(srvir_mass - srvir_remmass)[ind]
+print,'CGM'
+print,frac_inhalo[ind]
+print,'Disk'
+print,frac_star[ind]+frac_ism[ind]
+print,'HI + H2'
+print,HIH2_zmass[ind]/currenthalo_stars_zmass[ind]
+print,'Star'
+print,frac_star[ind]
 
 ;Fraction of metals produced by stars in current main halo, as
 ;calculated by peeples in that are
 ;still within rvir                                                                                                                           
 IF keyword_set(outplot) THEN  device,filename = outplot + '_zcurrfrac_peeples2_mass.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = ysize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = ysize
-plot,xmass,(accr_zmass + s_zmass)/(zmetals_predict),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
-oplot,xmass,(grvir_zmass + srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
-oplot,xmass,(grvir_zmass + srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(sym_outline(symbols[0])),symsize = symsize
-oplot,xmass,ism_zmass/(zmetals_predict),psym = symcat(symbols[1]),color = colors[1],symsize = symsize
-oplot,xmass,ism_zmass/(zmetals_predict),psym = symcat(sym_outline(symbols[1])),symsize = symsize
-oplot,xmass,(srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(symbols[2]),color = colors[2],symsize = symsize
-oplot,xmass,(srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(sym_outline(symbols[2])),symsize = symsize
-oplot,xmass,(srvir_zmass - srvir_remz + ism_zmass)/(zmetals_predict),psym = symcat(symbols[3]),color = colors[3],symsize = symsize
-oplot,xmass,(srvir_zmass - srvir_remz + ism_zmass)/(zmetals_predict),psym = symcat(sym_outline(symbols[3])),symsize = symsize
+plot,(srvir_mass - srvir_remmass),(accr_zmass + s_zmass)/(zmetals_predict),/xlog,xrange = xrange,yrange = [0,1],/nodata,xtitle = xtitle,ytitle = textoidl('M_z/M_z avaliable')
+oplot,(srvir_mass - srvir_remmass),(grvir_zmass + srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(symbols[0]),color = colors[0],symsize = symsize
+oplot,(srvir_mass - srvir_remmass),(grvir_zmass + srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(sym_outline(symbols[0])),symsize = symsize
+oplot,(srvir_mass - srvir_remmass),ism_zmass/(zmetals_predict),psym = symcat(symbols[1]),color = colors[1],symsize = symsize
+oplot,(srvir_mass - srvir_remmass),ism_zmass/(zmetals_predict),psym = symcat(sym_outline(symbols[1])),symsize = symsize
+oplot,(srvir_mass - srvir_remmass),(srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(symbols[2]),color = colors[2],symsize = symsize
+oplot,(srvir_mass - srvir_remmass),(srvir_zmass - srvir_remz)/(zmetals_predict),psym = symcat(sym_outline(symbols[2])),symsize = symsize
+oplot,(srvir_mass - srvir_remmass),(srvir_zmass - srvir_remz + ism_zmass)/(zmetals_predict),psym = symcat(symbols[3]),color = colors[3],symsize = symsize
+oplot,(srvir_mass - srvir_remmass),(srvir_zmass - srvir_remz + ism_zmass)/(zmetals_predict),psym = symcat(sym_outline(symbols[3])),symsize = symsize
 legend,["Within Rvir","Stars + ISM","Stars","ISM"],color = [colors[0],colors[3],colors[2],colors[1]],psym = [symbols[0],symbols[3],symbols[2],symbols[1]],box = 0
 IF keyword_set(outplot) THEN device, /close ELSE stop
+ind = where((srvir_mass - srvir_remmass) LE 1.9e7)
+print,(srvir_mass - srvir_remmass)[ind]
+print,'CGM'
+print,frac_inhalo[ind]
+print,'Disk'
+print,frac_star[ind]+frac_ism[ind]
+print,'HI + H2'
+print,HIH2_zmass[ind]/currenthalo_stars_zmass[ind]
+print,'Star'
+print,frac_star[ind]
+
+IF keyword_set(outplot) THEN  device,filename = outplot + '_zcurrfrac_peeples2_hist.eps',/color,bits_per_pixel= 8,xsize = xsize,ysize = xsize,xoffset =  2,yoffset =  2 ELSE window, 2, xsize = xsize, ysize = xsize
+plot,alog10(xmass),(accr_zmass + s_zmass)/(currenthalo_stars_zmass),xrange = [9.2,11.4],yrange = [0,1],/nodata,xtitle = textoidl('Log(M_*/M')+sunsymbol()+')',ytitle = textoidl('M_z/M_z avaliable')
+binsize = 0.1
+xcoords = [[alog10(srvir_mass - srvir_remmass) - binsize/2],[alog10(srvir_mass - srvir_remmass) - binsize/2],[alog10(srvir_mass - srvir_remmass) + binsize/2],[alog10(srvir_mass - srvir_remmass) + binsize/2]]
+frac_inhalo = (gr150_zmass + srvir_zmass - srvir_remz)/zmetals_predict ;(grvir_zmass + srvir_zmass - srvir_remz)
+frac_ism = HIH2_zmass/zmetals_predict ;ism_zmass/zmetals_predict
+frac_star = (srvir_zmass - srvir_remz)/zmetals_predict
+FOR i = 0, n_elements(xmass) - 1 DO BEGIN &  $
+IF alog10(xmass[i]) GT 9.5 THEN BEGIN & $
+polyfill,xcoords[i,*],[0,frac_star[i],frac_star[i],0],color = colors[2],/line_fill,orientation = 45,spacing = 0.1 &  $
+oplot,xcoords[i,*],[0,frac_star[i],frac_star[i],0],color = colors[2],thick = 5 &  $
+polyfill,xcoords[i,*],[frac_star[i],frac_star[i]+frac_ism[i],frac_star[i]+frac_ism[i],frac_star[i]],color = colors[1],/line_fill,orientation = 60,spacing = 0.1 &  $
+oplot,xcoords[i,*],[frac_star[i],frac_star[i]+frac_ism[i],frac_star[i]+frac_ism[i],frac_star[i]],color = colors[1],thick = 5 &  $
+polyfill,xcoords[i,*],[frac_star[i]+frac_ism[i],frac_inhalo[i],frac_inhalo[i],frac_star[i]+frac_ism[i]],color = colors[0],/line_fill,orientation = 30,spacing = 0.1 &  $
+oplot,xcoords[i,*],[frac_star[i]+frac_ism[i],frac_inhalo[i],frac_inhalo[i],frac_star[i]+frac_ism[i]],color = colors[0],thick = 5 &  $
+  ENDIF & $
+ENDFOR
+legend,["Within 150 kpc","Stars",textoidl('HI + H_2')],color = [colors[0],colors[2],colors[1]],linestyl = [0,0,0],box = 0
+IF keyword_set(redshift) THEN legend,['z = ' + strtrim(redshift,2)],box = 0,/right,/top
+IF keyword_set(outplot) THEN device, /close ELSE stop
+print,'Quantitative comparison to Peeples: '
+ind = where((srvir_mass - srvir_remmass) GT 10^9.5)
+print,(srvir_mass - srvir_remmass)[ind]
+print,'CGM'
+print,frac_inhalo[ind]
+print,'Disk'
+print,frac_star[ind]+frac_ism[ind]
 
 IF redshift eq 0 THEN BEGIN
 ;Fraction of metals produced by stars in main progenitor in that are still within rvir

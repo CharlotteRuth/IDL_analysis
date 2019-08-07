@@ -35,13 +35,25 @@ for m = 0, n_elements(groups)-1 do begin
     nostar = 0
     ind = where(grp eq i,comp=indcomp)
     IF ((where(ind ge h.ngas+h.ndark))[0] ne -1) THEN inds = ind(where(ind ge h.ngas+h.ndark)) ELSE nostar = 1
-    indg = ind(where(ind lt h.ngas))
     indd = ind(where(ind ge h.ngas and ind lt h.ngas+h.ndark))
 ;tempdata = read_ascii_array(cmp_file)
 ;components = tempdata[h.ngas+h.ndark:h.ndark+h.nstar+h.ngas-1]
 
     IF NOT nostar THEN stars = s[inds-h.ngas-h.ndark]
     dark = d[indd-h.ngas] 
+    IF (where(ind lt h.ngas))[0] EQ -1 THEN BEGIN
+        foo = min(dark.phi, cmindex)
+        cx = dark[cmindex].x
+        cy = dark[cmindex].y
+        cz = dark[cmindex].z   
+        propx=mean(dark.vx)
+        propy=mean(dark.vy)
+        propz=mean(dark.vz)
+        valign = [propx,propy,propz]
+        spinaxes = [0,0,1]
+        CONTINUE
+    ENDIF
+    indg = ind(where(ind lt h.ngas)) 
     gas = g[indg]
 
 

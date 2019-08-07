@@ -12,6 +12,7 @@ loadct, file='/home6/crchrist/IDL/IDL-Colorbars/mycolorbars.tbl'
 openw,2,'~/metallicity_diff_inflow_outflow.txt'
 FOR i = 0, n - 1 DO BEGIN
 ;   IF file_test(dirs[i] + '/outflowtime.grp' + halo[i] + '.txt') THEN BEGIN
+      print,dirs[i] + '/grp' + halo[i]
       diskaccri = mrdfits(dirs[i] + '/grp' + halo[i] + '.reaccrdisk_iord.fits',0) 
       diskaccrm = mrdfits(dirs[i] + '/grp' + halo[i] + '.mass_at_reaccrdisk.fits',0)
       diskaccrz = mrdfits(dirs[i] + '/grp' + halo[i] + '.reaccrdisk_z.fits',0)
@@ -53,11 +54,14 @@ FOR i = 0, n - 1 DO BEGIN
       metdiff = [0]
       reaccrmet = [0]
       ejectmet = [0]
+      ejecttime_noRet = [0]
+      ejectmet_noRet = [0]
+      outflowmass_noRet = [0]
       FOR j = 0, n_elements(uniqi) - 1 DO BEGIN
          diskaccrind = where(diskaccri EQ uniqi[j])
          reejectind  = where(reejecti EQ uniqi[j])
          IF (n_elements(diskaccrind) - 1 NE n_elements(reejectind)) AND (n_elements(diskaccrind) NE n_elements(reejectind)) THEN stop
-         IF n_elements(diskaccrind) - 1 NE n_elements([where(diskaccr_data.iord EQ uniqi[j])]) THEN stop
+         IF n_elements(diskaccrind) - 1 NE n_elements([where(diskaccr_data.iord EQ uniqi[j])]) THEN continue ;stop
          diskaccrtimes = diskaccrt[diskaccrind[sort(diskaccrt[diskaccrind])]]
          reejecttimes = reejectt[reejectind[sort(reejectt[reejectind])]]
          diskaccrmets = diskaccr_data[diskaccrind[sort(diskaccrt[diskaccrind])]].metallicity
@@ -69,12 +73,15 @@ FOR i = 0, n - 1 DO BEGIN
          metdiff     = [metdiff, diskaccr_data[where(diskaccr_data.iord EQ uniqi[j])].metallicity - reejectmets[0:n_elements(diskaccrind) - 2]]
          reaccrmet = [reaccrmet,diskaccr_data[where(diskaccr_data.iord EQ uniqi[j])].metallicity]
          ejectmet = [ejectmet,reejectmets[0:n_elements(diskaccrind) - 2]]
+         IF n_elements(reejectmets) EQ n_elements(diskaccrind) THEN ejectmet_noRet = [ejectmet_noRet,reejectmets[n_elements(diskaccrind) - 1]] ;If last time it is ejected it is never reaccreted, save the metallicity at the time of ejection
          IF (where(diskaccrtimes[1:n_elements(diskaccrind) - 1 ] - reejecttimes[0:n_elements(diskaccrind) - 2] LT 0.001))[0] NE -1 THEN stop
          reaccrtime = [reaccrtime,diskaccrtimes[1:n_elements(diskaccrind) - 1 ]]
          reaccriord = [reaccriord,lonarr(n_elements(diskaccrind) - 1) + uniqi[j]]
          ejecttime = [ejecttime,reejecttimes[0:n_elements(diskaccrind) - 2]]
+         IF n_elements(reejectmets) EQ n_elements(diskaccrind) THEN ejecttime_noRet = [ejecttime_noRet,reejecttimes[n_elements(diskaccrind) - 1]] ;If last time it is ejected it is never reaccreted, save the the time of ejection
          diskmass = [diskmass,reejectm[reejectind[sort(reejectt[reejectind])]]]
          outflowmass = [outflowmass,(diskaccrm[diskaccrind[sort(diskaccrt[diskaccrind])]])[1:n_elements(diskaccrind) - 1 ]]
+         IF n_elements(reejectmets) EQ n_elements(diskaccrind) THEN outflowmass_noRet = [outflowmass_noRet,(reejectm[reejectind[sort(reejectt[reejectind])]])[-1]] ;This should return the mass at the last time a particle is ejected (provided it never returns). I'm not going to thorougly test it, though so buyer beware.
       ENDFOR
       outflowtime = outflowtime[1:n_elements(outflowtime) - 1]
       disktime = disktime[1:n_elements(disktime) - 1]
@@ -86,6 +93,9 @@ FOR i = 0, n - 1 DO BEGIN
       reaccrmet = reaccrmet[1:n_elements(reaccrmet) - 1]
       ejectmet = ejectmet[1:n_elements(ejectmet) - 1]
       reaccriord = reaccriord[1:n_elements(reaccriord) - 1]
+      ejecttime_noRet = ejecttime_noRet[1:n_elements(ejecttime_noRet) - 1]
+      ejectmet_noRet = ejectmet_noRet[1:n_elements(ejectmet_noRet) - 1]
+      outflowmass_noRet =  outflowmass_noRet[1:-1]
       IF keyword_set(debug) THEN BEGIN
           contour_plus,outflowtime,alog10(abs(metdiff/ejectmet)),nlevels = 254,ymin = -6.0,ymax = 2.0,xmin = 0,xmax = 14.0,threshold = 1e7,xbinsize=0.2,ybinsize = 0.2,/fill,xtitle = 'Time in outflow',ytitle = textoidl('Log(|(Z_{reaccr} - Z_{eject})/Z_{eject}|)')
           stop
@@ -127,7 +137,10 @@ FOR i = 0, n - 1 DO BEGIN
       printf,2,'Relative difference: ',mean(ejectmet)/mean(reeject_data.metallicity)
 
       openw,1,dirs[i] + '/reaccZdiff.grp' + halo[i] + '.txt'
-      printf,1,transpose([[metdiff],[ejectmet],[outflowmass]])
+      printf,1,transpose([[metdiff],[ejectmet],[outflowmass],[ejecttime]])
+      close,1
+      openw,1,dirs[i] + '/unreaccZ.grp' + halo[i] + '.txt'
+      printf,1,transpose([[ejectmet_noRet],[outflowmass_noRet],[ejecttime_noRet]])
       close,1
       IF NOT keyword_set(nowrite) THEN BEGIN
           writecol,dirs[i] + '/reaccriord.grp' + halo[i] + '.txt',long(reaccriord)
@@ -146,5 +159,6 @@ FOR i = 0, n - 1 DO BEGIN
       ENDIF
 ;   ENDIF
 ENDFOR
-close,2   
+close,2
+stop   
 END

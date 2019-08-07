@@ -82,7 +82,7 @@ IF NOT keyword_set(gal) THEN gal = 1
 !P.CHARSIZE = 1.25
 
 IF NOT KEYWORD_SET(step) THEN BEGIN
-    command = "ls "+dir+filebase + "*/" + filebase + ".00*???.amiga.grp | grep amiga.grp | sed 's/.amiga.grp//g'"
+    command = "ls "+dir+filebase + "*/" + filebase + ".00???.amiga.grp | grep amiga.grp | sed 's/.amiga.grp//g'"
     spawn,command,file       ; return the files without the .amiga.grp
     grpfile = file+'.amiga.grp'
     statfile = file+'.amiga.stat'

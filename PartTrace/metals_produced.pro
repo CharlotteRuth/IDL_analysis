@@ -60,8 +60,8 @@ steps = ['00512']
 ;fileroot = 'h516.cosmo25cmb.3072g14HBWK'
 ;fileroot_short = 'h603.cosmo50cmb.3072g'
 ;fileroot = 'h603.cosmo50cmb.3072g14HBWK'
-fileroot_short = 'h799.cosmo25cmb.3072g/'
-fileroot = 'h799.cosmo25cmb.3072g14HBWK/'
+fileroot_short = 'h799.cosmo25cmb.3072g'
+fileroot = 'h799.cosmo25cmb.3072g14HBWK'
 
 dir = dirbase + fileroot_short + '/' + fileroot
 filebase = fileroot + '.'+ steps + '/' + fileroot + '.' + steps
