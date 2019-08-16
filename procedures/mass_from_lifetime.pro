@@ -4,7 +4,7 @@
 ;lifetime dStarTime [in yr]. 
 ;This code is adapted from startime.C in ChaNGA,
 ;which in turn references the Raiteri, Villata, and Navarro (A&A, 315, 105, 1996) fit to Padova group stellar models
-;dMetals is defined as the total mass fracion in elements heavier than
+;dMetals is defined as the total mass fraction in elements heavier than
 ;He, is in the range 0.0004-0.05.
 ;Both dStarLtime and dMetals can be scalars or arrays 
 

@@ -20,7 +20,7 @@ agemin = tmin - s.tform
 agemax = tmax - s.tform
 
 IF (where(s.tform GT tmin))[0] NE -1 THEN agemin[where(s.tform GT tmin)] = 0 ;For all stars formed after the timebin started, set their minimum age to zero
-IF (where(s.tform GT tmax))[0] NE -1 THEN agemax[where(s.tform GT tmin)] = 0 ;For all stars formed after the timebin bin, set their minimum age to zero. This should result in zero mass producing SNII after the integration
+IF (where(s.tform GT tmax))[0] NE -1 THEN agemax[where(s.tform GT tmax)] = 0 ;For all stars formed after the timebin bin, set their minimum age to zero. This should result in zero mass producing SNII after the integration
 
 mmax = mass_from_lifetime(agemin,dMetals)
 mmin = mass_from_lifetime(agemax,dMetals)

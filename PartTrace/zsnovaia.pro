@@ -21,7 +21,7 @@ IF (where(dMetals GT zmax))[0] NE -1 THEN dMetals[where(dMetals GT zmax)] = zmax
 agemin = tmin - s.tform
 agemax = tmax - s.tform
 IF (where(s.tform GT tmin))[0] NE -1 THEN agemin[where(s.tform GT tmin)] = 0 ;For all stars formed after the timebin started, set their minimum age to zero
-IF (where(s.tform GT tmax))[0] NE -1 THEN agemax[where(s.tform GT tmin)] = 0 ;For all stars formed after the timebin bin, set their minimum age to zero. This should result in zero mass producing SNII after the integration
+IF (where(s.tform GT tmax))[0] NE -1 THEN agemax[where(s.tform GT tmax)] = 0 ;For all stars formed after the timebin bin, set their minimum age to zero. This should result in zero mass producing SNII after the integration
 
 mmax = mass_from_lifetime(agemin,dMetals) ; The maximum mass of stars that may have ended their lives during this time
 mmin = mass_from_lifetime(agemax,dMetals) ; the minimum mass of stars that may have ended their lives during this time
@@ -69,10 +69,12 @@ Aprime = dFracBinSNIa*imf1to8PreFactor;*.85
 IF indlow[0] NE -1 THEN num_sn[ind_lowmass[indlow]] = Aprime/3.7*( $
                            3^(-4.7)*((3./2.+fltarr(n_elements(indlow)))^3 - masses_lower[indlow]^3) $
                            - 2^(-3.7)/0.7*(masses_upper[indlow]^(-0.7) - (3./2.+fltarr(n_elements(indlow)))^(-0.7)) $
-                           + (1.42857*masses_upper[indlow]^2 + 13.4454*masses_upper[indlow] + 39.8382)*(masses_upper[indlow] + 8)^(-2.7) - (1.42857*masses_lower[indlow]^2 + 13.4454*masses_lower[indlow] + 39.8382)*(masses_lower[indlow] + 8)^(-2.7))
+                           + (1.42857*masses_upper[indlow]^2 + 13.4454*masses_upper[indlow] + 39.8382)*(masses_upper[indlow] + 8)^(-2.7) $
+                           - (1.42857*masses_lower[indlow]^2 + 13.4454*masses_lower[indlow] + 39.8382)*(masses_lower[indlow] + 8)^(-2.7))
 IF indhigh[0] NE -1 THEN num_sn[ind_lowmass[indhigh]] = Aprime/3.7*( $
                            (-1)*2^(-3.7)/0.7*(masses_upper[indhigh]^(-0.7) - masses_lower[indhigh]^(-0.7)) $
-                           + ((1.42857*masses_upper[indhigh]^2 + 13.4454*masses_upper[indhigh] + 39.8382)*(masses_upper[indhigh] + 8)^(-2.7) - (1.42857*masses_lower[indhigh]^2 + 13.4454*masses_lower[indhigh] + 39.8382)*(masses_lower[indhigh] + 8)^(-2.7)))
+                           + (1.42857*masses_upper[indhigh]^2 + 13.4454*masses_upper[indhigh] + 39.8382)*(masses_upper[indhigh] + 8)^(-2.7) $
+                           - (1.42857*masses_lower[indhigh]^2 + 13.4454*masses_lower[indhigh] + 39.8382)*(masses_lower[indhigh] + 8)^(-2.7))
 
 
 ;from Gasoline
