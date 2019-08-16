@@ -1,7 +1,7 @@
 pro rtipsy,file,header,catg,catd,cats,TIME = time,VERBOSE = verbose, JUSTHEAD=justhead
 ;;; RTIPSY:  Tipsy reader for IDL
 ;;; Author:  James Wadsley
-;;; 
+;;;
 if (N_PARAMS() eq 0) then begin
   print, "rtipsy.pro  Reads tipsy files detecting the format: "
   print, "big endian, little endian, padded (standard) or non-padded header "
@@ -26,7 +26,7 @@ if (N_PARAMS() eq 0) then begin
 endif
 
 ;;; Note: IDL structures are never paddded 
-header = { time:double(0.0), n:0L, ndim:0L, ngas:0L, ndark:0L, nstar:0L }
+header = { time:double(0.0), n:0L, ndim:0L, ngas:0L, ndark:0L, nstar:0L   }
 
 close,1
 openr,1,file
@@ -60,17 +60,17 @@ endif
 
 IF (KEYWORD_SET(justhead) EQ 0) THEN BEGIN 
 if (header.ngas ne 0) then begin 
-	catg = replicate({mass: 1.,x: 1.,y : 1., z:1.,vx:1.,vy:1.,vz:1.,dens:1.,tempg:1.,h : 1. , zmetal : 1., phi : 1.},header.ngas)
+	catg = replicate({mass: 1.0,x: 1.0,y : 1.0, z:1.0,vx:1.0,vy:1.0,vz:1.0,dens:1.0,tempg:1.0,h : 1.0, zmetal : 1.0, phi : 1.0},header.ngas)
 	readu,1,catg
     if (endianswap eq 1) then catg=swap_endian(catg)
 endif
 if (header.ndark ne 0) then begin
-    catd = replicate({mass: 1.,x: 1.,y : 1., z:1.,vx:1.,vy:1.,vz:1.,eps: 1.,phi: 1.},header.ndark)
+    catd = replicate({mass: 1.0,x: 1.0,y : 1.0, z:1.0,vx:1.0,vy:1.0,vz:1.0,eps: 1.0,phi: 1.0},header.ndark)
     readu,1,catd
     if (endianswap eq 1) then catd=swap_endian(catd)
 endif
 if (header.nstar ne 0) then begin
-    cats = replicate({mass: 1.,x: 1.,y : 1., z:1.,vx:1.,vy:1.,vz:1.,metals:1.,tform:1.,eps: 1.,phi: 1.},header.nstar)
+    cats = replicate({mass: 1.0,x: 1.0,y : 1.0, z:1.0,vx:1.0,vy:1.0,vz:1.0,metals:1.0,tform:1.0,eps: 1.0,phi: 1.0},header.nstar)
     readu,1,cats
     if (endianswap eq 1) then cats=swap_endian(cats)
 endif
@@ -82,8 +82,9 @@ if (keyword_set(time)) then begin
     goto, Loop
   endif
 endif
-ENDIF;end the justhead if statement
+
 close,1
+ENDIF ;end the justhead if statement
 return
 
 ReadError:
